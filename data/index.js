@@ -165,6 +165,22 @@ export const banners = [
     },
 ]
 
+export const vaccineData = [
+    {
+        id: '0',
+        vaccineType_name: 'Anti-Rabies',
+        OR_NO: '095623',
+        expiryDate: '07-2026',
+        registrationDate: '08.23.27',
+        vaccinationnDate: '08.23.24',
+        registrationFee: '50',
+        remarks: 'Walk-in',
+        vetImage: images.gladysVet,
+        doctor: 'Dr. Gladys Garcia',
+        position: 'Veterinarian',
+        licenseNumber: '9834',
+    },
+]
 export const categories = [
     {
         id: '0',
@@ -190,6 +206,54 @@ export const categories = [
         backgroundColor: 'rgba(36, 107, 253, .12)',
         onPress: 'CategoryDentist',
     },
+    // {
+    //     id: "3",
+    //     name: "Ophthalmo",
+    //     icon: icons.eye,
+    //     iconColor: COLORS.primary,
+    //     backgroundColor: "rgba(36, 107, 253, .12)",
+    //     onPress: "CategoryOphthalmologist"
+    // },
+    // {
+    //     id: "4",
+    //     name: "Nutritionist",
+    //     icon: icons.nutrition1,
+    //     iconColor: "rgba(36, 107, 253, 1)",
+    //     backgroundColor: "rgba(36, 107, 253, .12)",
+    //     onPress: "CategoryNutritionist"
+    // },
+    // {
+    //     id: "5",
+    //     name: "Neurologist",
+    //     icon: icons.brain,
+    //     iconColor: "rgba(36, 107, 253, 1)",
+    //     backgroundColor: "rgba(36, 107, 253, .12)",
+    //     onPress: "CategoryNeurologist"
+    // },
+    // {
+    //     id: "6",
+    //     name: "Pediatric",
+    //     icon: icons.children,
+    //     iconColor: "rgba(36, 107, 253, 1)",
+    //     backgroundColor: "rgba(36, 107, 253, .12)",
+    //     onPress: "CategoryPediatric"
+    // },
+    // {
+    //     id: "7",
+    //     name: "Radiologist",
+    //     icon: icons.joint,
+    //     iconColor: "rgba(36, 107, 253, 1)",
+    //     backgroundColor: "rgba(36, 107, 253, .12)",
+    //     onPress: "CategoryRadiologist"
+    // },
+    // {
+    //     id: "8",
+    //     name: "Others",
+    //     icon: icons.more3,
+    //     iconColor: "rgba(36, 107, 253, 1)",
+    //     backgroundColor: "rgba(36, 107, 253, .12)",
+    //     onPress: null
+    // }
 ]
 
 export const recommendedDoctors = [
@@ -220,7 +284,20 @@ export const recommendedDoctors = [
         categoryId: '1',
     },
     {
-        id: '2',
+        id: '3',
+        name: 'Muning',
+        type: 'Cat',
+        image: images.klay,
+        // distance: "100 m",
+        // consultationFee: "Dog",
+        // rating: 4.8,
+        petBreed: 'Persian Cat',
+        // hospital: "St. Mary's Hospital",
+        isAvailable: true,
+        categoryId: '2',
+    },
+    {
+        id: '4',
         name: 'Muning',
         type: 'Cat',
         image: images.klay,
@@ -325,6 +402,38 @@ export const recommendedDoctors = [
     // },
 ]
 
+export const vaccineDetails = [
+    {
+        id: '1',
+        vaccineTypeName: 'Anti-Rabies',
+        vaccineDate: '02.27.2024',
+        Vaccinedoctor: 'Gladys Ignacio',
+    },
+    {
+        id: '2',
+        vaccineTypeName: 'Novibac',
+        vaccineDate: '02.27.2024',
+        Vaccinedoctor: 'Jamaica Sambrano',
+    },
+    {
+        id: '3',
+        vaccineTypeName: 'Anti-Ewan',
+        vaccineDate: '02.27.2024',
+        Vaccinedoctor: 'Jhomar Candelario',
+    },
+    {
+        id: '4',
+        vaccineTypeName: 'Sample Vaccine',
+        vaccineDate: '02.27.2024',
+        Vaccinedoctor: 'Eidriel Trinidad',
+    },
+    {
+        id: '5',
+        vaccineTypeName: 'Anti-Rabies',
+        vaccineDate: '02.27.2024',
+        Vaccinedoctor: 'Gladys Ignacio',
+    },
+]
 export const doctors = [
     {
         id: '1',
@@ -801,6 +910,25 @@ export const ratings = [
     {
         id: '2',
         title: '1',
+    },
+]
+
+export const dateFilter = [
+    {
+        id: '1',
+        title: '20240',
+    },
+    {
+        id: '1',
+        title: '20240',
+    },
+    {
+        id: '1',
+        title: '20240',
+    },
+    {
+        id: '1',
+        title: '20240',
     },
 ]
 
