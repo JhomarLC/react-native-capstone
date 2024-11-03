@@ -6,166 +6,152 @@ import {
     Image,
     TextInput,
     FlatList,
+    ActivityIndicator,
 } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { COLORS, SIZES, icons } from '../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { vaccineDetails } from '../data'
 import NotFoundCard from '../components/NotFoundCard'
 import HorizontalVaccineListInfo from '../components/HorizontalVaccineListInfo'
 import { ScrollView } from 'react-native-virtualized-view'
+import { loadPetMedication } from '../services/PetsService'
+import { formatDate } from '../services/FormatDate'
 
-const VaccineList = ({ navigation }) => {
-    /**
-     * Render header
-     */
-    const renderHeader = () => {
-        return (
-            <View style={styles.headerContainer}>
-                <View style={styles.headerLeft}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Image
-                            source={icons.back}
-                            resizeMode="contain"
-                            style={[
-                                styles.backIcon,
-                                {
-                                    tintColor: COLORS.greyscale900,
-                                },
-                            ]}
-                        />
-                    </TouchableOpacity>
-                    <View style={{ flexDirection: 'column' }}>
-                        <Text
-                            style={[
-                                styles.name,
-                                {
-                                    color: COLORS.greyscale900,
-                                },
-                            ]}
-                        >
-                            Pet Profile
-                        </Text>
-                        <Text
-                            style={[
-                                styles.headerTitle,
-                                {
-                                    color: COLORS.greyscale900,
-                                },
-                            ]}
-                        >
-                            Vaccine
-                        </Text>
-                    </View>
-                </View>
-            </View>
-        )
-    }
+const VaccineList = ({ route, navigation }) => {
+    const { pet_id, medication } = route.params
 
-    /**
-     * Render content
-     */
-    const renderContent = () => {
-        const [searchQuery, setSearchQuery] = useState('')
-        const [filteredVaccine, setFilteredVaccine] = useState(vaccineDetails)
-        const [resultsCount, setResultsCount] = useState(0)
+    // State for medications, search query, filtered results, and loading
+    const [medications, setMedications] = useState([])
+    const [searchQuery, setSearchQuery] = useState('')
+    const [filteredMedication, setFilteredMedication] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
 
-        useEffect(() => {
-            handleSearch()
-        }, [searchQuery])
+    // Load medications data on component mount
+    useEffect(() => {
+        async function fetchMedications() {
+            try {
+                setIsLoading(true) // Start loading
+                const result = await loadPetMedication(pet_id, medication.id)
+                const data = result.data ? [result.data] : []
+                setMedications(data)
+                setFilteredMedication(data)
+            } catch (e) {
+                console.log('Failed to load medications', e)
+            } finally {
+                setIsLoading(false) // Stop loading
+            }
+        }
+        fetchMedications()
+    }, [pet_id, medication])
 
-        const handleSearch = () => {
-            const allVaccines = vaccineDetails.filter((vaccine) =>
-                vaccine.vaccineTypeName
-                    .toLowerCase()
+    // Search and filter function
+    useEffect(() => {
+        handleSearch()
+    }, [searchQuery, medications])
+
+    const handleSearch = () => {
+        if (!searchQuery) {
+            setFilteredMedication(medications)
+        } else {
+            const filtered = medications.filter((med) =>
+                med?.medicationname?.name
+                    ?.toLowerCase()
                     .includes(searchQuery.toLowerCase())
             )
-            setFilteredVaccine(allVaccines)
-            setResultsCount(allVaccines.length)
+            setFilteredMedication(filtered)
         }
-
-        return (
-            <View>
-                {/* Search bar */}
-                <View
-                    onPress={() => console.log('Search')}
-                    style={[
-                        styles.searchBarContainer,
-                        {
-                            backgroundColor: COLORS.secondaryWhite,
-                        },
-                    ]}
-                >
-                    <TouchableOpacity onPress={handleSearch}>
-                        <Image
-                            source={icons.search2}
-                            resizeMode="contain"
-                            style={styles.searchIcon}
-                        />
-                    </TouchableOpacity>
-                    <TextInput
-                        placeholder="Search"
-                        placeholderTextColor={COLORS.gray}
-                        style={[
-                            styles.searchInput,
-                            {
-                                color: COLORS.greyscale900,
-                            },
-                        ]}
-                        value={searchQuery}
-                        onChangeText={(text) => setSearchQuery(text)}
-                    />
-                </View>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    <View>
-                        <View
-                            style={{
-                                marginVertical: 16,
-                            }}
-                        >
-                            {resultsCount && resultsCount > 0 ? (
-                                <>
-                                    {
-                                        <FlatList
-                                            data={filteredVaccine}
-                                            keyExtractor={(item) => item.id}
-                                            showsVerticalScrollIndicator={false}
-                                            renderItem={({ item }) => {
-                                                return (
-                                                    <HorizontalVaccineListInfo
-                                                        vaccineTypeName={
-                                                            item.vaccineTypeName
-                                                        }
-                                                        vaccineDate={
-                                                            item.vaccineDate
-                                                        }
-                                                        Vaccinedoctor={
-                                                            item.Vaccinedoctor
-                                                        }
-                                                    />
-                                                )
-                                            }}
-                                        />
-                                    }
-                                </>
-                            ) : (
-                                <NotFoundCard />
-                            )}
-                        </View>
-                    </View>
-                </ScrollView>
-            </View>
-        )
     }
 
-    // filter yung tumataas from bottom
+    // Render header
+    const renderHeader = () => (
+        <View style={styles.headerContainer}>
+            <View style={styles.headerLeft}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Image
+                        source={icons.back}
+                        resizeMode="contain"
+                        style={styles.backIcon}
+                    />
+                </TouchableOpacity>
+                <View style={{ flexDirection: 'column' }}>
+                    <Text style={[styles.name, { color: COLORS.greyscale900 }]}>
+                        Pet Medication
+                    </Text>
+                    <Text
+                        style={[
+                            styles.headerTitle,
+                            { color: COLORS.greyscale900 },
+                        ]}
+                    >
+                        {medication.name}
+                    </Text>
+                </View>
+            </View>
+        </View>
+    )
+
+    // Render main content with search results
+    const renderContent = () => (
+        <View>
+            <View
+                style={[
+                    styles.searchBarContainer,
+                    { backgroundColor: COLORS.secondaryWhite },
+                ]}
+            >
+                <Image
+                    source={icons.search2}
+                    resizeMode="contain"
+                    style={styles.searchIcon}
+                />
+                <TextInput
+                    placeholder="Search"
+                    placeholderTextColor={COLORS.gray}
+                    style={styles.searchInput}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                />
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={{ marginVertical: 16 }}>
+                    {isLoading ? (
+                        <ActivityIndicator
+                            size="large"
+                            color={COLORS.primary}
+                        />
+                    ) : filteredMedication.length > 0 ? (
+                        <FlatList
+                            data={filteredMedication}
+                            keyExtractor={(item) => item.id.toString()}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={({ item }) => (
+                                <HorizontalVaccineListInfo
+                                    vaccineTypeName={
+                                        item.medicationname?.name ||
+                                        'Unknown Medication'
+                                    }
+                                    vaccineDate={formatDate(item.created_at)}
+                                    Vaccinedoctor={
+                                        item.veterinarian?.name ||
+                                        'Unknown Doctor'
+                                    }
+                                    medications={medications}
+                                />
+                            )}
+                        />
+                    ) : (
+                        <NotFoundCard message="Sorry, no record found for this medication." />
+                    )}
+                </View>
+            </ScrollView>
+        </View>
+    )
+
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 {renderHeader()}
-
                 {renderContent()}
-                {/* </ScrollView> */}
             </View>
         </SafeAreaView>
     )
@@ -176,7 +162,6 @@ const styles = StyleSheet.create({
         color: COLORS.greyscale900,
         marginLeft: 20,
     },
-
     area: {
         flex: 1,
         backgroundColor: COLORS.white,
@@ -207,11 +192,6 @@ const styles = StyleSheet.create({
         color: COLORS.black,
         marginLeft: 16,
     },
-    moreIcon: {
-        width: 24,
-        height: 24,
-        tintColor: COLORS.black,
-    },
     searchBarContainer: {
         width: SIZES.width - 32,
         backgroundColor: COLORS.secondaryWhite,
@@ -232,129 +212,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'regular',
         marginHorizontal: 8,
-    },
-    filterIcon: {
-        width: 24,
-        height: 24,
-        tintColor: COLORS.primary,
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: SIZES.width - 32,
-        justifyContent: 'space-between',
-    },
-    tabBtn: {
-        width: (SIZES.width - 32) / 2 - 6,
-        height: 42,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1.4,
-        borderColor: COLORS.primary,
-        borderRadius: 32,
-    },
-    selectedTab: {
-        width: (SIZES.width - 32) / 2 - 6,
-        height: 42,
-        borderRadius: 12,
-        backgroundColor: COLORS.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1.4,
-        borderColor: COLORS.primary,
-        borderRadius: 32,
-    },
-    tabBtnText: {
-        fontSize: 16,
-        fontFamily: 'semiBold',
-        color: COLORS.primary,
-        textAlign: 'center',
-    },
-    selectedTabText: {
-        fontSize: 16,
-        fontFamily: 'semiBold',
-        color: COLORS.white,
-        textAlign: 'center',
-    },
-    resultContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: SIZES.width - 32,
-        marginVertical: 16,
-    },
-    subtitle: {
-        fontSize: 18,
-        fontFamily: 'bold',
-        color: COLORS.black,
-    },
-    subResult: {
-        fontSize: 14,
-        fontFamily: 'semiBold',
-        color: COLORS.primary,
-    },
-    resultLeftView: {
-        flexDirection: 'row',
-    },
-    bottomContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginVertical: 12,
-        paddingHorizontal: 16,
-        width: SIZES.width,
-    },
-    cancelButton: {
-        width: (SIZES.width - 32) / 2 - 8,
-        backgroundColor: COLORS.tansparentPrimary,
-        borderRadius: 32,
-    },
-    logoutButton: {
-        width: (SIZES.width - 32) / 2 - 8,
-        backgroundColor: COLORS.primary,
-        borderRadius: 32,
-    },
-    bottomTitle: {
-        fontSize: 24,
-        fontFamily: 'semiBold',
-        color: COLORS.black,
-        textAlign: 'center',
-        marginTop: 12,
-    },
-    separateLine: {
-        height: 0.4,
-        width: SIZES.width - 32,
-        backgroundColor: COLORS.greyscale300,
-        marginVertical: 12,
-    },
-    sheetTitle: {
-        fontSize: 18,
-        fontFamily: 'semiBold',
-        color: COLORS.black,
-        marginVertical: 12,
-    },
-    reusltTabContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: SIZES.width - 32,
-        justifyContent: 'space-between',
-    },
-    viewDashboard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: 36,
-        justifyContent: 'space-between',
-    },
-    dashboardIcon: {
-        width: 16,
-        height: 16,
-        tintColor: COLORS.primary,
-    },
-    tabText: {
-        fontSize: 20,
-        fontFamily: 'semiBold',
-        color: COLORS.black,
     },
 })
 

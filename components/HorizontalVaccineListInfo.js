@@ -12,21 +12,19 @@ import { FontAwesome } from '@expo/vector-icons'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import { categories, doctors, ratings, vaccineData } from '../data'
 import Button from '../components/Button'
-
+import { formatDate } from '../services/FormatDate'
+import { STORAGE_URL } from '@env'
 const HorizontalVaccineListInfo = ({
     vaccineTypeName,
     vaccineDate,
     Vaccinedoctor,
-    vaccineType_name,
+    medications,
 }) => {
-    const [isFavourite, setIsFavourite] = useState(false)
     const refRBSheet = useRef()
-    const [filteredVaccineData, setFilteredVaccineData] = useState(vaccineData)
 
     return (
         <TouchableOpacity
             onPress={() => refRBSheet.current.open()}
-            // onPress={onPress}
             style={[
                 styles.cardContainer,
                 {
@@ -99,7 +97,7 @@ const HorizontalVaccineListInfo = ({
                     }}
                 >
                     <FlatList
-                        data={vaccineData}
+                        data={medications}
                         keyExtractor={(item) => item.id}
                         showsVerticalScrollIndicator={false}
                         renderItem={({ item }) => {
@@ -113,7 +111,7 @@ const HorizontalVaccineListInfo = ({
                                             },
                                         ]}
                                     >
-                                        {item.vaccineType_name}
+                                        {item.medicationname.name}
                                     </Text>
 
                                     <View style={styles.separateLine} />
@@ -149,7 +147,7 @@ const HorizontalVaccineListInfo = ({
                                             >
                                                 OR NO
                                             </Text>
-                                            <Text>{item.OR_NO}</Text>
+                                            <Text>{item.or_no}</Text>
                                         </View>
                                         <View>
                                             <Text
@@ -162,7 +160,7 @@ const HorizontalVaccineListInfo = ({
                                             >
                                                 Expiry Date
                                             </Text>
-                                            <Text>{item.expiryDate}</Text>
+                                            <Text>{item.expiry_date}</Text>
                                         </View>
                                     </View>
 
@@ -198,7 +196,11 @@ const HorizontalVaccineListInfo = ({
                                             >
                                                 Registration Date
                                             </Text>
-                                            <Text>{item.registrationDate}</Text>
+                                            <Text>
+                                                {formatDate(
+                                                    item.registration_date
+                                                )}
+                                            </Text>
                                         </View>
                                         <View>
                                             <Text
@@ -209,9 +211,13 @@ const HorizontalVaccineListInfo = ({
                                                     },
                                                 ]}
                                             >
-                                                Vaccination Date
+                                                Medication Date
                                             </Text>
-                                            <Text>{item.vaccinationnDate}</Text>
+                                            <Text>
+                                                {formatDate(
+                                                    item.medication_date
+                                                )}
+                                            </Text>
                                         </View>
                                     </View>
 
@@ -238,7 +244,7 @@ const HorizontalVaccineListInfo = ({
                                                 },
                                             ]}
                                         >
-                                            Php {item.registrationFee}
+                                            Php 0
                                         </Text>
                                     </View>
 
@@ -266,7 +272,9 @@ const HorizontalVaccineListInfo = ({
                                     >
                                         <View>
                                             <Image
-                                                source={images.gladysVet}
+                                                source={{
+                                                    uri: `${STORAGE_URL}/vet_profiles/${item.veterinarian.image}`,
+                                                }}
                                                 resizeMode="contain"
                                                 style={[styles.backIcon, {}]}
                                             />
@@ -280,7 +288,7 @@ const HorizontalVaccineListInfo = ({
                                                     },
                                                 ]}
                                             >
-                                                {item.doctor}
+                                                {item.veterinarian.name}
                                             </Text>
                                             <Text
                                                 style={[
@@ -290,7 +298,7 @@ const HorizontalVaccineListInfo = ({
                                                     },
                                                 ]}
                                             >
-                                                {item.position}
+                                                {item.veterinarian.position}
                                             </Text>
                                             <Text
                                                 style={[
@@ -300,12 +308,17 @@ const HorizontalVaccineListInfo = ({
                                                     },
                                                 ]}
                                             >
-                                                {item.licenseNumber}
+                                                {
+                                                    item.veterinarian
+                                                        .license_number
+                                                }
                                             </Text>
                                         </View>
                                         <View>
                                             <Image
-                                                source={images.gladysVet}
+                                                source={{
+                                                    uri: `${STORAGE_URL}/electronic_signatures/${item.veterinarian.electronic_signature}`,
+                                                }}
                                                 resizeMode="contain"
                                                 style={[styles.backIcon, {}]}
                                             />
@@ -335,7 +348,7 @@ const HorizontalVaccineListInfo = ({
                                                 },
                                             ]}
                                         >
-                                            {item.remarks}
+                                            Walk-In
                                         </Text>
                                     </View>
                                 </View>
@@ -353,7 +366,7 @@ const styles = StyleSheet.create({
     backIcon: {
         height: 70,
         width: 70,
-        borderRadius: 50,
+        borderRadius: 5,
     },
     bottomTitle: {
         fontSize: 18,

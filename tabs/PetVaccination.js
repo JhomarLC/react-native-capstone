@@ -6,16 +6,32 @@ import {
     TouchableOpacity,
     Image,
 } from 'react-native'
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { VaccineName } from '../data'
 import { SIZES, COLORS, icons } from '../constants'
 import { useNavigation } from '@react-navigation/native'
 import { FontAwesome } from '@expo/vector-icons'
 import { ScrollView } from 'react-native-virtualized-view'
+import AuthContext from '../contexts/AuthContext'
+import { loadMedications } from '../services/PetsService'
 
-const PetVaccination = () => {
+const PetVaccination = ({ pet_id }) => {
     const [vaccine, setVaccine] = useState(VaccineName)
     const navigation = useNavigation()
+    const { user } = useContext(AuthContext)
+    const pet_owner = user?.pet_owner
+
+    useEffect(() => {
+        async function runEffect() {
+            try {
+                const result = await loadMedications()
+                setVaccine(result.data)
+            } catch (e) {
+                console.log('Failed to load medications', e)
+            }
+        }
+        runEffect()
+    }, [])
 
     return (
         <View
@@ -46,13 +62,23 @@ const PetVaccination = () => {
                         ]}
                     >
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('VaccineList')}
+                            onPress={() =>
+                                navigation.navigate('VaccineList', {
+                                    pet_id: pet_id,
+                                    pet_owner_id: pet_owner.id,
+                                    medication: item,
+                                })
+                            }
                         >
                             <View style={styles.detailsViewContainer}>
                                 <TouchableOpacity style={styles.iconContainer}>
                                     {/* <FontAwesome name="birthday-cake" //> */}
                                     <Image
-                                        source={item.vaccineIcon}
+                                        source={
+                                            item.id === 1
+                                                ? icons.vaccine
+                                                : icons.deworm
+                                        }
                                         resizeMode="contain"
                                         style={[
                                             styles.icon,

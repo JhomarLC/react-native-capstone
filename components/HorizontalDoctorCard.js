@@ -25,11 +25,7 @@ const HorizontalDoctorCard = ({
                 return styles.statusPendingContainer // Fallback to pending style if unknown
         }
     }
-    const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' }
-        const date = new Date(dateString)
-        return date.toLocaleDateString(undefined, options)
-    }
+
     return (
         <TouchableOpacity
             onPress={onPress}

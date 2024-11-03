@@ -2,7 +2,7 @@ import { View, Platform, Image, Text } from 'react-native'
 import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { COLORS, FONTS, icons } from '../constants'
-import { Veterinarians, History, Home, Profile } from '../screens'
+import { Veterinarians, History, Home, Profile, Events } from '../screens'
 
 const Tab = createBottomTabNavigator()
 
@@ -101,7 +101,7 @@ const BottomTabNavigation = () => {
             />
             <Tab.Screen
                 name="Calendar"
-                component={History}
+                component={Events}
                 options={{
                     tabBarIcon: ({ focused }) => {
                         return (

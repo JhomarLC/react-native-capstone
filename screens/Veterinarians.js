@@ -135,8 +135,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logoIcon: {
-        height: 24,
-        width: 24,
+        height: 50,
+        width: 50,
     },
     headerTitle: {
         fontSize: 20,

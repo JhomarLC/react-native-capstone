@@ -32,6 +32,17 @@ export async function addPetPhotos(pet_owner_id, pet_id, photos) {
 
     return pet_photos
 }
+export async function loadPetMedication(pet_id, medication) {
+    const { data: pet_medications } = await axios.get(
+        `/pets/${pet_id}/medications/${medication}`
+    )
+    return pet_medications
+}
+
+export async function loadMedications() {
+    const { data: medications } = await axios.get(`/medtype`)
+    return medications
+}
 
 // export async function loadVetProfile(vet_id) {
 //     const { data: vet_profile } = await axios.get(`/veterinarians/${vet_id}`)

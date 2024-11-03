@@ -70,6 +70,7 @@ import AddNewAddress from './AddNewAddress'
 import Messaging from './Messaging'
 import PetDetails from './PetDetails'
 import VaccineList from './VaccineList'
+import Events from './Events'
 
 export {
     Onboarding1,
@@ -144,4 +145,5 @@ export {
     Messaging,
     PetDetails,
     VaccineList,
+    Events,
 }

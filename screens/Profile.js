@@ -269,8 +269,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logo: {
-        height: 32,
-        width: 32,
+        height: 50,
+        width: 50,
         // tintColor: COLORS.primary
     },
     headerTitle: {
