@@ -34,7 +34,6 @@ import {
     ForgotPasswordPhoneNumber,
     HelpCenter,
     InviteFriends,
-    LeaveReview,
     Login,
     Messaging,
     MyAppointmentMessaging,
@@ -70,6 +69,14 @@ import {
     VoiceCallHistoryDetails,
     VoiceCallHistoryDetailsPlayRecordings,
     Welcome,
+    CreatePetProfile,
+    CreateNewPet,
+    LeaveReview,
+    SelectPetType,
+    SelectPetBreed,
+    SetPetProfile,
+    SelectDOB,
+    VeterinarianDetails,
 } from '../screens'
 import BottomTabNavigation from './BottomTabNavigation'
 import { loadUser } from '../services/AuthService'
@@ -124,6 +131,34 @@ const AppNavigation = () => {
                             <Stack.Screen
                                 name="Main"
                                 component={BottomTabNavigation}
+                            />
+                            <Stack.Screen
+                                name="VeterinarianDetails"
+                                component={VeterinarianDetails}
+                            />
+                            <Stack.Screen
+                                name="CreatePetProfile"
+                                component={CreatePetProfile}
+                            />
+                            <Stack.Screen
+                                name="CreateNewPet"
+                                component={CreateNewPet}
+                            />
+                            <Stack.Screen
+                                name="SelectPetType"
+                                component={SelectPetType}
+                            />
+                            <Stack.Screen
+                                name="SelectPetBreed"
+                                component={SelectPetBreed}
+                            />
+                            <Stack.Screen
+                                name="SelectDOB"
+                                component={SelectDOB}
+                            />
+                            <Stack.Screen
+                                name="SetPetProfile"
+                                component={SetPetProfile}
                             />
                             <Stack.Screen
                                 name="CreateNewPassword"

@@ -70,16 +70,6 @@ const Profile = ({ navigation }) => {
      * Render User Profile
      */
     const renderProfile = () => {
-        const pickImage = async () => {
-            try {
-                const tempUri = await launchImagePicker()
-
-                if (!tempUri) return
-
-                // set the image
-                setImage({ uri: tempUri })
-            } catch (error) {}
-        }
         return (
             <View style={styles.profileContainer}>
                 <View>
@@ -90,16 +80,6 @@ const Profile = ({ navigation }) => {
                         resizeMode="cover"
                         style={styles.avatar}
                     />
-                    <TouchableOpacity
-                        onPress={pickImage}
-                        style={styles.picContainer}
-                    >
-                        <MaterialIcons
-                            name="edit"
-                            size={16}
-                            color={COLORS.white}
-                        />
-                    </TouchableOpacity>
                 </View>
                 <Text style={[styles.title, { color: COLORS.greyscale900 }]}>
                     {pet_owner.name}

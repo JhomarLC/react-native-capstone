@@ -24,6 +24,7 @@ const PetHealthCard = ({ pet_id }) => {
     const [pet, setPet] = useState(null)
     const { user } = useContext(AuthContext)
     const pet_owner = user?.pet_owner
+    const refRBSheet = useRef()
 
     useEffect(() => {
         async function runEffect() {
@@ -96,7 +97,6 @@ const PetHealthCard = ({ pet_id }) => {
                                 />
 
                                 <View style={styles.PetBreed}>
-                                    {/* <FontAwesome name="star" size={14} color="rgb(250, 159, 28)" /> */}
                                     <Text
                                         style={{
                                             color: COLORS.grayscale700,
@@ -106,7 +106,6 @@ const PetHealthCard = ({ pet_id }) => {
                                         {' '}
                                         {pet.color_description}
                                     </Text>
-                                    {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
                                     <Text
                                         style={{
                                             color: COLORS.grayscale700,
@@ -115,11 +114,33 @@ const PetHealthCard = ({ pet_id }) => {
                                         {'  '}| {pet.breed}
                                     </Text>
                                 </View>
-                                <View style={styles.statusContainer}>
-                                    <Text style={styles.statusText}>
-                                        Approved
-                                    </Text>
-                                </View>
+                                {pet.status === 'pending' ? (
+                                    <View style={styles.statusPendingContainer}>
+                                        <Text
+                                            style={[styles.statusPendingText]}
+                                        >
+                                            Pending
+                                        </Text>
+                                    </View>
+                                ) : pet.status === 'approved' ? (
+                                    <View style={styles.statusContainer}>
+                                        <Text style={[styles.statusText]}>
+                                            Approved
+                                        </Text>
+                                    </View>
+                                ) : pet.status === 'deceased' ? (
+                                    <View
+                                        style={styles.statusDeceasedContainer}
+                                    >
+                                        <Text
+                                            style={[styles.statusDeceasedText]}
+                                        >
+                                            Deceased
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    <></>
+                                )}
                             </View>
                         </View>
                     </View>
@@ -366,19 +387,113 @@ const PetHealthCard = ({ pet_id }) => {
                             {pet.age}
                         </Text> */}
                     </View>
-                    <View>
+                    {/* <View>
                         <QRCode value={pet.id} />
-                    </View>
+                    </View> */}
                 </View>
             </ScrollView>
-            <View style={styles.bottomContainer}>
-                <Button title="Generate QR Code" filled style={styles.btn} />
+            <View style={styles.bottomContainerQR}>
+                <TouchableOpacity onPress={() => refRBSheet.current.open()}>
+                    <View style={styles.btn}>
+                        <Text
+                            style={{
+                                color: COLORS.white,
+                                fontFamily: 'bold',
+                                fontSize: 16,
+                            }}
+                        >
+                            View QR Code
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+                {/* Pet profile status */}
+                <RBSheet
+                    ref={refRBSheet}
+                    closeOnDragDown={true}
+                    closeOnPressMask={true}
+                    height={384}
+                    customStyles={{
+                        wrapper: {
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                        },
+                        draggableIcon: {
+                            backgroundColor: '#000',
+                        },
+                        container: {
+                            borderTopRightRadius: 32,
+                            borderTopLeftRadius: 32,
+                            height: 'auto',
+                            backgroundColor: COLORS.white,
+                            alignItems: 'center',
+                        },
+                    }}
+                >
+                    <Text
+                        style={[
+                            styles.bottomTitle,
+                            {
+                                color: COLORS.greyscale900,
+                            },
+                        ]}
+                    >
+                        QR Code
+                    </Text>
+
+                    <View style={styles.separateLine} />
+
+                    <View style={styles.bottomContainerQR}>
+                        <View>
+                            <QRCode
+                                size={250}
+                                logo={{
+                                    uri: `${STORAGE_URL}/pet_profile/${pet.image}`,
+                                }}
+                                value={pet.id}
+                            />
+                        </View>
+                        <TouchableOpacity
+                            onPress={() => refRBSheet.current.close()}
+                        >
+                            <View
+                                style={[
+                                    styles.btn,
+                                    { marginBottom: 20, marginTop: 20 },
+                                ]}
+                            >
+                                <Text
+                                    style={{
+                                        color: COLORS.white,
+                                        fontFamily: 'bold',
+                                        fontSize: 16,
+                                    }}
+                                >
+                                    Save QR Code
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </RBSheet>
             </View>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
+    qrImage: {
+        height: 250,
+        width: 250,
+    },
+    bottomTitle: {
+        fontSize: 24,
+        fontFamily: 'semiBold',
+        color: COLORS.black,
+        textAlign: 'center',
+        marginTop: 12,
+    },
+    bottomContainerQR: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
     statusContainer: {
         width: 62,
         height: 24,
@@ -395,6 +510,38 @@ const styles = StyleSheet.create({
         color: COLORS.greeen,
         fontFamily: 'medium',
     },
+    statusPendingContainer: {
+        width: 62,
+        height: 24,
+        borderRadius: 6,
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderColor: COLORS.red,
+        borderWidth: 1,
+        marginVertical: 10,
+    },
+    statusPendingText: {
+        fontSize: 10,
+        color: COLORS.red,
+        fontFamily: 'medium',
+    },
+    statusDeceasedContainer: {
+        width: 62,
+        height: 24,
+        borderRadius: 6,
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderColor: COLORS.black,
+        borderWidth: 1,
+        marginVertical: 10,
+    },
+    statusDeceasedText: {
+        fontSize: 10,
+        color: COLORS.black,
+        fontFamily: 'medium',
+    },
     area: {
         flex: 1,
         backgroundColor: COLORS.white,
@@ -407,7 +554,15 @@ const styles = StyleSheet.create({
         flex: 1, // Scrollable content
     },
     btn: {
-        width: '100%',
+        paddingHorizontal: SIZES.padding,
+        paddingVertical: SIZES.padding,
+        borderColor: COLORS.primary,
+        borderWidth: 1,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 52,
+        backgroundColor: COLORS.primary,
     },
     container: {
         flex: 1, // Makes the container take full screen height

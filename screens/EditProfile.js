@@ -1,499 +1,317 @@
-import { View, Text, StyleSheet, ScrollView, Alert, Image, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
-import React, { useCallback, useEffect, useReducer, useState } from 'react';
-import { COLORS, SIZES, FONTS, icons, images } from '../constants';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Header from '../components/Header';
-import { reducer } from '../utils/reducers/formReducers';
-import { validateInput } from '../utils/actions/formActions';
-import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
-import { launchImagePicker } from '../utils/ImagePickerHelper';
-import Input from '../components/Input';
-import { getFormatedDate } from "react-native-modern-datepicker";
-import DatePickerModal from '../components/DatePickerModal';
-import Button from '../components/Button';
-import RNPickerSelect from 'react-native-picker-select';
-
-const isTestMode = true;
-
-const initialState = {
-  inputValues: {
-    fullName: isTestMode ? 'John Doe' : '',
-    email: isTestMode ? 'example@gmail.com' : '',
-    nickname: isTestMode ? "" : "",
-    phoneNumber: ''
-  },
-  inputValidities: {
-    fullName: false,
-    email: false,
-    nickname: false,
-    phoneNumber: false,
-  },
-  formIsValid: false,
-}
+import {
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
+    Image,
+    TouchableOpacity,
+    ActivityIndicator,
+} from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
+import { COLORS, SIZES, icons } from '../constants'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import Header from '../components/Header'
+import Input from '../components/Input'
+import Button from '../components/Button'
+import AuthContext from '../contexts/AuthContext'
+import FlashMessage, { showMessage } from 'react-native-flash-message'
+import { getFileType, launchImagePicker } from '../utils/ImagePickerHelper'
+import { loadUser, updateprofile } from '../services/AuthService'
+import { STORAGE_URL } from '@env'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { Picker } from '@react-native-picker/picker'
 
 const EditProfile = ({ navigation }) => {
-  const [image, setImage] = useState(null);
-  const [error, setError] = useState();
-  const [formState, dispatchFormState] = useReducer(reducer, initialState);
-  const [areas, setAreas] = useState([]);
-  const [selectedArea, setSelectedArea] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
-  const [selectedGender, setSelectedGender] = useState('');
+    const { user, setUser } = useContext(AuthContext)
+    const pet_owner = user?.pet_owner || {}
 
-  const genderOptions = [
-    { label: 'Male', value: 'male' },
-    { label: 'Female', value: 'female' },
-    { label: 'Other', value: 'other' },
-  ];
-
-  const handleGenderChange = (value) => {
-    setSelectedGender(value);
-  };
-
-  const today = new Date();
-  const startDate = getFormatedDate(
-    new Date(today.setDate(today.getDate() + 1)),
-    "YYYY/MM/DD"
-  );
-
-  const [startedDate, setStartedDate] = useState("12/12/2023");
-  const handleOnPressStartDate = () => {
-    setOpenStartDatePicker(!openStartDatePicker);
-  };
-
-  const inputChangedHandler = useCallback(
-    (inputId, inputValue) => {
-      const result = validateInput(inputId, inputValue)
-      dispatchFormState({ inputId, validationResult: result, inputValue })
-    },
-    [dispatchFormState]
-  )
-
-  useEffect(() => {
-    if (error) {
-      Alert.alert('An error occured', error)
+    const initialState = {
+        inputValues: {
+            fullName: pet_owner.name || '',
+            phoneNumber: pet_owner.phone_number || '',
+            zone: pet_owner.addr_zone || '',
+            barangay: pet_owner.addr_brgy || '',
+        },
+        formIsValid: false,
     }
-  }, [error])
 
-  const pickImage = async () => {
-    try {
-      const tempUri = await launchImagePicker()
+    const [image, setImage] = useState(null)
+    const [isImageFromLibrary, setIsImageFromLibrary] = useState(false)
+    const [inputValues, setInputValues] = useState(initialState.inputValues)
+    const [loading, setLoading] = useState(false)
+    const barangays = [
+        'A. Pascual',
+        'Abar Ist',
+        'Abar 2nd',
+        'Bagong Sikat',
+        'Caanawan',
+        'Calaocan',
+        'Camanacsacan',
+        'Culaylay',
+        'Dizol',
+        'Kaliwanagan',
+        'Kita-Kita',
+        'Malasin',
+        'Manicla',
+        'Palestina',
+        'Parang Mangga',
+        'Villa Joson',
+        'Pinili',
+        'Rafael Rueda, Sr. Pob.',
+        'Ferdinand E. Marcos Pob.',
+        'Canuto Ramos Pob.',
+        'Raymundo Eugenio Pob.',
+        'Crisanto Sanchez Pob.',
+        'Porais',
+        'San Agustin',
+        'San Juan',
+        'San Mauricio',
+        'Santo Niño 1st',
+        'Santo Niño 2nd',
+        'Santo Tomas',
+        'Sibut',
+        'Sinipit Bubon',
+        'Santo Niño 3rd',
+        'Tabulac',
+        'Tayabo',
+        'Tondod',
+        'Tulat',
+        'Villa Floresca',
+        'Villa Marina',
+    ]
+    // Load initial image from pet_owner profile
+    useEffect(() => {
+        if (pet_owner?.image) {
+            setImage({
+                uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
+            })
+            setIsImageFromLibrary(false)
+        }
+    }, [pet_owner])
 
-      if (!tempUri) return
+    // Handle text input changes
+    const inputChangedHandler = (inputId, inputValue) => {
+        setInputValues((prevValues) => ({
+            ...prevValues,
+            [inputId]: inputValue,
+        }))
+    }
 
-      // set the image
-      setImage({ uri: tempUri })
-    } catch (error) { }
-  };
+    // Pick image from the library
+    const pickImage = async () => {
+        try {
+            const imageData = await launchImagePicker()
+            if (!imageData) return
+            setImage(imageData)
+            setIsImageFromLibrary(true)
+            console.log(imageData)
+        } catch (error) {
+            console.error(error)
+        }
+    }
 
-  // fectch codes from rescountries api
-  // useEffect(() => {
-  //   fetch("https://restcountries.com/v2/all")
-  //     .then(response => response.json())
-  //     .then(data => {
-  //       let areaData = data.map((item) => {
-  //         return {
-  //           code: item.alpha2Code,
-  //           item: item.name,
-  //           callingCode: `+${item.callingCodes[0]}`,
-  //           flag: `https://flagsapi.com/${item.alpha2Code}/flat/64.png`
-  //         }
-  //       });
+    // Handle profile update with loading indication
+    const handleEditProfile = async () => {
+        if (!image) {
+            showMessage({
+                message: 'No image selected. Please pick an image to upload.',
+                type: 'danger',
+            })
+            return
+        }
 
-  //       setAreas(areaData);
-  //       if (areaData.length > 0) {
-  //         let defaultData = areaData.filter((a) => a.code == "US");
+        setLoading(true)
+        const { fullName, zone, barangay, phoneNumber } = inputValues
+        const fileType = getFileType(image)
+        const formData = new FormData()
 
-  //         if (defaultData.length > 0) {
-  //           setSelectedArea(defaultData[0])
-  //         }
-  //       }
-  //     })
-  // }, [])
+        formData.append('name', fullName)
+        formData.append('addr_zone', zone)
+        formData.append('addr_brgy', barangay)
+        formData.append('phone_number', phoneNumber)
 
-  // render countries codes modal
-  // function RenderAreasCodesModal() {
+        if (isImageFromLibrary && image) {
+            formData.append('image', {
+                uri: image.startsWith('file://') ? image : `file://${image}`,
+                name: `photo.${fileType.split('/')[1]}`,
+                type: fileType,
+            })
+        }
 
-  //   const renderItem = ({ item }) => {
-  //     return (
-  //       <TouchableOpacity
-  //         style={{
-  //           padding: 10,
-  //           flexDirection: "row"
-  //         }}
-  //         onPress={() => {
-  //           setSelectedArea(item),
-  //             setModalVisible(false)
-  //         }}
-  //       >
-  //         <Image
-  //           source={{ uri: item.flag }}
-  //           contentFit='contain'
-  //           style={{
-  //             height: 30,
-  //             width: 30,
-  //             marginRight: 10
-  //           }}
-  //         />
-  //         <Text style={{ fontSize: 16, color: "#fff" }}>{item.item}</Text>
-  //       </TouchableOpacity>
-  //     )
-  //   }
-  //   return (
-  //     <Modal
-  //       animationType="slide"
-  //       transparent={true}
-  //       visible={modalVisible}>
-  //       <TouchableWithoutFeedback
-  //         onPress={() => setModalVisible(false)}>
-  //         <View
-  //           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-  //           <View
-  //             style={{
-  //               height: 400,
-  //               width: SIZES.width * 0.8,
-  //               backgroundColor: COLORS.primary,
-  //               borderRadius: 12
-  //             }}
-  //           >
-  //             <FlatList
-  //               data={areas}
-  //               renderItem={renderItem}
-  //               horizontal={false}
-  //               keyExtractor={(item) => item.code}
-  //               style={{
-  //                 padding: 20,
-  //                 marginBottom: 20
-  //               }}
-  //             />
-  //           </View>
-  //         </View>
-  //       </TouchableWithoutFeedback>
-  //     </Modal>
-  //   )
-  // }
+        try {
+            await updateprofile(pet_owner.id, formData)
 
-  return (
-    <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
-      <View style={[styles.container, { backgroundColor: COLORS.white }]}>
-        <Header title="Edit Profile" />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={{ alignItems: "center", marginVertical: 12 }}>
-            <View style={styles.avatarContainer}>
-              <Image
-                source={image === null ? images.user1 : image}
-                resizeMode="cover"
-                style={styles.avatar} />
-              <TouchableOpacity
-                onPress={pickImage}
-                style={styles.pickImage}>
-                <MaterialCommunityIcons
-                  name="pencil-outline"
-                  size={24}
-                  color={COLORS.white} />
-              </TouchableOpacity>
+            const updatedUser = await loadUser()
+            setUser(updatedUser)
+            showMessage({
+                message: 'Profile updated successfully!',
+                type: 'success',
+            })
+            navigation.navigate('Profile')
+        } catch (e) {
+            console.log(e)
+            showMessage({
+                message: 'An error occurred. Please try again.',
+                type: 'danger',
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
+            <View style={[styles.container, { backgroundColor: COLORS.white }]}>
+                <Header title="Edit Profile" />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={{ alignItems: 'center', marginVertical: 12 }}>
+                        <View style={styles.avatarContainer}>
+                            <Image
+                                source={
+                                    image
+                                        ? { uri: image }
+                                        : {
+                                              uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
+                                          }
+                                }
+                                resizeMode="cover"
+                                style={styles.avatar}
+                            />
+                            <TouchableOpacity
+                                onPress={pickImage}
+                                style={styles.pickImage}
+                            >
+                                <MaterialCommunityIcons
+                                    name="pencil-outline"
+                                    size={24}
+                                    color={COLORS.white}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View style={styles.inputSection}>
+                        <Text style={styles.label}>Full Name</Text>
+                        <Input
+                            id="fullName"
+                            value={inputValues.fullName}
+                            onInputChanged={inputChangedHandler}
+                            placeholder="Full Name"
+                            icon={icons.user}
+                            placeholderTextColor={COLORS.gray}
+                        />
+                    </View>
+                    <View style={styles.inputSection}>
+                        <Text style={styles.label}>Phone Number</Text>
+                        <Input
+                            id="phoneNumber"
+                            value={inputValues.phoneNumber}
+                            onInputChanged={inputChangedHandler}
+                            placeholder="Phone Number"
+                            icon={icons.telephone}
+                            placeholderTextColor={COLORS.gray}
+                            keyboardType="numeric"
+                        />
+                    </View>
+                    <View style={styles.inputSection}>
+                        <Text style={styles.label}>Zone</Text>
+                        <Input
+                            id="zone"
+                            value={inputValues.zone}
+                            onInputChanged={inputChangedHandler}
+                            placeholder="Zone"
+                            icon={icons.location}
+                            placeholderTextColor={COLORS.gray}
+                        />
+                    </View>
+                    <View style={styles.inputSection}>
+                        <Text style={styles.label}>Barangay</Text>
+                        <Input
+                            id="barangay"
+                            value={inputValues.barangay}
+                            onInputChanged={inputChangedHandler}
+                            placeholder="Barangay"
+                            icon={icons.location}
+                            placeholderTextColor={COLORS.gray}
+                        />
+                    </View>
+                </ScrollView>
             </View>
-          </View>
-          <View>
-            <Input
-              id="fullName"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['fullName']}
-              placeholder="Full Name"
-              placeholderTextColor={COLORS.gray} />
-            <Input
-              id="email"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['email']}
-              placeholder="Email"
-              placeholderTextColor={COLORS.gray}
-              // icon={icons.email}
-              keyboardType="email-address"
-            />
-            <Input
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['password']}
-              autoCapitalize="none"
-              id="password"
-              placeholder="Password"
-              placeholderTextColor={COLORS.gray}
-              // icon={icons.padlock}
-              secureTextEntry={true}
-            />
-       
-            <Input
-              id="phoneNumber"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['phoneNumber']}
-              placeholder="Phone Number"
-              placeholderTextColor={COLORS.gray}
-              keyboardType = "numeric" />
-            <Input
-              id="zone"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['zone']}
-              placeholder="Zone"
-              placeholderTextColor={COLORS.gray}
-             />
-             <Input
-              id="barangay"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['barangay']}
-              placeholder="Barangay"
-              placeholderTextColor={COLORS.gray}
-             />
-{/*             
-            <View style={{
-              width: SIZES.width - 32
-            }}>
-              <TouchableOpacity
-                style={[styles.inputBtn, {
-                  backgroundColor: COLORS.greyscale500,
-                  borderColor: COLORS.greyscale500,
-                }]}
-                onPress={handleOnPressStartDate}
-              >
-                <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>{startedDate}</Text>
-                <Feather name="calendar" size={24} color={COLORS.grayscale400} />
-              </TouchableOpacity>
-            </View> */}
-            {/* <View style={[styles.inputContainer, {
-              backgroundColor: COLORS.greyscale500,
-              borderColor: COLORS.greyscale500,
-            }]}>
-              <TouchableOpacity
-                style={styles.selectFlagContainer}
-                onPress={() => setModalVisible(true)}>
-                <View style={{ justifyContent: "center" }}>
-                  <Image
-                    source={icons.down}
-                    resizeMode='contain'
-                    style={styles.downIcon}
-                  />
-                </View>
-                <View style={{ justifyContent: "center", marginLeft: 5 }}>
-                  <Image
-                    source={{ uri: selectedArea?.flag }}
-                    contentFit="contain"
-                    style={styles.flagIcon}
-                  />
-                </View>
-                <View style={{ justifyContent: "center", marginLeft: 5 }}>
-                  <Text style={{ color: "#111", fontSize: 12 }}>{selectedArea?.callingCode}</Text>
-                </View>
-              </TouchableOpacity> */}
-              {/* Phone Number Text Input */}
-              {/* <TextInput
-                style={styles.input}
-                placeholder="Enter your phone number"
-                placeholderTextColor={COLORS.black}
-                selectionColor="#111"
-                keyboardType="numeric"
-              />
-            </View> */}
-            {/* <View>
-              <RNPickerSelect
-                placeholder={{ label: 'Select', value: '' }}
-                items={genderOptions}
-                onValueChange={(value) => handleGenderChange(value)}
-                value={selectedGender}
-                style={{
-                  inputIOS: {
-                    fontSize: 16,
-                    paddingHorizontal: 10,
-                    borderRadius: 4,
-                    color: COLORS.greyscale600,
-                    paddingRight: 30,
-                    height: 52,
-                    width: SIZES.width - 32,
-                    alignItems: 'center',
-                    backgroundColor: COLORS.greyscale500,
-                    borderRadius: 16
-                  },
-                  inputAndroid: {
-                    fontSize: 16,
-                    paddingHorizontal: 10,
-                    borderRadius: 8,
-                    color: COLORS.greyscale600,
-                    paddingRight: 30,
-                    height: 52,
-                    width: SIZES.width - 32,
-                    alignItems: 'center',
-                    backgroundColor: COLORS.greyscale500,
-                    borderRadius: 16
-                  },
-                }}
-              />
-            </View> */}
-            {/* <Input
-              id="occupation"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['occupation']}
-              placeholder="Occupation"
-              placeholderTextColor={COLORS.black}
-            /> */}
-          </View>
-        </ScrollView>
-      </View>
-      {/* <DatePickerModal
-        open={openStartDatePicker}
-        startDate={startDate}
-        selectedDate={startedDate}
-        onClose={() => setOpenStartDatePicker(false)}
-        onChangeStartDate={(date) => setStartedDate(date)}
-      /> */}
-      {/* {RenderAreasCodesModal()} */}
-      <View style={styles.bottomContainer}>
-        <Button
-          title="Update"
-          filled
-          style={styles.continueButton}
-          onPress={() => navigation.goBack()}
-        />
-      </View>
-    </SafeAreaView>
-  )
-};
+
+            <View style={styles.bottomContainer}>
+                <Button
+                    title={
+                        loading ? (
+                            <ActivityIndicator color={COLORS.white} />
+                        ) : (
+                            'Update'
+                        )
+                    }
+                    filled
+                    style={styles.continueButton}
+                    onPress={handleEditProfile}
+                    disabled={loading}
+                />
+            </View>
+            <FlashMessage position="top" />
+        </SafeAreaView>
+    )
+}
 
 const styles = StyleSheet.create({
-  area: {
-    flex: 1,
-    backgroundColor: COLORS.white
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.white
-  },
-  avatarContainer: {
-    marginVertical: 12,
-    alignItems: "center",
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-  },
-  avatar: {
-    height: 130,
-    width: 130,
-    borderRadius: 65,
-  },
-  pickImage: {
-    height: 42,
-    width: 42,
-    borderRadius: 21,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    borderColor: COLORS.greyscale500,
-    borderWidth: .4,
-    borderRadius: 6,
-    height: 52,
-    width: SIZES.width - 32,
-    alignItems: 'center',
-    marginVertical: 16,
-    backgroundColor: COLORS.greyscale500,
-  },
-  downIcon: {
-    width: 10,
-    height: 10,
-    tintColor: "#111"
-  },
-  selectFlagContainer: {
-    width: 90,
-    height: 50,
-    marginHorizontal: 5,
-    flexDirection: "row",
-  },
-  flagIcon: {
-    width: 30,
-    height: 30
-  },
-  input: {
-    flex: 1,
-    marginVertical: 10,
-    height: 40,
-    fontSize: 14,
-    color: "#111"
-  },
-  inputBtn: {
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: COLORS.greyscale500,
-    height: 50,
-    paddingLeft: 8,
-    fontSize: 18,
-    justifyContent: "space-between",
-    marginTop: 4,
-    backgroundColor: COLORS.greyscale500,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingRight: 8
-  },
-  rowContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  bottomContainer: {
-    position: "absolute",
-    bottom: 32,
-    right: 16,
-    left: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: SIZES.width - 32,
-    alignItems: "center"
-  },
-  continueButton: {
-    width: SIZES.width - 32,
-    borderRadius: 32,
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary
-  },
-  genderContainer: {
-    flexDirection: "row",
-    borderColor: COLORS.greyscale500,
-    borderWidth: .4,
-    borderRadius: 6,
-    height: 58,
-    width: SIZES.width - 32,
-    alignItems: 'center',
-    marginVertical: 16,
-    backgroundColor: COLORS.greyscale500,
-  }
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    borderRadius: 4,
-    color: COLORS.greyscale600,
-    paddingRight: 30,
-    height: 58,
-    width: SIZES.width - 32,
-    alignItems: 'center',
-    backgroundColor: COLORS.greyscale500,
-    borderRadius: 16
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    color: COLORS.greyscale600,
-    paddingRight: 30,
-    height: 58,
-    width: SIZES.width - 32,
-    alignItems: 'center',
-    backgroundColor: COLORS.greyscale500,
-    borderRadius: 16
-  },
-});
+    area: {
+        flex: 1,
+        backgroundColor: COLORS.white,
+    },
+    container: {
+        flex: 1,
+        padding: 16,
+        backgroundColor: COLORS.white,
+    },
+    avatarContainer: {
+        marginVertical: 12,
+        alignItems: 'center',
+        width: 130,
+        height: 130,
+        borderRadius: 65,
+    },
+    avatar: {
+        height: 130,
+        width: 130,
+        borderRadius: 65,
+    },
+    pickImage: {
+        height: 42,
+        width: 42,
+        borderRadius: 21,
+        backgroundColor: COLORS.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+    },
+    bottomContainer: {
+        position: 'absolute',
+        bottom: 32,
+        right: 16,
+        left: 16,
+        alignItems: 'center',
+    },
+    continueButton: {
+        width: SIZES.width - 32,
+        borderRadius: 32,
+        backgroundColor: COLORS.primary,
+        borderColor: COLORS.primary,
+    },
+    inputSection: {
+        marginBottom: 16,
+    },
+    label: {
+        fontSize: 16,
+        color: COLORS.gray,
+        marginBottom: 4,
+        marginLeft: 8,
+    },
+})
 
 export default EditProfile

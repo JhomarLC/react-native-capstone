@@ -30,8 +30,6 @@ import { showMessage, hideMessage } from 'react-native-flash-message'
 import { loadUser, register } from '../services/AuthService'
 import { setToken } from '../services/TokenService'
 import AuthContext from '../contexts/AuthContext'
-import { API_URL } from '@env'
-import axios from 'axios'
 const isTestMode = true
 
 const initialState = {
@@ -61,23 +59,24 @@ const Signup = ({ navigation }) => {
     const [formState, dispatchFormState] = useReducer(reducer, initialState)
     const [isLoading, setIsLoading] = useState(false)
 
-    const [error, setError] = useState(null)
+    const [error, setError] = useState({})
     const [isChecked, setChecked] = useState(false)
     const [image, setImage] = useState(null)
 
     const inputChangedHandler = useCallback(
         (inputId, inputValue) => {
+            setError({})
             const result = validateInput(inputId, inputValue)
             dispatchFormState({ inputId, validationResult: result, inputValue })
         },
         [dispatchFormState]
     )
 
-    useEffect(() => {
-        if (error) {
-            Alert.alert('An error occured', error)
-        }
-    }, [error])
+    // useEffect(() => {
+    //     if (error) {
+    //         Alert.alert('An error occured', error)
+    //     }
+    // }, [error])
 
     const pickImage = async () => {
         try {
@@ -140,17 +139,9 @@ const Signup = ({ navigation }) => {
                 type: fileType,
             })
         }
-
+        setIsLoading(true)
         try {
-            const { data } = await axios.post(
-                `${API_URL}/petowner/register`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                }
-            )
+            const data = await register(formData)
             console.log(data)
 
             await setToken(data.api_token)
@@ -161,12 +152,17 @@ const Signup = ({ navigation }) => {
             setIsLoading(false)
             console.log(e)
             if (e.response?.status === 422) {
-                console.log(e.response.data.errors)
+                setError(e.response.data.errors)
             } else if (e.response?.status === 401) {
-                console.log(e.response.data.message)
+                showMessage({
+                    message: e.response.data.message[0],
+                    type: 'danger',
+                })
             } else {
                 console.log('An error occurred. Please try again.')
             }
+        } finally {
+            setIsLoading(false) // Set loading back to false after login attempt
         }
     }
 
@@ -205,7 +201,7 @@ const Signup = ({ navigation }) => {
                         <Input
                             id="email"
                             onInputChanged={inputChangedHandler}
-                            errorText={formState.inputValidities['email']}
+                            errorText={error.email}
                             placeholder="Email"
                             icon={icons.email}
                             keyboardType="email-address"
@@ -213,7 +209,7 @@ const Signup = ({ navigation }) => {
                         />
                         <Input
                             onInputChanged={inputChangedHandler}
-                            errorText={formState.inputValidities['password']}
+                            errorText={error.password}
                             autoCapitalize="none"
                             id="password"
                             placeholder="Password"
@@ -223,11 +219,7 @@ const Signup = ({ navigation }) => {
                         />
                         <Input
                             onInputChanged={inputChangedHandler}
-                            errorText={
-                                formState.inputValidities[
-                                    'password_confirmation'
-                                ]
-                            }
+                            errorText={error.password_confirmation}
                             autoCapitalize="none"
                             id="password_confirmation"
                             placeholder="Password"
@@ -238,7 +230,7 @@ const Signup = ({ navigation }) => {
                         <Input
                             id="name"
                             onInputChanged={inputChangedHandler}
-                            errorText={formState.inputValidities['name']}
+                            errorText={error.name}
                             placeholder="Full Name"
                             icon={icons.user}
                             placeholderTextColor={COLORS.gray}
@@ -246,7 +238,7 @@ const Signup = ({ navigation }) => {
                         <Input
                             id="addr_zone"
                             onInputChanged={inputChangedHandler}
-                            errorText={formState.inputValidities['addr_zone']}
+                            errorText={error.addr_zone}
                             placeholder="Zone"
                             icon={icons.location}
                             placeholderTextColor={COLORS.gray}
@@ -255,7 +247,7 @@ const Signup = ({ navigation }) => {
                         <Input
                             id="addr_brgy"
                             onInputChanged={inputChangedHandler}
-                            errorText={formState.inputValidities['addr_brgy']}
+                            errorText={error.addr_brgy}
                             placeholder="Brgy"
                             icon={icons.location2}
                             placeholderTextColor={COLORS.gray}
@@ -263,9 +255,7 @@ const Signup = ({ navigation }) => {
                         <Input
                             id="phone_number"
                             onInputChanged={inputChangedHandler}
-                            errorText={
-                                formState.inputValidities['phone_number']
-                            }
+                            errorText={error.phone_number}
                             placeholder="Phone Number"
                             placeholderTextColor={COLORS.gray}
                             icon={icons.telephone}

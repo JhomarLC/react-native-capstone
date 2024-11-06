@@ -18,6 +18,8 @@ import HorizontalDoctorCard from '../components/HorizontalDoctorCard'
 import AuthContext from '../contexts/AuthContext'
 import { STORAGE_URL } from '@env'
 import { loadPets } from '../services/PetsService'
+import { useFocusEffect } from '@react-navigation/native'
+import { loadEvents } from '../services/EventService'
 
 const Home = ({ navigation }) => {
     const { user } = useContext(AuthContext)
@@ -27,18 +29,35 @@ const Home = ({ navigation }) => {
     }
     const [currentIndex, setCurrentIndex] = useState(0)
     const [pets, setPets] = useState([])
+    const [events, setEvents] = useState([])
+
+    const fetchPets = async () => {
+        try {
+            const { data } = await loadPets(pet_owner.id)
+            setPets(data)
+        } catch (e) {
+            console.log('Failed to load Pets', e)
+        }
+    }
+    const fetchAnnouncements = async () => {
+        try {
+            const { data } = await loadEvents(pet_owner.id)
+            setEvents(data)
+            console.log(data)
+        } catch (e) {
+            console.log('Failed to load Pets', e)
+        }
+    }
 
     useEffect(() => {
-        async function runEffect() {
-            try {
-                const { data } = await loadPets(pet_owner.id)
-                setPets(data)
-            } catch (e) {
-                console.log('Failed to load Pets', e)
-            }
-        }
-        runEffect()
+        fetchAnnouncements()
     }, [])
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchPets()
+        }, [])
+    )
+
     /**
      * Render header
      */
@@ -114,13 +133,6 @@ const Home = ({ navigation }) => {
                     style={styles.searchInput}
                     onFocus={handleInputFocus}
                 />
-                <TouchableOpacity>
-                    <Image
-                        source={icons.filter}
-                        resizeMode="contain"
-                        style={styles.filterIcon}
-                    />
-                </TouchableOpacity>
             </TouchableOpacity>
         )
     }
@@ -238,8 +250,8 @@ const Home = ({ navigation }) => {
             <View>
                 <SubHeaderItem
                     title="Pet Profiles"
-                    navTitle="See all"
-                    onPress={() => navigation.navigate('Search')}
+                    navTitle="Add New Pet"
+                    onPress={() => navigation.navigate('CreatePetProfile')}
                 />
                 <FlatList
                     data={categories}
@@ -256,7 +268,9 @@ const Home = ({ navigation }) => {
                         </Text>
                         <TouchableOpacity
                             style={styles.createPetButton}
-                            onPress={() => navigation.navigate('CreatePet')} // Navigate to CreatePet screen
+                            onPress={() =>
+                                navigation.navigate('CreatePetProfile')
+                            } // Navigate to CreatePet screen
                         >
                             <Text style={styles.createPetButtonText}>
                                 Create Now
@@ -284,6 +298,7 @@ const Home = ({ navigation }) => {
                                             item.color_description
                                         }
                                         petBreed={item.breed}
+                                        pet_type={item.pet_type}
                                         status={item.status}
                                         age={item.age}
                                         onPress={() =>

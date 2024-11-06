@@ -14,7 +14,9 @@ import { categories, doctors, ratings, vaccineData } from '../data'
 import Button from '../components/Button'
 import { formatDate } from '../services/FormatDate'
 import { STORAGE_URL } from '@env'
+
 const HorizontalVaccineListInfo = ({
+    onPress,
     vaccineTypeName,
     vaccineDate,
     Vaccinedoctor,
@@ -25,6 +27,7 @@ const HorizontalVaccineListInfo = ({
     return (
         <TouchableOpacity
             onPress={() => refRBSheet.current.open()}
+            // onPress={onPress}
             style={[
                 styles.cardContainer,
                 {
@@ -52,6 +55,7 @@ const HorizontalVaccineListInfo = ({
                     </Text>
                 </View>
                 <View style={styles.viewContainer}>
+                    {/* <FontAwesome name="star" size={14} color="rgb(250, 159, 28)" /> */}
                     <Text
                         style={[
                             styles.VaccineDetails,
@@ -63,6 +67,7 @@ const HorizontalVaccineListInfo = ({
                         {' '}
                         {vaccineDate}
                     </Text>
+                    {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
                     <Text
                         style={[
                             styles.VaccineDetails,
@@ -317,10 +322,13 @@ const HorizontalVaccineListInfo = ({
                                         <View>
                                             <Image
                                                 source={{
-                                                    uri: `${STORAGE_URL}/electronic_signatures/${item.veterinarian.electronic_signature}`,
+                                                    uri: `${STORAGE_URL}/vet_profiles/${item.veterinarian.electronic_signature}`,
                                                 }}
                                                 resizeMode="contain"
-                                                style={[styles.backIcon, {}]}
+                                                style={[
+                                                    styles.imageSignature,
+                                                    {},
+                                                ]}
                                             />
                                         </View>
                                     </View>
@@ -348,7 +356,8 @@ const HorizontalVaccineListInfo = ({
                                                 },
                                             ]}
                                         >
-                                            Walk-In
+                                            {/* {item.remarks} */}
+                                            Walk-in
                                         </Text>
                                     </View>
                                 </View>
@@ -366,7 +375,11 @@ const styles = StyleSheet.create({
     backIcon: {
         height: 70,
         width: 70,
-        borderRadius: 5,
+        borderRadius: 50,
+    },
+    imageSignature: {
+        height: 70,
+        width: 70,
     },
     bottomTitle: {
         fontSize: 18,

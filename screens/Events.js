@@ -133,7 +133,7 @@ const Events = ({ navigation }) => {
                     />
                 }
             >
-                <Text style={styles.emptyText}>No events for this day</Text>
+                <Text style={styles.emptyText}>No events for today</Text>
 
                 {upcomingEvents.length > 0 && (
                     <View style={styles.upcomingContainer}>

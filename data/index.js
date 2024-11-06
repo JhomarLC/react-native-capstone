@@ -256,6 +256,87 @@ export const categories = [
     // }
 ]
 
+export const veterinarianList = [
+    {
+        id: 1,
+        vetName: 'Dr. Gladys Garcia',
+        address: 'San Jose City, Nueva Ecija',
+        position: 'Veterinarian',
+        email: 'gladys@gmail.com',
+        image: images.gladysVet,
+    },
+    {
+        id: 2,
+        vetName: 'Dr. Jamaica Sambrano',
+        address: 'San Jose City, Nueva Ecija',
+        position: 'Veterinarian',
+        email: 'gladys@gmail.com',
+        image: images.gladysVet,
+    },
+    {
+        id: 3,
+        vetName: 'Dr. Gladys Garcia',
+        address: 'San Jose City, Nueva Ecija',
+        position: 'Veterinarian',
+        email: 'gladys@gmail.com',
+        image: images.gladysVet,
+    },
+    {
+        id: 4,
+        vetName: 'Dr. Gladys Garcia',
+        address: 'San Jose City, Nueva Ecija',
+        position: 'Veterinarian',
+        email: 'gladys@gmail.com',
+        image: images.gladysVet,
+    },
+    {
+        id: 5,
+        vetName: 'Dr. Gladys Garcia',
+        address: 'San Jose City, Nueva Ecija',
+        position: 'Veterinarian',
+        email: 'gladys@gmail.com',
+        image: images.gladysVet,
+    },
+]
+
+export const petOwnerList = [
+    {
+        id: '1',
+        name: 'Maricel Sambrano',
+        image: images.doctor1,
+        address: 'Zone 11, Sibut, San Jose City',
+        email: 'sambranomaricel@gmail.com',
+        isAvailable: true,
+        categoryId: '1',
+    },
+    {
+        id: '2',
+        name: 'Jhomar Candelario',
+        image: images.jhomarVet,
+        address: 'Zone 4, Caanawan, San Jose City',
+        email: 'candelariojhomar@gmail.com',
+        isAvailable: true,
+        categoryId: '1',
+    },
+    {
+        id: '3',
+        name: 'Eidriel Trinidad',
+        image: images.eidrielVet,
+        address: 'Zone 11, Sibut, San Jose City',
+        email: 'trinidadeidriel@gmail.com',
+        isAvailable: true,
+        categoryId: '1',
+    },
+    {
+        id: '4',
+        name: 'Jamaica Sambrano',
+        image: images.jamVet,
+        address: 'Zone 11, Sibut, San Jose City',
+        email: 'jamsambrano@gmail.com',
+        isAvailable: true,
+        categoryId: '1',
+    },
+]
 export const recommendedDoctors = [
     {
         id: '1',

@@ -6,218 +6,172 @@ import {
     Image,
     TextInput,
     FlatList,
+    RefreshControl,
 } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { COLORS, SIZES, icons } from '../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { categories, doctors, ratings } from '../data'
+import { categories, ratings } from '../data'
 import NotFoundCard from '../components/NotFoundCard'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../components/Button'
 import { FontAwesome } from '@expo/vector-icons'
 import HorizontalDoctorCard from '../components/HorizontalDoctorCard'
+import { loadPets } from '../services/PetsService'
+import AuthContext from '../contexts/AuthContext'
+import { useFocusEffect } from '@react-navigation/native'
+import { STORAGE_URL } from '@env'
 
 const Search = ({ navigation }) => {
+    const { user } = useContext(AuthContext)
+    const pet_owner = user.pet_owner
     const refRBSheet = useRef()
     const [selectedCategories, setSelectedCategories] = useState(['1'])
     const [selectedRating, setSelectedRating] = useState(['1'])
+    const [pets, setPets] = useState([])
+    const [searchQuery, setSearchQuery] = useState('')
+    const [filteredPets, setFilteredPets] = useState([])
+    const [refreshing, setRefreshing] = useState(false)
+
+    const fetchPets = async () => {
+        try {
+            const { data } = await loadPets(pet_owner.id)
+            setPets(data)
+            setFilteredPets(data) // Set initial filtered list to full pet list
+        } catch (e) {
+            console.log('Failed to load Pets', e)
+        }
+    }
+
+    const onRefresh = async () => {
+        setRefreshing(true)
+        await fetchPets() // Fetch pets again to reload data
+        setRefreshing(false)
+    }
+
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchPets()
+        }, [])
+    )
+
+    useEffect(() => {
+        handleSearch()
+    }, [searchQuery, pets])
+
+    const handleSearch = () => {
+        const results = pets.filter((pet) =>
+            pet.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        setFilteredPets(results)
+    }
+
     /**
      * Render header
      */
-    const renderHeader = () => {
-        return (
-            <View style={styles.headerContainer}>
-                <View style={styles.headerLeft}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Image
-                            source={icons.back}
-                            resizeMode="contain"
-                            style={[
-                                styles.backIcon,
-                                {
-                                    tintColor: COLORS.greyscale900,
-                                },
-                            ]}
-                        />
-                    </TouchableOpacity>
-                    <Text
-                        style={[
-                            styles.headerTitle,
-                            {
-                                color: COLORS.greyscale900,
-                            },
-                        ]}
-                    >
-                        Pets
-                    </Text>
-                </View>
-                {/* <TouchableOpacity>
-          <Image
-            source={icons.moreCircle}
-            resizeMode='contain'
-            style={[styles.moreIcon, {
-              tintColor: COLORS.greyscale900
-            }]}
-          />
-        </TouchableOpacity> */}
+    const renderHeader = () => (
+        <View style={styles.headerContainer}>
+            <View style={styles.headerLeft}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Image
+                        source={icons.back}
+                        resizeMode="contain"
+                        style={styles.backIcon}
+                    />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Pets</Text>
             </View>
-        )
-    }
+        </View>
+    )
 
     /**
      * Render content
      */
-    const renderContent = () => {
-        const [selectedTab, setSelectedTab] = useState('row')
-        const [searchQuery, setSearchQuery] = useState('')
-        const [filteredDoctors, setFilteredDoctors] = useState(doctors)
-        const [resultsCount, setResultsCount] = useState(0)
-
-        useEffect(() => {
-            handleSearch()
-        }, [searchQuery, selectedTab])
-
-        const handleSearch = () => {
-            const allDoctors = doctors.filter((doctor) =>
-                doctor.name.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            setFilteredDoctors(allDoctors)
-            setResultsCount(allDoctors.length)
-        }
-
-        return (
-            <View>
-                {/* Search bar */}
-                <View
-                    onPress={() => console.log('Search')}
-                    style={[
-                        styles.searchBarContainer,
-                        {
-                            backgroundColor: COLORS.secondaryWhite,
-                        },
-                    ]}
-                >
-                    <TouchableOpacity onPress={handleSearch}>
-                        <Image
-                            source={icons.search2}
-                            resizeMode="contain"
-                            style={styles.searchIcon}
-                        />
-                    </TouchableOpacity>
-                    <TextInput
-                        placeholder="Search"
-                        placeholderTextColor={COLORS.gray}
-                        style={[
-                            styles.searchInput,
-                            {
-                                color: COLORS.greyscale900,
-                            },
-                        ]}
-                        value={searchQuery}
-                        onChangeText={(text) => setSearchQuery(text)}
+    const renderContent = () => (
+        <View>
+            <View style={styles.searchBarContainer}>
+                <TouchableOpacity onPress={handleSearch}>
+                    <Image
+                        source={icons.search2}
+                        resizeMode="contain"
+                        style={styles.searchIcon}
                     />
-                    <TouchableOpacity onPress={() => refRBSheet.current.open()}>
-                        <Image
-                            source={icons.filter}
-                            resizeMode="contain"
-                            style={styles.filterIcon}
-                        />
-                    </TouchableOpacity>
-                </View>
-
-                {/* Results container  */}
-                <View>
-                    {/* Events result list */}
-                    <View
-                        style={{
-                            backgroundColor: COLORS.secondaryWhite,
-                            marginVertical: 16,
-                        }}
-                    >
-                        {resultsCount && resultsCount > 0 ? (
-                            <>
-                                {
-                                    <FlatList
-                                        data={filteredDoctors}
-                                        keyExtractor={(item) => item.id}
-                                        showsVerticalScrollIndicator={false}
-                                        renderItem={({ item }) => {
-                                            return (
-                                                <HorizontalDoctorCard
-                                                    name={item.name}
-                                                    image={item.image}
-                                                    // distance={item.distance}
-                                                    // price={item.price}
-                                                    // consultationFee={item.consultationFee}
-                                                    type={item.type}
-                                                    petBreed={item.petBreed}
-                                                    // rating={item.rating}
-                                                    // numReviews={item.numReviews}
-                                                    isAvailable={
-                                                        item.isAvailable
-                                                    }
-                                                    onPress={() =>
-                                                        navigation.navigate(
-                                                            'DoctorDetails'
-                                                        )
-                                                    }
-                                                />
-                                            )
-                                        }}
-                                    />
-                                }
-                            </>
-                        ) : (
-                            <NotFoundCard />
-                        )}
-                    </View>
-                </View>
+                </TouchableOpacity>
+                <TextInput
+                    placeholder="Search"
+                    placeholderTextColor={COLORS.gray}
+                    style={styles.searchInput}
+                    value={searchQuery}
+                    onChangeText={(text) => setSearchQuery(text)}
+                />
             </View>
+
+            <View style={styles.resultsContainer}>
+                {filteredPets.length > 0 ? (
+                    <FlatList
+                        data={filteredPets}
+                        keyExtractor={(item) => item.id}
+                        showsVerticalScrollIndicator={false}
+                        renderItem={({ item }) => (
+                            <HorizontalDoctorCard
+                                name={item.name}
+                                image={{
+                                    uri: `${STORAGE_URL}/pet_profile/${item.image}`,
+                                }}
+                                type={item.pet_type}
+                                petBreed={item.breed}
+                                color_description={item.color_description}
+                                weight={item.weight}
+                                pet_type={item.pet_type}
+                                age={item.age}
+                                status={item.status}
+                                onPress={() =>
+                                    navigation.navigate('PetDetails', {
+                                        pet_id: item.id,
+                                    })
+                                }
+                            />
+                        )}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                            />
+                        }
+                    />
+                ) : (
+                    <NotFoundCard />
+                )}
+            </View>
+        </View>
+    )
+
+    const toggleCategory = (categoryId) => {
+        setSelectedCategories((prevCategories) =>
+            prevCategories.includes(categoryId)
+                ? prevCategories.filter((id) => id !== categoryId)
+                : [...prevCategories, categoryId]
         )
     }
 
-    // Toggle category selection
-    const toggleCategory = (categoryId) => {
-        const updatedCategories = [...selectedCategories]
-        const index = updatedCategories.indexOf(categoryId)
-
-        if (index === -1) {
-            updatedCategories.push(categoryId)
-        } else {
-            updatedCategories.splice(index, 1)
-        }
-
-        setSelectedCategories(updatedCategories)
-    }
-
-    // toggle rating selection
     const toggleRating = (ratingId) => {
-        const updatedRatings = [...selectedRating]
-        const index = updatedRatings.indexOf(ratingId)
-
-        if (index === -1) {
-            updatedRatings.push(ratingId)
-        } else {
-            updatedRatings.splice(index, 1)
-        }
-
-        setSelectedRating(updatedRatings)
+        setSelectedRating((prevRatings) =>
+            prevRatings.includes(ratingId)
+                ? prevRatings.filter((id) => id !== ratingId)
+                : [...prevRatings, ratingId]
+        )
     }
 
-    // Category item
     const renderCategoryItem = ({ item }) => (
         <TouchableOpacity
-            style={{
-                backgroundColor: selectedCategories.includes(item.id)
-                    ? COLORS.primary
-                    : 'transparent',
-                padding: 10,
-                marginVertical: 5,
-                borderColor: COLORS.primary,
-                borderWidth: 1.3,
-                borderRadius: 24,
-                marginRight: 12,
-            }}
+            style={[
+                styles.categoryItem,
+                {
+                    backgroundColor: selectedCategories.includes(item.id)
+                        ? COLORS.primary
+                        : 'transparent',
+                },
+            ]}
             onPress={() => toggleCategory(item.id)}
         >
             <Text
@@ -234,33 +188,25 @@ const Search = ({ navigation }) => {
 
     const renderRatingItem = ({ item }) => (
         <TouchableOpacity
-            style={{
-                backgroundColor: selectedRating.includes(item.id)
-                    ? COLORS.primary
-                    : 'transparent',
-                paddingHorizontal: 16,
-                paddingVertical: 6,
-                marginVertical: 5,
-                borderColor: COLORS.primary,
-                borderWidth: 1.3,
-                borderRadius: 24,
-                marginRight: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-            }}
+            style={[
+                styles.ratingItem,
+                {
+                    backgroundColor: selectedRating.includes(item.id)
+                        ? COLORS.primary
+                        : 'transparent',
+                },
+            ]}
             onPress={() => toggleRating(item.id)}
         >
-            <View style={{ marginRight: 6 }}>
-                <FontAwesome
-                    name=""
-                    size={14}
-                    color={
-                        selectedRating.includes(item.id)
-                            ? COLORS.white
-                            : COLORS.primary
-                    }
-                />
-            </View>
+            <FontAwesome
+                name="star"
+                size={14}
+                color={
+                    selectedRating.includes(item.id)
+                        ? COLORS.white
+                        : COLORS.primary
+                }
+            />
             <Text
                 style={{
                     color: selectedRating.includes(item.id)
@@ -274,98 +220,55 @@ const Search = ({ navigation }) => {
     )
 
     return (
-        <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
-            <View style={[styles.container, { backgroundColor: COLORS.white }]}>
+        <SafeAreaView style={styles.area}>
+            <View style={styles.container}>
                 {renderHeader()}
-                <View>{renderContent()}</View>
+                {renderContent()}
                 <RBSheet
                     ref={refRBSheet}
-                    closeOnDragDown={true}
-                    closeOnPressMask={true}
+                    closeOnDragDown
+                    closeOnPressMask
                     height={384}
                     customStyles={{
-                        wrapper: {
-                            backgroundColor: 'rgba(0,0,0,0.5)',
-                        },
-                        draggableIcon: {
-                            backgroundColor: '#000',
-                        },
-                        container: {
-                            borderTopRightRadius: 32,
-                            borderTopLeftRadius: 32,
-                            height: 384,
-                            backgroundColor: COLORS.white,
-                            alignItems: 'center',
-                        },
+                        wrapper: { backgroundColor: 'rgba(0,0,0,0.5)' },
+                        draggableIcon: { backgroundColor: '#000' },
+                        container: styles.sheetContainer,
                     }}
                 >
-                    <Text
-                        style={[
-                            styles.bottomTitle,
-                            {
-                                color: COLORS.greyscale900,
-                            },
-                        ]}
-                    >
-                        Filter
-                    </Text>
+                    <Text style={styles.bottomTitle}>Filter</Text>
                     <View style={styles.separateLine} />
-                    <View style={{ width: SIZES.width - 32 }}>
-                        <Text
-                            style={[
-                                styles.sheetTitle,
-                                {
-                                    color: COLORS.greyscale900,
-                                },
-                            ]}
-                        >
-                            Category
-                        </Text>
+                    <View style={styles.filterSection}>
+                        <Text style={styles.sheetTitle}>Category</Text>
                         <FlatList
                             data={categories}
                             keyExtractor={(item) => item.id}
-                            showsHorizontalScrollIndicator={false}
                             horizontal
                             renderItem={renderCategoryItem}
+                            showsHorizontalScrollIndicator={false}
                         />
 
-                        <Text
-                            style={[
-                                styles.sheetTitle,
-                                {
-                                    color: COLORS.greyscale900,
-                                },
-                            ]}
-                        >
-                            Rating
-                        </Text>
+                        <Text style={styles.sheetTitle}>Rating</Text>
                         <FlatList
                             data={ratings}
                             keyExtractor={(item) => item.id}
-                            showsHorizontalScrollIndicator={false}
                             horizontal
                             renderItem={renderRatingItem}
+                            showsHorizontalScrollIndicator={false}
                         />
                     </View>
 
                     <View style={styles.separateLine} />
-
                     <View style={styles.bottomContainer}>
                         <Button
                             title="Reset"
-                            style={{
-                                width: (SIZES.width - 32) / 2 - 8,
-                                backgroundColor: COLORS.tansparentPrimary,
-                                borderRadius: 32,
-                                borderColor: COLORS.tansparentPrimary,
-                            }}
+                            style={styles.resetButton}
                             textColor={COLORS.primary}
                             onPress={() => refRBSheet.current.close()}
                         />
                         <Button
                             title="Filter"
                             filled
-                            style={styles.logoutButton}
+                            style={styles.filterButton}
                             onPress={() => refRBSheet.current.close()}
                         />
                     </View>
@@ -376,41 +279,17 @@ const Search = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
-    area: {
-        flex: 1,
-        backgroundColor: COLORS.white,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.white,
-        padding: 16,
-    },
+    area: { flex: 1, backgroundColor: COLORS.white },
+    container: { flex: 1, backgroundColor: COLORS.white, padding: 16 },
     headerContainer: {
         flexDirection: 'row',
-        width: SIZES.width - 32,
         justifyContent: 'space-between',
         marginBottom: 16,
+        width: SIZES.width - 32,
     },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    backIcon: {
-        height: 24,
-        width: 24,
-        tintColor: COLORS.black,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontFamily: 'bold',
-        color: COLORS.black,
-        marginLeft: 16,
-    },
-    moreIcon: {
-        width: 24,
-        height: 24,
-        tintColor: COLORS.black,
-    },
+    headerLeft: { flexDirection: 'row', alignItems: 'center' },
+    backIcon: { height: 24, width: 24, tintColor: COLORS.black },
+    headerTitle: { fontSize: 20, fontFamily: 'bold', marginLeft: 16 },
     searchBarContainer: {
         width: SIZES.width - 32,
         backgroundColor: COLORS.secondaryWhite,
@@ -421,103 +300,42 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    searchIcon: {
-        height: 24,
-        width: 24,
-        tintColor: COLORS.gray,
-    },
+    searchIcon: { height: 24, width: 24, tintColor: COLORS.gray },
     searchInput: {
         flex: 1,
         fontSize: 16,
         fontFamily: 'regular',
         marginHorizontal: 8,
     },
-    filterIcon: {
-        width: 24,
-        height: 24,
-        tintColor: COLORS.primary,
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: SIZES.width - 32,
-        justifyContent: 'space-between',
-    },
-    tabBtn: {
-        width: (SIZES.width - 32) / 2 - 6,
-        height: 42,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1.4,
+    filterIcon: { width: 24, height: 24, tintColor: COLORS.primary },
+    categoryItem: {
+        padding: 10,
+        marginVertical: 5,
         borderColor: COLORS.primary,
-        borderRadius: 32,
+        borderWidth: 1.3,
+        borderRadius: 24,
+        marginRight: 12,
     },
-    selectedTab: {
-        width: (SIZES.width - 32) / 2 - 6,
-        height: 42,
-        borderRadius: 12,
-        backgroundColor: COLORS.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1.4,
-        borderColor: COLORS.primary,
-        borderRadius: 32,
-    },
-    tabBtnText: {
-        fontSize: 16,
-        fontFamily: 'semiBold',
-        color: COLORS.primary,
-        textAlign: 'center',
-    },
-    selectedTabText: {
-        fontSize: 16,
-        fontFamily: 'semiBold',
-        color: COLORS.white,
-        textAlign: 'center',
-    },
-    resultContainer: {
+    ratingItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        width: SIZES.width - 32,
-        marginVertical: 16,
-    },
-    subtitle: {
-        fontSize: 18,
-        fontFamily: 'bold',
-        color: COLORS.black,
-    },
-    subResult: {
-        fontSize: 14,
-        fontFamily: 'semiBold',
-        color: COLORS.primary,
-    },
-    resultLeftView: {
-        flexDirection: 'row',
-    },
-    bottomContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginVertical: 12,
         paddingHorizontal: 16,
-        width: SIZES.width,
+        paddingVertical: 6,
+        marginVertical: 5,
+        borderColor: COLORS.primary,
+        borderWidth: 1.3,
+        borderRadius: 24,
+        marginRight: 12,
     },
-    cancelButton: {
-        width: (SIZES.width - 32) / 2 - 8,
-        backgroundColor: COLORS.tansparentPrimary,
-        borderRadius: 32,
-    },
-    logoutButton: {
-        width: (SIZES.width - 32) / 2 - 8,
-        backgroundColor: COLORS.primary,
-        borderRadius: 32,
+    sheetContainer: {
+        borderTopRightRadius: 32,
+        borderTopLeftRadius: 32,
+        alignItems: 'center',
+        backgroundColor: COLORS.white,
     },
     bottomTitle: {
         fontSize: 24,
         fontFamily: 'semiBold',
-        color: COLORS.black,
         textAlign: 'center',
         marginTop: 12,
     },
@@ -527,33 +345,27 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.greyscale300,
         marginVertical: 12,
     },
-    sheetTitle: {
-        fontSize: 18,
-        fontFamily: 'semiBold',
-        color: COLORS.black,
-        marginVertical: 12,
-    },
-    reusltTabContainer: {
+    filterSection: { width: SIZES.width - 32 },
+    sheetTitle: { fontSize: 18, fontFamily: 'semiBold', marginVertical: 12 },
+    bottomContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        width: SIZES.width - 32,
         justifyContent: 'space-between',
+        paddingHorizontal: 16,
     },
-    viewDashboard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: 36,
-        justifyContent: 'space-between',
+    resetButton: {
+        width: (SIZES.width - 32) / 2 - 8,
+        backgroundColor: COLORS.tansparentPrimary,
+        borderRadius: 32,
     },
-    dashboardIcon: {
-        width: 16,
-        height: 16,
-        tintColor: COLORS.primary,
+    filterButton: {
+        width: (SIZES.width - 32) / 2 - 8,
+        backgroundColor: COLORS.primary,
+        borderRadius: 32,
     },
-    tabText: {
-        fontSize: 20,
-        fontFamily: 'semiBold',
-        color: COLORS.black,
+    resultsContainer: {
+        backgroundColor: COLORS.secondaryWhite,
+        marginVertical: 16,
     },
 })
 

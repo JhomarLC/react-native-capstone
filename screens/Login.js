@@ -51,6 +51,8 @@ const Login = ({ navigation }) => {
     const inputChangedHandler = useCallback(
         (inputId, inputValue) => {
             const result = validateInput(inputId, inputValue)
+            console.log(result)
+
             dispatchFormState({ inputId, validationResult: result, inputValue })
         },
         [dispatchFormState]
@@ -111,11 +113,10 @@ const Login = ({ navigation }) => {
             setLoading(false) // Set loading back to false after login attempt
         }
     }
-
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
-                <Header />
+                <Header title="Pet Owner" />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={styles.logoContainer}>
                         <Image
@@ -148,7 +149,7 @@ const Login = ({ navigation }) => {
                     />
 
                     <Button
-                        title={loading ? 'Loading...' : 'Login'} // Hide text if loading
+                        title={loading ? 'Loading...' : 'Login'}
                         filled
                         onPress={onLoginPress}
                         disabled={loading} // Disable button while loading

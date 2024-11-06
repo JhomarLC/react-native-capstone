@@ -1,6 +1,6 @@
 import CancelledBooking from './CancelledBooking'
 import CompletedBooking from './CompletedBooking'
-import VeterinarianDetails from './VeterinarianDetails'
+import VeterinarianDetails from '../screens/VeterinarianDetails'
 
 import PetHealthCard from './PetHealthCard'
 import PetPictures from './PetPictures'

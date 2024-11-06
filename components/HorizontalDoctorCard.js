@@ -10,6 +10,7 @@ const HorizontalDoctorCard = ({
     petBreed,
     status,
     onPress,
+    pet_type,
     date_of_birth,
     age,
 }) => {
@@ -64,7 +65,7 @@ const HorizontalDoctorCard = ({
                         ]}
                     >
                         {' '}
-                        {color_description}
+                        {pet_type.toUpperCase()}
                     </Text>
                     {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
                     <Text

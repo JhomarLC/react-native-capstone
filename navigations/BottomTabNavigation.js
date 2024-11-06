@@ -72,8 +72,8 @@ const BottomTabNavigation = () => {
                                 <Image
                                     source={
                                         focused
-                                            ? icons.calendar5
-                                            : icons.calendar
+                                            ? icons.veterinarian
+                                            : icons.veterinarian
                                     }
                                     resizeMode="contain"
                                     style={{

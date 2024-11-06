@@ -21,9 +21,9 @@ const VaccineList = ({ route, navigation }) => {
     const { pet_id, medication } = route.params
 
     // State for medications, search query, filtered results, and loading
-    const [medications, setMedications] = useState([])
+    const [medications, setMedications] = useState([]) // Original list of medications
     const [searchQuery, setSearchQuery] = useState('')
-    const [filteredMedication, setFilteredMedication] = useState([])
+    const [filteredMedication, setFilteredMedication] = useState([]) // Filtered list based on search
     const [isLoading, setIsLoading] = useState(true)
 
     // Load medications data on component mount
@@ -32,9 +32,13 @@ const VaccineList = ({ route, navigation }) => {
             try {
                 setIsLoading(true) // Start loading
                 const result = await loadPetMedication(pet_id, medication.id)
-                const data = result.data ? [result.data] : []
-                setMedications(data)
-                setFilteredMedication(data)
+                const filteredData = result.data.filter(
+                    (medicationItem) =>
+                        medicationItem.medicationname.medication_type_id ===
+                        medication.id
+                )
+                setMedications(filteredData) // Set original data here
+                setFilteredMedication(filteredData) // Initialize filtered data with all medications
             } catch (e) {
                 console.log('Failed to load medications', e)
             } finally {
@@ -47,11 +51,11 @@ const VaccineList = ({ route, navigation }) => {
     // Search and filter function
     useEffect(() => {
         handleSearch()
-    }, [searchQuery, medications])
+    }, [searchQuery])
 
     const handleSearch = () => {
         if (!searchQuery) {
-            setFilteredMedication(medications)
+            setFilteredMedication(medications) // Reset to full list if search is cleared
         } else {
             const filtered = medications.filter((med) =>
                 med?.medicationname?.name
@@ -122,7 +126,7 @@ const VaccineList = ({ route, navigation }) => {
                     ) : filteredMedication.length > 0 ? (
                         <FlatList
                             data={filteredMedication}
-                            keyExtractor={(item) => item.id.toString()}
+                            keyExtractor={(item) => item.id.toString()} // Ensure the key is a string
                             showsVerticalScrollIndicator={false}
                             renderItem={({ item }) => (
                                 <HorizontalVaccineListInfo
@@ -135,7 +139,7 @@ const VaccineList = ({ route, navigation }) => {
                                         item.veterinarian?.name ||
                                         'Unknown Doctor'
                                     }
-                                    medications={medications}
+                                    medications={[item]}
                                 />
                             )}
                         />

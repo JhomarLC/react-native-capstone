@@ -19,6 +19,7 @@ import {
 } from '../utils/ImagePickerHelper'
 import { COLORS, SIZES } from '../constants'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import NotFoundCard from '../components/NotFoundCard'
 
 const PetPictures = ({ pet_id }) => {
     const [petPhotos, setPetPhotos] = useState([])
@@ -108,60 +109,69 @@ const PetPictures = ({ pet_id }) => {
 
     return (
         <View style={styles.wrapper}>
-            <FlatList
-                data={combinedPhotos}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => (
-                    <View style={styles.imageContainer}>
-                        <TouchableOpacity
-                            onPress={() => handleImagePress(index)} // Use index based on combined array
-                        >
-                            <Image
-                                source={{
-                                    uri:
-                                        item.uri ||
-                                        `${STORAGE_URL}/pet_photos/${item.image}`,
-                                }}
-                                resizeMode="cover"
-                                style={styles.petImage}
-                            />
-                        </TouchableOpacity>
-                        {/* Remove option only for preview images */}
-                        {index >= petPhotos.length && (
+            {combinedPhotos.length > 0 ? (
+                <FlatList
+                    data={combinedPhotos}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item, index }) => (
+                        <View style={styles.imageContainer}>
                             <TouchableOpacity
-                                style={styles.removeIcon}
-                                onPress={() =>
-                                    handleRemovePreviewImage(
-                                        index - petPhotos.length
-                                    )
-                                }
+                                onPress={() => handleImagePress(index)} // Use index based on combined array
                             >
-                                <MaterialCommunityIcons
-                                    name="close"
-                                    size={24}
-                                    color={COLORS.white}
+                                <Image
+                                    source={{
+                                        uri:
+                                            item.uri ||
+                                            `${STORAGE_URL}/pet_photos/${item.image}`,
+                                    }}
+                                    resizeMode="cover"
+                                    style={styles.petImage}
                                 />
                             </TouchableOpacity>
-                        )}
-                    </View>
-                )}
-                ListEmptyComponent={
-                    <Image
-                        source={{ uri: `${STORAGE_URL}/default_pet_image.jpg` }}
-                        resizeMode="cover"
-                        style={styles.petImage}
-                    />
-                }
-                numColumns={3}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                    />
-                }
-                contentContainerStyle={styles.contentContainer}
-                showsVerticalScrollIndicator={false}
-            />
+                            {/* Remove option only for preview images */}
+                            {index >= petPhotos.length && (
+                                <TouchableOpacity
+                                    style={styles.removeIcon}
+                                    onPress={() =>
+                                        handleRemovePreviewImage(
+                                            index - petPhotos.length
+                                        )
+                                    }
+                                >
+                                    <MaterialCommunityIcons
+                                        name="close"
+                                        size={24}
+                                        color={COLORS.white}
+                                    />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    )}
+                    ListEmptyComponent={
+                        <Image
+                            source={{
+                                uri: `${STORAGE_URL}/default_pet_image.jpg`,
+                            }}
+                            resizeMode="cover"
+                            style={styles.petImage}
+                        />
+                    }
+                    numColumns={3}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                        />
+                    }
+                    contentContainerStyle={styles.contentContainer}
+                    showsVerticalScrollIndicator={false}
+                />
+            ) : (
+                <View>
+                    <NotFoundCard message="No photos found for your pet. Please add image." />
+                </View>
+            )}
+
             <View style={styles.bottomContainer}>
                 <Button
                     title={
@@ -225,6 +235,10 @@ const styles = StyleSheet.create({
         height: 16,
     },
     bottomContainer: {
+        position: 'absolute', // Fixes the position to the bottom
+        bottom: 0,
+        left: 0,
+        right: 0,
         paddingHorizontal: 16,
         paddingVertical: 12,
         backgroundColor: COLORS.white,

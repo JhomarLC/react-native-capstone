@@ -56,7 +56,6 @@ import MyAppointmentVideoCall from './MyAppointmentVideoCall'
 import VideoCall from './VideoCall'
 import VoiceCall from './VoiceCall'
 import SessionEnded from './SessionEnded'
-import LeaveReview from './LeaveReview'
 import VoiceCallHistoryDetails from './VoiceCallHistoryDetails'
 import VideoCallHistoryDetails from './VideoCallHistoryDetails'
 import VoiceCallHistoryDetailsPlayRecordings from './VoiceCallHistoryDetailsPlayRecordings'
@@ -71,8 +70,25 @@ import Messaging from './Messaging'
 import PetDetails from './PetDetails'
 import VaccineList from './VaccineList'
 import Events from './Events'
-
+import CreatePetProfile from './CreatePetProfile'
+import Step1Screen from './CreatePetProfile/Step1Screen'
+import Step2Screen from './CreatePetProfile/Step2Screen'
+import Step3Screen from './CreatePetProfile/Step3Screen'
+import FinalScreen from './CreatePetProfile/FinalScreen'
+import CreateNewPet from './CreatePetProfile/CreateNewPet'
+import LeaveReview from './LeaveReview'
+import SelectPetType from './CreatePetProfile/SelectPetType'
+import SelectPetBreed from './CreatePetProfile/SelectPetBreed'
+import SetPetProfile from './CreatePetProfile/SetPetProfile'
+import SelectDOB from './CreatePetProfile/SelectDOB'
+import VeterinarianDetails from './VeterinarianDetails'
 export {
+    VeterinarianDetails,
+    LeaveReview,
+    SelectDOB,
+    SelectPetType,
+    SelectPetBreed,
+    SetPetProfile,
     Onboarding1,
     Onboarding2,
     Onboarding3,
@@ -131,7 +147,6 @@ export {
     VideoCall,
     VoiceCall,
     SessionEnded,
-    LeaveReview,
     VoiceCallHistoryDetails,
     VideoCallHistoryDetails,
     VoiceCallHistoryDetailsPlayRecordings,
@@ -146,4 +161,10 @@ export {
     PetDetails,
     VaccineList,
     Events,
+    CreatePetProfile,
+    Step1Screen,
+    Step2Screen,
+    Step3Screen,
+    FinalScreen,
+    CreateNewPet,
 }
