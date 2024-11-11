@@ -61,7 +61,7 @@ const Welcome = ({ navigation }) => {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('Login')}
+                        onPress={() => navigation.navigate('VetLogin')}
                     >
                         <View
                             style={{

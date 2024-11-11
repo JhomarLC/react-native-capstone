@@ -7,40 +7,38 @@ import {
     Image,
     Alert,
 } from 'react-native'
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { upcomingAppointments } from '../data'
-import { SIZES, COLORS, icons, images } from '../constants'
+import React, { useEffect, useRef, useState } from 'react'
+import { SIZES, COLORS, icons } from '../constants'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../components/Button'
-import { useNavigation } from '@react-navigation/native'
 import { FontAwesome } from '@expo/vector-icons'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { ScrollView } from 'react-native-virtualized-view'
-import { loadPetProfile } from '../services/PetsService'
-import AuthContext from '../contexts/AuthContext'
+import { approvePet, declinePet, loadPetProfile } from '../services/PetsService'
 import { STORAGE_URL } from '@env'
 import QRCode from 'react-native-qrcode-svg'
 import * as FileSystem from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library'
 
-const PetHealthCard = ({ pet_id }) => {
-    const [pet, setPet] = useState(null)
-    const { user } = useContext(AuthContext)
-    const pet_owner = user?.pet_owner
+const VetPetHealthCard = ({ petData, petowner }) => {
     const refRBSheet = useRef()
+    const refRBSheet2 = useRef()
+    const [pet, setPet] = useState(petData)
+    const [isApproving, setIsApproving] = useState(false)
     const qrCodeRef = useRef()
 
-    useEffect(() => {
-        async function runEffect() {
-            try {
-                const pet_profile = await loadPetProfile(pet_owner.id, pet_id)
-                setPet(pet_profile.data)
-            } catch (e) {
-                console.log('Failed to load pet profile', e)
-            }
+    const loadPetData = async () => {
+        try {
+            const updatedPet = await loadPetProfile(petowner.id, petData.id) // Fetch latest pet data
+            setPet(updatedPet.data)
+        } catch (error) {
+            console.error('Failed to load pet data:', error)
         }
-        runEffect()
+    }
+
+    useEffect(() => {
+        loadPetData() // Initial data load
     }, [])
+
     if (!pet) {
         return (
             <View style={styles.loadingContainer}>
@@ -55,6 +53,7 @@ const PetHealthCard = ({ pet_id }) => {
         const date = new Date(dateString)
         return date.toLocaleDateString(undefined, options)
     }
+
     const downloadQRCode = async () => {
         try {
             const base64Data = await new Promise((resolve, reject) => {
@@ -148,26 +147,41 @@ const PetHealthCard = ({ pet_id }) => {
                                         {'  '}| {pet.breed}
                                     </Text>
                                 </View>
+
                                 {pet.status === 'pending' ? (
-                                    <View style={styles.statusPendingContainer}>
-                                        <Text
-                                            style={[styles.statusPendingText]}
+                                    <TouchableOpacity
+                                        onPress={() =>
+                                            refRBSheet2.current.open()
+                                        }
+                                    >
+                                        <View
+                                            style={
+                                                styles.statusPendingContainer
+                                            }
                                         >
-                                            Pending
-                                        </Text>
-                                    </View>
+                                            <Text
+                                                style={[
+                                                    styles.statusPendingText,
+                                                ]}
+                                            >
+                                                Pending
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
                                 ) : pet.status === 'approved' ? (
-                                    <View style={styles.statusContainer}>
-                                        <Text style={[styles.statusText]}>
-                                            Approved
-                                        </Text>
-                                    </View>
+                                    <TouchableOpacity>
+                                        <View style={styles.statusContainer}>
+                                            <Text style={[styles.statusText]}>
+                                                Approved
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
                                 ) : pet.status === 'declined' ? (
                                     <View
-                                        style={styles.statusDeceasedContainer}
+                                        style={styles.statusDeclinedContainer}
                                     >
                                         <Text
-                                            style={[styles.statusDeceasedText]}
+                                            style={[styles.statusDeclinedText]}
                                         >
                                             Declined
                                         </Text>
@@ -425,6 +439,88 @@ const PetHealthCard = ({ pet_id }) => {
                         <QRCode value={pet.id} />
                     </View> */}
                 </View>
+                <RBSheet
+                    ref={refRBSheet2}
+                    closeOnDragDown={true}
+                    closeOnPressMask={true}
+                    height={384}
+                    customStyles={{
+                        wrapper: {
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                        },
+                        draggableIcon: {
+                            backgroundColor: '#000',
+                        },
+                        container: {
+                            borderTopRightRadius: 32,
+                            borderTopLeftRadius: 32,
+                            height: 'auto',
+                            backgroundColor: COLORS.white,
+                            alignItems: 'center',
+                        },
+                    }}
+                >
+                    <Text
+                        style={[
+                            styles.bottomTitle,
+                            {
+                                color: COLORS.greyscale900,
+                            },
+                        ]}
+                    >
+                        Status
+                    </Text>
+                    {/* <View style={styles.separateLine} /> */}
+                    {/* <View style={{ width: SIZES.width - 32 }}>
+        
+          </View> */}
+
+                    <View style={styles.separateLine} />
+
+                    <View style={styles.bottomContainer}>
+                        <Button
+                            title="Decline"
+                            filled
+                            style={styles.logoutButton}
+                            onPress={async () => {
+                                setIsApproving(true) // Start loading indicator
+                                try {
+                                    await declinePet(pet.id)
+                                    await loadPetData() // Reload data after approval
+                                } catch (e) {
+                                    console.log('Error:', e)
+                                } finally {
+                                    setIsApproving(false) // Stop loading indicator
+                                    refRBSheet2.current.close()
+                                }
+                            }}
+                        />
+                        <Button
+                            title={isApproving ? 'Approving...' : 'Approve'}
+                            style={{
+                                width: (SIZES.width - 32) / 2 - 8,
+                                backgroundColor: COLORS.greeen,
+                                borderRadius: 32,
+                                borderColor: COLORS.greeen,
+                                opacity: isApproving ? 0.6 : 1,
+                            }}
+                            textColor={COLORS.white}
+                            disabled={isApproving}
+                            onPress={async () => {
+                                setIsApproving(true) // Start loading indicator
+                                try {
+                                    await approvePet(pet.id)
+                                    await loadPetData() // Reload data after approval
+                                } catch (e) {
+                                    console.log('Error:', e)
+                                } finally {
+                                    setIsApproving(false) // Stop loading indicator
+                                    refRBSheet2.current.close()
+                                }
+                            }}
+                        />
+                    </View>
+                </RBSheet>
             </ScrollView>
             <View style={styles.bottomContainerQR}>
                 <TouchableOpacity onPress={() => refRBSheet.current.open()}>
@@ -482,7 +578,10 @@ const PetHealthCard = ({ pet_id }) => {
                                 logo={{
                                     uri: `${STORAGE_URL}/pet_profile/${pet.image}`,
                                 }}
-                                value={pet.id}
+                                value={JSON.stringify({
+                                    pet_id: pet.id,
+                                    petowner_id: petowner.id,
+                                })}
                                 logoBorderRadius={50}
                                 quietZone={20}
                                 getRef={(ref) => (qrCodeRef.current = ref)}
@@ -514,6 +613,12 @@ const PetHealthCard = ({ pet_id }) => {
 }
 
 const styles = StyleSheet.create({
+    logoutButton: {
+        width: (SIZES.width - 32) / 2 - 8,
+        backgroundColor: COLORS.red,
+        borderRadius: 32,
+        borderColor: COLORS.red,
+    },
     qrImage: {
         height: 250,
         width: 250,
@@ -565,7 +670,7 @@ const styles = StyleSheet.create({
         width: 62,
         height: 24,
         borderRadius: 6,
-        backgroundColor: COLORS.black,
+        backgroundColor: 'transparent',
         alignItems: 'center',
         justifyContent: 'center',
         borderColor: COLORS.black,
@@ -573,6 +678,22 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     statusDeceasedText: {
+        fontSize: 10,
+        color: COLORS.black,
+        fontFamily: 'medium',
+    },
+    statusDeclinedContainer: {
+        width: 62,
+        height: 24,
+        borderRadius: 6,
+        backgroundColor: COLORS.black,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderColor: COLORS.black,
+        borderWidth: 1,
+        marginVertical: 10,
+    },
+    statusDeclinedText: {
         fontSize: 10,
         color: COLORS.white,
         fontFamily: 'medium',
@@ -743,10 +864,15 @@ const styles = StyleSheet.create({
         fontFamily: 'bold',
     },
     bottomContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginVertical: 12,
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        width: SIZES.width,
+        marginTop: 20,
+        marginBottom: 45,
     },
-
     //pet information
     subtitle: {
         fontSize: 20,
@@ -793,4 +919,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default PetHealthCard
+export default VetPetHealthCard

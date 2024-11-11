@@ -265,8 +265,22 @@ const deworm = require('../assets/icons/deworm.png')
 const pets = require('../assets/icons/pets.png')
 const weight = require('../assets/icons/weight.png')
 const veterinarian = require('../assets/icons/veterinarian.png')
+const vetfill = require('../assets/icons/doctor-fill.png')
+const vet_unfill = require('../assets/icons/doctor-unfill.png')
+const qrfill = require('../assets/icons/qr-unfill.png')
+const qr_unfill = require('../assets/icons/qr-fill.png')
+const plus_pet = require('../assets/icons/pet-plus.png')
+const petfill = require('../assets/icons/petfill.png')
+const petunfill = require('../assets/icons/petunfill.png')
 
 export default {
+    petunfill,
+    petfill,
+    plus_pet,
+    qrfill,
+    qr_unfill,
+    vetfill,
+    vet_unfill,
     addFileOutline,
     veterinarian,
     weight,

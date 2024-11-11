@@ -16,7 +16,19 @@ export const launchImagePicker = async () => {
     }
     return null
 }
+export const launchSignaturePicker = async () => {
+    await checkMediaPermissions()
 
+    const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+    })
+
+    if (!result.canceled) {
+        return result.assets[0].uri
+    }
+    return null
+}
 export const launchMultipleImagePicker = async () => {
     await checkMediaPermissions()
 

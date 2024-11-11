@@ -7,22 +7,23 @@ import {
     Switch,
 } from 'react-native'
 import React, { useState, useRef, useContext, useEffect } from 'react'
-import { COLORS, SIZES, icons, images } from '../constants'
+import { COLORS, SIZES, icons, images } from '../../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ScrollView } from 'react-native-virtualized-view'
 import { MaterialIcons } from '@expo/vector-icons'
-import { launchImagePicker } from '../utils/ImagePickerHelper'
-import SettingsItem from '../components/SettingsItem'
+import { launchImagePicker } from '../../utils/ImagePickerHelper'
+import SettingsItem from '../../components/SettingsItem'
 import RBSheet from 'react-native-raw-bottom-sheet'
-import Button from '../components/Button'
-import AuthContext from '../contexts/AuthContext'
+import Button from '../../components/Button'
+import AuthContext from '../../contexts/AuthContext'
 import { STORAGE_URL } from '@env'
-import { logout } from '../services/AuthService'
+import { logout } from '../../services/AuthService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const Profile = ({ navigation }) => {
+const VetProfile = ({ navigation }) => {
     const { user, setUser } = useContext(AuthContext)
-    const { pet_owner } = user
+    const veterinarian = user.user
+
     const refRBSheet = useRef()
 
     const handleLogout = async () => {
@@ -78,17 +79,17 @@ const Profile = ({ navigation }) => {
                 <View>
                     <Image
                         source={{
-                            uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
+                            uri: `${STORAGE_URL}/vet_profiles/${veterinarian?.image}`,
                         }}
                         resizeMode="cover"
                         style={styles.avatar}
                     />
                 </View>
                 <Text style={[styles.title, { color: COLORS.greyscale900 }]}>
-                    {pet_owner.name}
+                    {veterinarian?.name}
                 </Text>
                 <Text style={[styles.subtitle, { color: COLORS.greyscale900 }]}>
-                    {pet_owner.email}
+                    {veterinarian?.email}
                 </Text>
             </View>
         )
@@ -108,7 +109,11 @@ const Profile = ({ navigation }) => {
                 <SettingsItem
                     icon={icons.userOutline}
                     name="Edit Profile"
-                    onPress={() => navigation.navigate('EditProfile')}
+                    onPress={() =>
+                        navigation.navigate('VetEditProfile', {
+                            veterinarian: veterinarian,
+                        })
+                    }
                 />
                 <SettingsItem
                     icon={icons.bell2}
@@ -406,4 +411,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default Profile
+export default VetProfile

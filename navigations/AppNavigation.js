@@ -77,11 +77,21 @@ import {
     SetPetProfile,
     SelectDOB,
     VeterinarianDetails,
+    VetPetOwnerLists,
+    VetScanQR,
+    VetPetOwnerDetails,
+    VetPetDetails,
+    VetVaccineList,
+    VetAddVaccination,
+    VetEditProfile,
 } from '../screens'
 import BottomTabNavigation from './BottomTabNavigation'
-import { loadUser } from '../services/AuthService'
+import { loadUser, loadVetUser } from '../services/AuthService'
 import AuthContext from '../contexts/AuthContext.js'
 import FlashMessage from 'react-native-flash-message'
+import VetLogin from '../screens/Veterinarians/VetLogin.js'
+import VetSignup from '../screens/Veterinarians/VetSignup.js'
+import VetBottomTabNavigation from './VetBottomTabNavigation.js'
 
 const Stack = createNativeStackNavigator()
 
@@ -89,12 +99,20 @@ const AppNavigation = () => {
     const [isFirstLaunch, setIsFirstLaunch] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [user, setUser] = useState()
+    const [role, setRole] = useState()
 
     useEffect(() => {
         const initializeApp = async () => {
             try {
-                // Load user data
-                const loadedUser = await loadUser()
+                let loadedUser
+                const storedRole = await AsyncStorage.getItem('role') // or get from another source if needed
+                setRole(storedRole)
+
+                if (role === 'veterinarian' || storedRole === 'veterinarian') {
+                    loadedUser = await loadVetUser()
+                } else if (role === 'petowner' || storedRole === 'petowner') {
+                    loadedUser = await loadUser()
+                }
                 setUser(loadedUser)
 
                 // Check if it's the first launch
@@ -106,6 +124,7 @@ const AppNavigation = () => {
                 } else {
                     setIsFirstLaunch(false)
                 }
+                console.log(user)
             } catch (error) {
                 console.log('Initialization error:', error)
             } finally {
@@ -122,16 +141,59 @@ const AppNavigation = () => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, setUser }}>
+        <AuthContext.Provider value={{ user, setUser, role, setRole }}>
             <NavigationContainer>
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
                     {user ? (
                         // If user is logged in, go directly to the main app screens
                         <>
+                            {role === 'veterinarian' ? (
+                                <Stack.Screen
+                                    name="VetMain"
+                                    component={VetBottomTabNavigation}
+                                />
+                            ) : (
+                                <Stack.Screen
+                                    name="Main"
+                                    component={BottomTabNavigation}
+                                />
+                            )}
+
+                            {/* VETERINARIANS */}
+
                             <Stack.Screen
+                                name="VetPetOwnerLists"
+                                component={VetPetOwnerLists}
+                            />
+                            <Stack.Screen
+                                name="VetScanQR"
+                                component={VetScanQR}
+                            />
+                            <Stack.Screen
+                                name="VetPetOwnerDetails"
+                                component={VetPetOwnerDetails}
+                            />
+                            <Stack.Screen
+                                name="VetPetDetails"
+                                component={VetPetDetails}
+                            />
+                            <Stack.Screen
+                                name="VetVaccineList"
+                                component={VetVaccineList}
+                            />
+                            <Stack.Screen
+                                name="VetAddVaccination"
+                                component={VetAddVaccination}
+                            />
+                            <Stack.Screen
+                                name="VetEditProfile"
+                                component={VetEditProfile}
+                            />
+                            {/* PETOWNER */}
+                            {/* <Stack.Screen
                                 name="Main"
                                 component={BottomTabNavigation}
-                            />
+                            /> */}
                             <Stack.Screen
                                 name="VeterinarianDetails"
                                 component={VeterinarianDetails}
@@ -396,6 +458,10 @@ const AppNavigation = () => {
                                         name="Onboarding4"
                                         component={Onboarding4}
                                     />
+                                    <Stack.Screen
+                                        name="Welcome"
+                                        component={Welcome}
+                                    />
                                 </>
                             ) : (
                                 <Stack.Screen
@@ -403,6 +469,17 @@ const AppNavigation = () => {
                                     component={Welcome}
                                 />
                             )}
+                            {/* VETERINARIANS */}
+                            <Stack.Screen
+                                name="VetLogin"
+                                component={VetLogin}
+                            />
+                            <Stack.Screen
+                                name="VetSignup"
+                                component={VetSignup}
+                            />
+                            {/* PETOWNER */}
+
                             <Stack.Screen name="Login" component={Login} />
                             <Stack.Screen name="Signup" component={Signup} />
                             <Stack.Screen

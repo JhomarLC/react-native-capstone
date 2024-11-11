@@ -9,6 +9,9 @@ import PetVaccination from './PetVaccination'
 import MyActivityChats from './MyActivityChats'
 import MyActivityVoiceCall from './MyActivityVoiceCall'
 import MyActivityVideoCall from './MyActivityVideoCall'
+import VetPetHealthCard from './VetPetHealthCard'
+import VetPetPictures from './VetPetPictures'
+import VetPetVaccination from './VetPetVaccination'
 
 export {
     CancelledBooking,
@@ -20,4 +23,7 @@ export {
     PetHealthCard,
     PetPictures,
     PetVaccination,
+    VetPetHealthCard,
+    VetPetPictures,
+    VetPetVaccination,
 }

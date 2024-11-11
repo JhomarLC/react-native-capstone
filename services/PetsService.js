@@ -28,8 +28,6 @@ export async function addPetPhotos(pet_owner_id, pet_id, photos) {
             },
         }
     )
-    console.log(pet_photos)
-
     return pet_photos
 }
 
@@ -43,13 +41,20 @@ export async function addPet(pet_owner_id, pet_profile) {
             },
         }
     )
-    console.log(created_pet)
 
     return created_pet
 }
-export async function loadPetMedication(pet_id, medication) {
+
+export async function approvePet(pet_id) {
+    const { data: pet_approved } = await axios.post(`/pets/${pet_id}/approve`)
+    return pet_approved
+}
+export async function declinePet(pet_id) {
+    const { data: declined_pet } = await axios.post(`/pets/${pet_id}/decline`)
+    return declined_pet
+}
+export async function loadPetMedication(pet_id) {
     const { data: pet_medications } = await axios.get(
-        // `/pets/${pet_id}/medications/${medication}`
         `/pets/${pet_id}/medications`
     )
     return pet_medications
@@ -64,8 +69,3 @@ export async function loadEvents() {
     const { data: events } = await axios.get(`/events`)
     return events
 }
-
-// export async function loadVetProfile(vet_id) {
-//     const { data: vet_profile } = await axios.get(`/veterinarians/${vet_id}`)
-//     return vet_profile
-// }

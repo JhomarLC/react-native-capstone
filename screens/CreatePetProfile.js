@@ -19,6 +19,7 @@ export default function App() {
     const [formData, setFormData] = useState({
         type: '',
         breed: '',
+        gender: '',
         image: icons.userDefault2,
         name: '',
         color_description: '',

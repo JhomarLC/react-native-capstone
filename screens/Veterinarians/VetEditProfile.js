@@ -8,29 +8,38 @@ import {
     ActivityIndicator,
 } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import { COLORS, SIZES, icons } from '../constants'
+import { COLORS, SIZES, icons } from '../../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Header from '../components/Header'
-import Input from '../components/Input'
-import Button from '../components/Button'
-import AuthContext from '../contexts/AuthContext'
+import Header from '../../components/Header'
+import Input from '../../components/Input'
+import Button from '../../components/Button'
+import AuthContext from '../../contexts/AuthContext'
 import FlashMessage, { showMessage } from 'react-native-flash-message'
-import { getFileType, launchImagePicker } from '../utils/ImagePickerHelper'
-import { loadUser, updateprofile } from '../services/AuthService'
+import { getFileType, launchImagePicker } from '../../utils/ImagePickerHelper'
+import {
+    loadUser,
+    loadVetUser,
+    updateprofile,
+    updateVetprofile,
+} from '../../services/AuthService'
 import { STORAGE_URL } from '@env'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import RNPickerSelect from 'react-native-picker-select'
+import { Picker } from '@react-native-picker/picker'
 
-const EditProfile = ({ navigation }) => {
-    const { user, setUser } = useContext(AuthContext)
-    const pet_owner = user?.pet_owner || {}
-
+const VetEditProfile = ({ route, navigation }) => {
+    const { setUser } = useContext(AuthContext)
+    const { veterinarian } = route.params
+    useEffect(() => {
+        setImage({
+            uri: `${STORAGE_URL}/vet_profile/${veterinarian.image}`,
+        })
+    }, [])
     const initialState = {
         inputValues: {
-            fullName: pet_owner.name || '',
-            phoneNumber: pet_owner.phone_number || '',
-            zone: pet_owner.addr_zone || '',
-            barangay: pet_owner.addr_brgy || '',
+            fullName: veterinarian.name || '',
+            phoneNumber: veterinarian.phone_number || '',
+            position: veterinarian.position || '',
+            licenseNumber: veterinarian.license_number || '',
         },
         formIsValid: false,
     }
@@ -39,71 +48,46 @@ const EditProfile = ({ navigation }) => {
     const [isImageFromLibrary, setIsImageFromLibrary] = useState(false)
     const [inputValues, setInputValues] = useState(initialState.inputValues)
     const [loading, setLoading] = useState(false)
-    const [selectedBarangay, setSelectedBarangay] = useState(
-        pet_owner.addr_brgy
-    )
-    RNPickerSelect
-    const pet_s = pet_owner.addr_brgy
-    useEffect(() => {
-        // Set the initial barangay from profile data
-        if (initialBarangay) {
-            setSelectedBarangay(initialBarangay)
-        }
-    }, [initialBarangay])
-
     const barangays = [
-        { label: 'A. Pascual', value: 'A. Pascual' },
-        { label: 'Abar Ist', value: 'Abar Ist' },
-        { label: 'Abar 2nd', value: 'Abar 2nd' },
-        { label: 'Bagong Sikat', value: 'Bagong Sikat' },
-        { label: 'Caanawan', value: 'Caanawan' },
-        { label: 'Calaocan', value: 'Calaocan' },
-        { label: 'Camanacsacan', value: 'Camanacsacan' },
-        { label: 'Culaylay', value: 'Culaylay' },
-        { label: 'Dizol', value: 'Dizol' },
-        { label: 'Kaliwanagan', value: 'Kaliwanagan' },
-        { label: 'Kita-Kita', value: 'Kita-Kita' },
-        { label: 'Malasin', value: 'Malasin' },
-        { label: 'Manicla', value: 'Manicla' },
-        { label: 'Palestina', value: 'Palestina' },
-        { label: 'Parang Mangga', value: 'Parang Mangga' },
-        { label: 'Villa Joson', value: 'Villa Joson' },
-        { label: 'Pinili', value: 'Pinili' },
-        { label: 'Rafael Rueda, Sr. Pob.', value: 'Rafael Rueda, Sr. Pob.' },
-        {
-            label: 'Ferdinand E. Marcos Pob.',
-            value: 'Ferdinand E. Marcos Pob.',
-        },
-        { label: 'Canuto Ramos Pob.', value: 'Canuto Ramos Pob.' },
-        { label: 'Raymundo Eugenio Pob.', value: 'Raymundo Eugenio Pob.' },
-        { label: 'Crisanto Sanchez Pob.', value: 'Crisanto Sanchez Pob.' },
-        { label: 'Porais', value: 'Porais' },
-        { label: 'San Agustin', value: 'San Agustin' },
-        { label: 'San Juan', value: 'San Juan' },
-        { label: 'San Mauricio', value: 'San Mauricio' },
-        { label: 'Santo Niño 1st', value: 'Santo Niño 1st' },
-        { label: 'Santo Niño 2nd', value: 'Santo Niño 2nd' },
-        { label: 'Santo Tomas', value: 'Santo Tomas' },
-        { label: 'Sibut', value: 'Sibut' },
-        { label: 'Sinipit Bubon', value: 'Sinipit Bubon' },
-        { label: 'Santo Niño 3rd', value: 'Santo Niño 3rd' },
-        { label: 'Tabulac', value: 'Tabulac' },
-        { label: 'Tayabo', value: 'Tayabo' },
-        { label: 'Tondod', value: 'Tondod' },
-        { label: 'Tulat', value: 'Tulat' },
-        { label: 'Villa Floresca', value: 'Villa Floresca' },
-        { label: 'Villa Marina', value: 'Villa Marina' },
+        'A. Pascual',
+        'Abar Ist',
+        'Abar 2nd',
+        'Bagong Sikat',
+        'Caanawan',
+        'Calaocan',
+        'Camanacsacan',
+        'Culaylay',
+        'Dizol',
+        'Kaliwanagan',
+        'Kita-Kita',
+        'Malasin',
+        'Manicla',
+        'Palestina',
+        'Parang Mangga',
+        'Villa Joson',
+        'Pinili',
+        'Rafael Rueda, Sr. Pob.',
+        'Ferdinand E. Marcos Pob.',
+        'Canuto Ramos Pob.',
+        'Raymundo Eugenio Pob.',
+        'Crisanto Sanchez Pob.',
+        'Porais',
+        'San Agustin',
+        'San Juan',
+        'San Mauricio',
+        'Santo Niño 1st',
+        'Santo Niño 2nd',
+        'Santo Tomas',
+        'Sibut',
+        'Sinipit Bubon',
+        'Santo Niño 3rd',
+        'Tabulac',
+        'Tayabo',
+        'Tondod',
+        'Tulat',
+        'Villa Floresca',
+        'Villa Marina',
     ]
-
-    // Load initial image from pet_owner profile
-    useEffect(() => {
-        if (pet_owner?.image) {
-            setImage({
-                uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
-            })
-            setIsImageFromLibrary(false)
-        }
-    }, [pet_owner])
 
     // Handle text input changes
     const inputChangedHandler = (inputId, inputValue) => {
@@ -137,14 +121,14 @@ const EditProfile = ({ navigation }) => {
         }
 
         setLoading(true)
-        const { fullName, zone, phoneNumber } = inputValues
+        const { fullName, phoneNumber, position, licenseNumber } = inputValues
         const fileType = getFileType(image)
         const formData = new FormData()
 
         formData.append('name', fullName)
-        formData.append('addr_zone', zone)
-        formData.append('addr_brgy', selectedBarangay)
         formData.append('phone_number', phoneNumber)
+        formData.append('position', position)
+        formData.append('license_number', licenseNumber)
 
         if (isImageFromLibrary && image) {
             formData.append('image', {
@@ -153,22 +137,31 @@ const EditProfile = ({ navigation }) => {
                 type: fileType,
             })
         }
-        try {
-            await updateprofile(pet_owner.id, formData)
+        console.log(formData)
 
-            const updatedUser = await loadUser()
+        try {
+            await updateVetprofile(veterinarian.id, formData)
+            const updatedUser = await loadVetUser()
             setUser(updatedUser)
             showMessage({
                 message: 'Profile updated successfully!',
                 type: 'success',
             })
-            navigation.navigate('Profile')
+            navigation.navigate('VetProfile')
         } catch (e) {
             console.log(e)
-            showMessage({
-                message: 'An error occurred. Please try again.',
-                type: 'danger',
-            })
+
+            if (e.response?.status === 422) {
+                console.log(e.response.data.errors)
+                setError(e.response.data.errors)
+            } else if (e.response?.status === 401) {
+                showMessage({
+                    message: e.response.data.message[0],
+                    type: 'danger',
+                })
+            } else {
+                console.log('An error occurred. Please try again.')
+            }
         } finally {
             setLoading(false)
         }
@@ -186,7 +179,7 @@ const EditProfile = ({ navigation }) => {
                                     image
                                         ? { uri: image }
                                         : {
-                                              uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
+                                              uri: `${STORAGE_URL}/vet_profiles/${veterinarian.image}`,
                                           }
                                 }
                                 resizeMode="cover"
@@ -228,43 +221,25 @@ const EditProfile = ({ navigation }) => {
                         />
                     </View>
                     <View style={styles.inputSection}>
-                        <Text style={styles.label}>Zone</Text>
+                        <Text style={styles.label}>Position</Text>
                         <Input
-                            id="zone"
-                            value={inputValues.zone}
+                            id="position"
+                            value={inputValues.position}
                             onInputChanged={inputChangedHandler}
                             placeholder="Zone"
-                            icon={icons.location}
+                            icon={icons.apple}
                             placeholderTextColor={COLORS.gray}
                         />
                     </View>
                     <View style={styles.inputSection}>
-                        <Text style={styles.label}>Select Barangay</Text>
-
-                        <RNPickerSelect
-                            placeholder={{
-                                label: 'Select Barangay',
-                                value: '',
-                            }}
-                            items={barangays}
-                            value={selectedBarangay}
-                            onValueChange={(value) =>
-                                setSelectedBarangay(value)
-                            }
-                            style={{
-                                inputAndroid: {
-                                    borderRadius: 12,
-                                    borderWidth: 1,
-                                    marginVertical: 5,
-                                    fontSize: 14,
-                                    paddingHorizontal: 10,
-                                    color: COLORS.black,
-                                    paddingRight: 30,
-                                    height: 52,
-                                    alignItems: 'center',
-                                    backgroundColor: COLORS.greyscale500,
-                                },
-                            }}
+                        <Text style={styles.label}>License Number</Text>
+                        <Input
+                            id="licenseNumber"
+                            value={inputValues.licenseNumber}
+                            onInputChanged={inputChangedHandler}
+                            placeholder="License Number"
+                            icon={icons.creditCard}
+                            placeholderTextColor={COLORS.gray}
                         />
                     </View>
                 </ScrollView>
@@ -347,4 +322,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default EditProfile
+export default VetEditProfile

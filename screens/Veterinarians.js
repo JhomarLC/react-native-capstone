@@ -27,8 +27,8 @@ const Veterinarians = ({ navigation }) => {
     const [veterinarians, setVeterinarians] = useState([])
     const [filteredVeterinarians, setFilteredVeterinarians] = useState([])
     const [refreshing, setRefreshing] = useState(false)
-    const [selectedCategories, setSelectedCategories] = useState(['1'])
-    const [selectedRating, setSelectedRating] = useState(['1'])
+    const [resultsCount, setResultsCount] = useState(0)
+
     /**
      * Render header
      */
@@ -36,7 +36,9 @@ const Veterinarians = ({ navigation }) => {
         try {
             const result = await loadVeterinarians()
             setVeterinarians(result.data)
-            setFilteredVeterinarians(result.data) // Initial filtered data
+            setFilteredVeterinarians(result.data)
+
+            setResultsCount(result.data.length)
         } catch (e) {
             console.log('Failed to load Veterinarians', e)
         }
@@ -51,6 +53,7 @@ const Veterinarians = ({ navigation }) => {
     useEffect(() => {
         loadVets()
     }, [])
+
     const renderHeader = () => {
         return (
             <TouchableOpacity style={styles.headerContainer}>
@@ -91,20 +94,17 @@ const Veterinarians = ({ navigation }) => {
      * Render content
      */
     const renderContent = () => {
-        const [selectedTab, setSelectedTab] = useState('row')
         const [searchQuery, setSearchQuery] = useState('')
-        const [filteredDoctors, setFilteredDoctors] = useState(veterinarianList)
-        const [resultsCount, setResultsCount] = useState(0)
 
         useEffect(() => {
             handleSearch()
-        }, [searchQuery, selectedTab])
+        }, [searchQuery])
 
         const handleSearch = () => {
-            const allVeterinarians = filteredVeterinarians.filter((vet) =>
+            const allVeterinarians = veterinarians.filter((vet) =>
                 vet.name.toLowerCase().includes(searchQuery.toLowerCase())
             )
-            setFilteredDoctors(allVeterinarians)
+            setFilteredVeterinarians(allVeterinarians)
             setResultsCount(allVeterinarians.length)
         }
 

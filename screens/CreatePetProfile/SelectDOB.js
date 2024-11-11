@@ -42,6 +42,7 @@ const SelectDOB = ({ navigation, formData, setFormData }) => {
 
         const fData = new FormData()
         fData.append('pet_type', updatedFormData.type)
+        fData.append('gender', updatedFormData.gender)
         fData.append('breed', updatedFormData.breed)
         fData.append('name', updatedFormData.name)
         fData.append('color_description', updatedFormData.color_description)

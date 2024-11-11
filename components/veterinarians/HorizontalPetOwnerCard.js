@@ -1,33 +1,26 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
 import React, { useState } from 'react'
-import { COLORS, SIZES, icons } from '../constants'
+import { COLORS, SIZES, icons } from '../../constants'
 import { FontAwesome } from '@expo/vector-icons'
 
-const HorizontalDoctorCard = ({
+const HorizontalPetOwnerCard = ({
     name,
     image,
-    color_description,
-    petBreed,
-    status,
+    // address,
+    addr_zone,
+    addr_brgy,
+    email,
+    // type,
+    // petBreed,
+    // distance,
+    // hospital,
+    // consultationFee,
+    // rating,
+    // numReviews,
+    isAvailable,
     onPress,
-    pet_type,
-    date_of_birth,
-    age,
 }) => {
-    const getStatusStyle = (status) => {
-        switch (status) {
-            case 'pending':
-                return styles.statusPendingContainer
-            case 'approved':
-                return styles.statusActiveContainer
-            case 'declined':
-                return styles.statusDeceasedContainer
-            case 'deceased':
-                return styles.statusDeceasedContainer
-            default:
-                return styles.statusPendingContainer // Fallback to pending style if unknown
-        }
-    }
+    const [isFavourite, setIsFavourite] = useState(false)
 
     return (
         <TouchableOpacity
@@ -40,9 +33,11 @@ const HorizontalDoctorCard = ({
             ]}
         >
             <Image source={image} resizeMode="cover" style={styles.image} />
-            <View style={getStatusStyle(status)}>
-                <Text style={styles.status}>{status}</Text>
-            </View>
+            {isAvailable && isAvailable === true && (
+                <View style={styles.reviewContainer}>
+                    <Text style={styles.rating}>ACTIVE</Text>
+                </View>
+            )}
             <View style={styles.columnContainer}>
                 <View style={styles.topViewContainer}>
                     <Text
@@ -66,21 +61,9 @@ const HorizontalDoctorCard = ({
                             },
                         ]}
                     >
-                        {' '}
-                        {/* {pet_type.toUpperCase()} */}
-                        {pet_type}
+                        Zone {addr_zone}, Brgy.{addr_brgy}, San Jose City
                     </Text>
                     {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
-                    <Text
-                        style={[
-                            styles.location,
-                            {
-                                color: COLORS.grayscale700,
-                            },
-                        ]}
-                    >
-                        {'  '}| {petBreed}
-                    </Text>
                 </View>
                 <Text
                     style={[
@@ -90,10 +73,24 @@ const HorizontalDoctorCard = ({
                         },
                     ]}
                 >
-                    {' '}
-                    {/* {formatDate(date_of_birth)} */}
-                    {age}
+                    {email}
                 </Text>
+                {/* <Text style={[styles.location, {
+                    color: COLORS.grayscale700,
+                }]}></Text> */}
+                {/* <View style={styles.bottomViewContainer}>
+                    <View style={styles.priceContainer}>
+                        <Text style={styles.price}>{}</Text>
+                        <Text style={styles.price}>{type}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => setIsFavourite(!isFavourite)}>
+                        <Image
+                            source={isFavourite ? icons.heart2 : icons.heart2Outline}
+                            resizeMode='contain'
+                            style={styles.heartIcon}
+                        />
+                    </TouchableOpacity>
+                </View> */}
             </View>
         </TouchableOpacity>
     )
@@ -111,8 +108,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     image: {
-        width: 120,
-        height: 120,
+        width: 100,
+        height: 100,
         borderRadius: 16,
     },
     columnContainer: {
@@ -126,12 +123,13 @@ const styles = StyleSheet.create({
         color: COLORS.greyscale900,
         marginVertical: 4,
         marginRight: 40,
+        display: 'flex',
     },
     location: {
         fontSize: 14,
         fontFamily: 'regular',
         color: COLORS.grayscale700,
-        marginVertical: 4,
+        display: 'flex',
     },
     priceContainer: {
         flexDirection: 'column',
@@ -149,70 +147,25 @@ const styles = StyleSheet.create({
         tintColor: COLORS.primary,
         marginLeft: 6,
     },
-    statusPendingContainer: {
+    reviewContainer: {
         position: 'absolute',
         top: 16,
         left: 16,
         width: 40,
         height: 20,
         borderRadius: 4,
-        backgroundColor: COLORS.error,
+        backgroundColor: COLORS.primary,
         zIndex: 999,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    statusActiveContainer: {
-        position: 'absolute',
-        top: 16,
-        left: 16,
-        width: 50,
-        height: 20,
-        borderRadius: 4,
-        backgroundColor: COLORS.success,
-        zIndex: 999,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    statusDeceasedContainer: {
-        position: 'absolute',
-        top: 16,
-        left: 16,
-        width: 50,
-        height: 20,
-        borderRadius: 4,
-        backgroundColor: COLORS.dark3,
-        zIndex: 999,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    statusDeclinedContainer: {
-        position: 'absolute',
-        top: 16,
-        left: 16,
-        width: 50,
-        height: 20,
-        borderRadius: 4,
-        backgroundColor: COLORS.dark3,
-        zIndex: 999,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
+        marginTop: 7,
     },
     rating: {
         fontSize: 8,
         fontFamily: 'semiBold',
         color: COLORS.white,
         marginLeft: 4,
-    },
-    status: {
-        fontSize: 8,
-        fontFamily: 'semiBold',
-        color: COLORS.white,
-        marginLeft: 4,
-        textTransform: 'uppercase',
     },
     topViewContainer: {
         flexDirection: 'row',
@@ -249,4 +202,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default HorizontalDoctorCard
+export default HorizontalPetOwnerCard

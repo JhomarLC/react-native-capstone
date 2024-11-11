@@ -18,10 +18,14 @@ const BottomTabNavigation = () => {
                     bottom: 0,
                     right: 0,
                     left: 0,
-                    elevation: 0,
-                    height: Platform.OS === 'ios' ? 90 : 60,
+                    elevation: 10,
+                    height: Platform.OS === 'ios' ? 100 : 80,
                     backgroundColor: COLORS.white,
                     borderTopColor: 'transparent',
+                    shadowColor: '#000',
+                    shadowOpacity: 0.3,
+                    shadowOffset: { width: 0, height: 12 },
+                    shadowRadius: 25,
                 },
             }}
         >
@@ -35,13 +39,13 @@ const BottomTabNavigation = () => {
                                 <Image
                                     source={
                                         focused
-                                            ? icons.home
-                                            : icons.home2Outline
+                                            ? icons.petfill
+                                            : icons.petunfill
                                     }
                                     resizeMode="contain"
                                     style={{
-                                        height: 24,
-                                        width: 24,
+                                        height: 30,
+                                        width: 30,
                                         tintColor: focused
                                             ? COLORS.primary
                                             : COLORS.gray3,
@@ -55,7 +59,7 @@ const BottomTabNavigation = () => {
                                             : COLORS.gray3,
                                     }}
                                 >
-                                    Home
+                                    Pet Profiles
                                 </Text>
                             </View>
                         )
@@ -72,13 +76,13 @@ const BottomTabNavigation = () => {
                                 <Image
                                     source={
                                         focused
-                                            ? icons.veterinarian
-                                            : icons.veterinarian
+                                            ? icons.vetfill
+                                            : icons.vet_unfill
                                     }
                                     resizeMode="contain"
                                     style={{
-                                        height: 24,
-                                        width: 24,
+                                        height: 30,
+                                        width: 30,
                                         tintColor: focused
                                             ? COLORS.primary
                                             : COLORS.gray3,
@@ -109,13 +113,13 @@ const BottomTabNavigation = () => {
                                 <Image
                                     source={
                                         focused
-                                            ? icons.document2
-                                            : icons.document2Outline
+                                            ? icons.calendar5
+                                            : icons.calendar4
                                     }
                                     resizeMode="contain"
                                     style={{
-                                        height: 24,
-                                        width: 24,
+                                        height: 30,
+                                        width: 30,
                                         tintColor: focused
                                             ? COLORS.primary
                                             : COLORS.gray3,
@@ -131,36 +135,34 @@ const BottomTabNavigation = () => {
                                 >
                                     Calendar
                                 </Text>
+                                <View
+                                    style={{
+                                        position: 'absolute',
+                                        top: -8,
+                                        right: -10,
+                                        backgroundColor: 'red',
+                                        borderRadius: 12,
+                                        width: 18,
+                                        height: 18,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            color: 'white',
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        3
+                                    </Text>
+                                </View>
                             </View>
                         )
                     },
                 }}
             />
-            {/* <Tab.Screen
-                name="Articles"
-                component={Articles}
-                options={{
-                    tabBarIcon: ({ focused }) => {
-                        return (
-                            <View style={{ alignItems: "center" }}>
-                                <Image
-                                    source={focused ? icons.document : icons.documentOutline}
-                                    resizeMode='contain'
-                                    style={{
-                                        height: 24,
-                                        width: 24,
-                                        tintColor: focused ? COLORS.primary : COLORS.gray3,
-                                    }}
-                                />
-                                <Text style={{
-                                    ...FONTS.body4,
-                                    color: focused ? COLORS.primary : COLORS.gray3,
-                                }}>Articles</Text>
-                            </View>
-                        )
-                    },
-                }}
-            /> */}
+
             <Tab.Screen
                 name="Profile"
                 component={Profile}
@@ -174,8 +176,8 @@ const BottomTabNavigation = () => {
                                     }
                                     resizeMode="contain"
                                     style={{
-                                        height: 24,
-                                        width: 24,
+                                        height: 30,
+                                        width: 30,
                                         tintColor: focused
                                             ? COLORS.primary
                                             : COLORS.gray3,

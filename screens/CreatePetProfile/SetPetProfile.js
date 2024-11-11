@@ -17,13 +17,18 @@ import Button from '../../components/Button'
 import { launchImagePicker } from '../../utils/ImagePickerHelper'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import PassingInput from '../../components/PassingInput'
+import RNPickerSelect from 'react-native-picker-select'
 
 const { width } = Dimensions.get('window')
 const ITEM_SIZE = width / 2 - 24 // Adjusting size to fit 2 items per row
 
 const SetPetProfile = ({ navigation, formData, setFormData }) => {
     const [image, setImage] = useState(formData.image?.uri || null)
-
+    const genders = [
+        { label: 'Male', value: 'Male' },
+        { label: 'Female', value: 'Female' },
+    ]
+    const [gender, setGender] = useState(formData.gender)
     const pickImage = async () => {
         try {
             const imageData = await launchImagePicker() // Get the image data (uri, fileName, mimeType)
@@ -88,7 +93,7 @@ const SetPetProfile = ({ navigation, formData, setFormData }) => {
                 </View>
                 <View>
                     <View style={styles.inputSection}>
-                        <Text style={styles.label}>Pet Name</Text>
+                        <Text style={styles.label}>Pet Name *</Text>
                         <PassingInput
                             id="PetName"
                             value={formData.name}
@@ -101,7 +106,7 @@ const SetPetProfile = ({ navigation, formData, setFormData }) => {
                         />
                     </View>
                     <View style={styles.inputSection}>
-                        <Text style={styles.label}>Color Description</Text>
+                        <Text style={styles.label}>Color Description * </Text>
                         <PassingInput
                             id="ColorDescription"
                             value={formData.color_description}
@@ -120,7 +125,7 @@ const SetPetProfile = ({ navigation, formData, setFormData }) => {
                         {/* Make this 2 PassingInput flex like they are in the same row. */}
                         <View style={styles.row}>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Weight (kg)</Text>
+                                <Text style={styles.label}>Weight (kg) *</Text>
                                 <PassingInput
                                     id="Weight"
                                     value={formData.weight}
@@ -132,6 +137,55 @@ const SetPetProfile = ({ navigation, formData, setFormData }) => {
                                 />
                             </View>
                             <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Gender</Text>
+                                <View style={{ marginTop: 5 }}>
+                                    <RNPickerSelect
+                                        placeholder={{
+                                            label: 'Select Gender',
+                                            value: '',
+                                        }}
+                                        items={genders}
+                                        onValueChange={
+                                            (value) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    gender: value,
+                                                })
+                                            // setGender(value)
+                                        }
+                                        value={formData.gender}
+                                        style={{
+                                            inputIOS: {
+                                                fontSize: 14,
+                                                paddingHorizontal: 10,
+                                                borderRadius: 4,
+                                                color: COLORS.black,
+                                                paddingRight: 30,
+                                                height: 52,
+                                                alignItems: 'center',
+                                                backgroundColor:
+                                                    COLORS.greyscale500,
+                                                borderRadius: 16,
+                                            },
+                                            inputAndroid: {
+                                                fontFamily: 'regular',
+
+                                                fontSize: 14,
+                                                paddingHorizontal: 10,
+                                                borderRadius: 8,
+                                                color: COLORS.black,
+                                                paddingRight: 30,
+                                                height: 52,
+                                                alignItems: 'center',
+                                                backgroundColor:
+                                                    COLORS.greyscale500,
+                                                borderRadius: 16,
+                                            },
+                                        }}
+                                    />
+                                </View>
+                            </View>
+                            <View style={styles.inputContainerHidden}>
                                 <Text style={styles.label}>Size</Text>
                                 <PassingInput
                                     id="Size"
@@ -257,6 +311,9 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         flex: 1,
+    },
+    inputContainerHidden: {
+        display: 'none',
     },
 })
 

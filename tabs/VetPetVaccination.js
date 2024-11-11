@@ -15,19 +15,14 @@ import { ScrollView } from 'react-native-virtualized-view'
 import AuthContext from '../contexts/AuthContext'
 import { loadMedications } from '../services/PetsService'
 
-const PetVaccination = ({ pet_id }) => {
+const VetPetVaccination = ({ petowner, pet }) => {
     const [vaccine, setVaccine] = useState(VaccineName)
     const navigation = useNavigation()
-    const { user } = useContext(AuthContext)
-    const pet_owner = user?.pet_owner
 
     useEffect(() => {
         async function runEffect() {
             try {
                 const result = await loadMedications()
-                console.log('====================================')
-                console.log(result.data)
-                console.log('====================================')
                 setVaccine(result.data)
             } catch (e) {
                 console.log('Failed to load medications', e)
@@ -66,10 +61,11 @@ const PetVaccination = ({ pet_id }) => {
                     >
                         <TouchableOpacity
                             onPress={() =>
-                                navigation.navigate('VaccineList', {
-                                    pet_id: pet_id,
-                                    pet_owner_id: pet_owner.id,
+                                navigation.navigate('VetVaccineList', {
+                                    pet_id: pet.id,
+                                    pet_owner_id: petowner.id,
                                     medication: item,
+                                    pet_status: pet.status,
                                 })
                             }
                         >
@@ -374,4 +370,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default PetVaccination
+export default VetPetVaccination

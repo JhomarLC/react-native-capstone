@@ -67,8 +67,28 @@ const aspin = require('../assets/images/pets/aspin.png')
 const labrador = require('../assets/images/pets/labrador.png')
 const german_shepherd = require('../assets/images/pets/german_shepherd.png')
 const golden_retriever = require('../assets/images/pets/golden_retriever.png')
+const bulldog = require('../assets/images/pets/bulldog.png')
+const beagle = require('../assets/images/pets/beagle.png')
+const poodle = require('../assets/images/pets/poodle.png')
+const rottweiler = require('../assets/images/pets/rottweiler.png')
+const yt = require('../assets/images/pets/yorkshireterrier.png')
+const boxer = require('../assets/images/pets/bpxer.png')
+const puspin = require('../assets/images/pets/puspin.png')
+const persian = require('../assets/images/pets/persian.png')
+const maine_coon = require('../assets/images/pets/maine_coon.png')
+const siamese = require('../assets/images/pets/siamese.png')
 
 export default {
+    puspin,
+    persian,
+    maine_coon,
+    siamese,
+    boxer,
+    bulldog,
+    beagle,
+    poodle,
+    rottweiler,
+    yt,
     aspin,
     labrador,
     german_shepherd,

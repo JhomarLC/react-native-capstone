@@ -6,8 +6,22 @@ export async function login(credentials) {
     await setToken(data.api_token)
 }
 
+export async function loginAsVet(credentials) {
+    const { data } = await axios.post('/veterinarian/login', credentials)
+    await setToken(data.api_token)
+}
+
 export async function register(formData) {
     const { data } = await axios.post('/petowner/register', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    })
+    await setToken(data.api_token)
+    return data
+}
+export async function registerVet(formData) {
+    const { data } = await axios.post('/veterinarian/register', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
@@ -18,6 +32,10 @@ export async function register(formData) {
 
 export async function loadUser() {
     const { data: user } = await axios.post('/petowner/profile')
+    return user
+}
+export async function loadVetUser() {
+    const { data: user } = await axios.post('/veterinarian/profile')
     return user
 }
 
@@ -33,5 +51,19 @@ export async function updateprofile(petowner_id, formData) {
             'Content-Type': 'multipart/form-data',
         },
     })
+    return data
+}
+export async function updateVetprofile(veterinarian_id, formData) {
+    const { data } = await axios.post(
+        `/veterinarians/${veterinarian_id}`,
+        formData,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        }
+    )
+    console.log(data)
+
     return data
 }

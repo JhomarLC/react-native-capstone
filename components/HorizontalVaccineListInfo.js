@@ -141,7 +141,7 @@ const HorizontalVaccineListInfo = ({
                                             paddingHorizontal: 40,
                                         }}
                                     >
-                                        <View style={{ marginRight: '45%' }}>
+                                        <View style={{ width: '55%' }}>
                                             <Text
                                                 style={[
                                                     styles.VaccineDetails,
@@ -150,9 +150,9 @@ const HorizontalVaccineListInfo = ({
                                                     },
                                                 ]}
                                             >
-                                                OR NO
+                                                Batch No
                                             </Text>
-                                            <Text>{item.or_no}</Text>
+                                            <Text>{item.batch_number}</Text>
                                         </View>
                                         <View>
                                             <Text
@@ -166,6 +166,54 @@ const HorizontalVaccineListInfo = ({
                                                 Expiry Date
                                             </Text>
                                             <Text>{item.expiry_date}</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* registration fee */}
+                                    <View style={{ width: SIZES.width - 32 }}>
+                                        <Text
+                                            style={[
+                                                styles.sheetTitle,
+                                                {
+                                                    color: COLORS.greyscale900,
+                                                },
+                                            ]}
+                                        >
+                                            Registration Fee
+                                        </Text>
+                                    </View>
+
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            paddingHorizontal: 40,
+                                        }}
+                                    >
+                                        <View style={{ width: '55%' }}>
+                                            <Text
+                                                style={[
+                                                    styles.VaccineDetails,
+                                                    {
+                                                        color: COLORS.greyscale900,
+                                                    },
+                                                ]}
+                                            >
+                                                Fee
+                                            </Text>
+                                            <Text>PHP {item.fee}</Text>
+                                        </View>
+                                        <View>
+                                            <Text
+                                                style={[
+                                                    styles.VaccineDetails,
+                                                    {
+                                                        color: COLORS.greyscale900,
+                                                    },
+                                                ]}
+                                            >
+                                                OR No
+                                            </Text>
+                                            <Text>{item.or_number}</Text>
                                         </View>
                                     </View>
 
@@ -186,7 +234,6 @@ const HorizontalVaccineListInfo = ({
                                     <View
                                         style={{
                                             flexDirection: 'row',
-                                            justifyContent: 'space-between',
                                             paddingHorizontal: 40,
                                         }}
                                     >
@@ -199,15 +246,11 @@ const HorizontalVaccineListInfo = ({
                                                     },
                                                 ]}
                                             >
-                                                Registration Date
+                                                Vaccination Date
                                             </Text>
-                                            <Text>
-                                                {formatDate(
-                                                    item.registration_date
-                                                )}
-                                            </Text>
+                                            <Text>{item.medication_date}</Text>
                                         </View>
-                                        <View>
+                                        <View style={{ marginLeft: 60 }}>
                                             <Text
                                                 style={[
                                                     styles.VaccineDetails,
@@ -216,41 +259,10 @@ const HorizontalVaccineListInfo = ({
                                                     },
                                                 ]}
                                             >
-                                                Medication Date
+                                                Next Vaccination Date
                                             </Text>
-                                            <Text>
-                                                {formatDate(
-                                                    item.medication_date
-                                                )}
-                                            </Text>
+                                            <Text>{item.next_vaccination}</Text>
                                         </View>
-                                    </View>
-
-                                    {/* registration fee */}
-                                    <View style={{ width: SIZES.width - 32 }}>
-                                        <Text
-                                            style={[
-                                                styles.sheetTitle,
-                                                {
-                                                    color: COLORS.greyscale900,
-                                                },
-                                            ]}
-                                        >
-                                            Registration Fee
-                                        </Text>
-                                    </View>
-                                    <View>
-                                        <Text
-                                            style={[
-                                                styles.VaccineDetails,
-                                                {
-                                                    color: COLORS.greyscale900,
-                                                    paddingHorizontal: 40,
-                                                },
-                                            ]}
-                                        >
-                                            Php 0
-                                        </Text>
                                     </View>
 
                                     {/* Veterinarian */}
@@ -322,7 +334,7 @@ const HorizontalVaccineListInfo = ({
                                         <View>
                                             <Image
                                                 source={{
-                                                    uri: `${STORAGE_URL}/vet_profiles/${item.veterinarian.electronic_signature}`,
+                                                    uri: `${STORAGE_URL}/electronic_signatures/${item.veterinarian.electronic_signature}`,
                                                 }}
                                                 resizeMode="contain"
                                                 style={[
@@ -356,8 +368,7 @@ const HorizontalVaccineListInfo = ({
                                                 },
                                             ]}
                                         >
-                                            {/* {item.remarks} */}
-                                            Walk-in
+                                            {item.remarks}
                                         </Text>
                                     </View>
                                 </View>

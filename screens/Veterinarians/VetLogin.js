@@ -4,10 +4,8 @@ import {
     StyleSheet,
     ScrollView,
     Image,
-    Alert,
     TouchableOpacity,
     ActivityIndicator,
-    Modal,
 } from 'react-native'
 import React, {
     useCallback,
@@ -17,17 +15,21 @@ import React, {
     useState,
 } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { COLORS, SIZES, icons, illustrations, images } from '../constants'
-import Header from '../components/Header'
-import { reducer } from '../utils/reducers/formReducers'
-import { validateInput } from '../utils/actions/formActions'
-import Input from '../components/Input'
-import Button from '../components/Button'
-import { loadUser, login } from '../services/AuthService'
-import AuthContext from '../contexts/AuthContext'
+import { COLORS, SIZES, icons, images } from '../../constants'
+import Header from '../../components/Header'
+import { reducer } from '../../utils/reducers/formReducers'
+import { validateInput } from '../../utils/actions/formActions'
+import Input from '../../components/Input'
+import Button from '../../components/Button'
+import {
+    loadUser,
+    loadVetUser,
+    login,
+    loginAsVet,
+} from '../../services/AuthService'
+import AuthContext from '../../contexts/AuthContext'
 import { showMessage, hideMessage } from 'react-native-flash-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 
 const isTestMode = true
 
@@ -43,7 +45,7 @@ const initialState = {
     formIsValid: false,
 }
 
-const Login = ({ navigation }) => {
+const VetLogin = ({ navigation }) => {
     const { setUser, setRole } = useContext(AuthContext)
 
     const [formState, dispatchFormState] = useReducer(reducer, initialState)
@@ -97,18 +99,15 @@ const Login = ({ navigation }) => {
         try {
             const email = formState.inputValues.email
             const password = formState.inputValues.password
-
-            await login({ email, password })
-            const user = await loadUser()
-            setRole('petowner')
-            await AsyncStorage.setItem('role', 'petowner')
+            await loginAsVet({ email, password })
+            const user = await loadVetUser()
+            setRole('veterinarian')
+            await AsyncStorage.setItem('role', 'veterinarian')
             setUser(user)
-            navigation.replace('Main')
-        } catch (e) {
-            console.log(e)
-            if (e.response?.status === 422) {
-                console.log(e.response)
 
+            navigation.replace('VetMain')
+        } catch (e) {
+            if (e.response?.status === 422) {
                 setError(e.response.data.errors)
             } else if (e.response?.status == 401) {
                 setMessage(e.response.data.message)
@@ -117,18 +116,15 @@ const Login = ({ navigation }) => {
                     message: 'Login failed. Please try again.',
                     type: 'danger',
                 })
-
-                console.log(e)
             }
         } finally {
             setLoading(false) // Set loading back to false after login attempt
         }
     }
-
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
-                <Header title="Pet Owner" />
+                <Header title="Veterinarian" />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={styles.logoContainer}>
                         <Image
@@ -190,7 +186,7 @@ const Login = ({ navigation }) => {
                         Don't have an account?
                     </Text>
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('Signup')}
+                        onPress={() => navigation.navigate('VetSignup')}
                     >
                         <Text style={styles.bottomRight}>{'  '}Sign Up</Text>
                     </TouchableOpacity>
@@ -260,4 +256,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default Login
+export default VetLogin

@@ -82,7 +82,30 @@ import SelectPetBreed from './CreatePetProfile/SelectPetBreed'
 import SetPetProfile from './CreatePetProfile/SetPetProfile'
 import SelectDOB from './CreatePetProfile/SelectDOB'
 import VeterinarianDetails from './VeterinarianDetails'
+// VET
+import VetLogin from './Veterinarians/VetLogin'
+import VetSignup from './Veterinarians/VetSignup'
+import VetPetOwnerLists from './Veterinarians/VetPetOwnerLists'
+import VetProfile from './Veterinarians/VetProfile'
+import VetPetOwnerDetails from './Veterinarians/VetPetOwnerDetails'
+import VetPetDetails from './Veterinarians/VetPetDetails'
+import VetVaccineList from './Veterinarians/VetVaccineList'
+import VetAddVaccination from './Veterinarians/VetAddVaccination'
+import VetEditProfile from './Veterinarians/VetEditProfile'
+import VetScanQR from './Veterinarians/VetScanQR'
 export {
+    // VET
+    VetLogin,
+    VetSignup,
+    VetPetOwnerLists,
+    VetProfile,
+    VetScanQR,
+    VetPetOwnerDetails,
+    VetPetDetails,
+    VetVaccineList,
+    VetAddVaccination,
+    VetEditProfile,
+    // PETOWNER
     VeterinarianDetails,
     LeaveReview,
     SelectDOB,
