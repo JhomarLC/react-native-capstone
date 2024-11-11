@@ -40,7 +40,7 @@ import {
     MyAppointmentVideoCall,
     MyAppointmentVoiceCall,
     MyBookmarkedArticles,
-    Notifications,
+    Notifications as Notification,
     OTPVerification,
     Onboarding1,
     Onboarding2,
@@ -92,6 +92,7 @@ import FlashMessage from 'react-native-flash-message'
 import VetLogin from '../screens/Veterinarians/VetLogin.js'
 import VetSignup from '../screens/Veterinarians/VetSignup.js'
 import VetBottomTabNavigation from './VetBottomTabNavigation.js'
+import * as Notifications from 'expo-notifications'
 
 const Stack = createNativeStackNavigator()
 
@@ -101,6 +102,46 @@ const AppNavigation = () => {
     const [user, setUser] = useState()
     const [role, setRole] = useState()
 
+    useEffect(() => {
+        // Only configure push notifications if the user is logged in
+        if (user) {
+            configurePushNotifications()
+        }
+    }, [user])
+
+    async function configurePushNotifications() {
+        const hasRequestedPermission = await AsyncStorage.getItem(
+            'hasRequestedPermission'
+        )
+
+        // Only ask for permission if it hasn't been requested before
+        if (!hasRequestedPermission) {
+            const { status } = await Notifications.getPermissionsAsync()
+            if (status !== 'granted') {
+                const { status: newStatus } =
+                    await Notifications.requestPermissionsAsync()
+                if (newStatus === 'granted') {
+                    const pushTokenData =
+                        await Notifications.getExpoPushTokenAsync()
+                    console.log(pushTokenData)
+                    // Store the flag to prevent repeated prompts
+                    await AsyncStorage.setItem('hasRequestedPermission', 'true')
+                } else {
+                    Alert.alert(
+                        'Permission Required',
+                        'Please enable notifications in settings to receive updates.'
+                    )
+                }
+            }
+        }
+
+        if (Platform.OS === 'android') {
+            Notifications.setNotificationChannelAsync('default', {
+                name: 'default',
+                importance: Notifications.AndroidImportance.DEFAULT,
+            })
+        }
+    }
     useEffect(() => {
         const initializeApp = async () => {
             try {
@@ -293,7 +334,7 @@ const AppNavigation = () => {
                             <Stack.Screen name="Chat" component={Chat} />
                             <Stack.Screen
                                 name="Notifications"
-                                component={Notifications}
+                                component={Notification}
                             />
                             <Stack.Screen name="Search" component={Search} />
                             <Stack.Screen
@@ -440,35 +481,7 @@ const AppNavigation = () => {
                         </>
                     ) : (
                         <>
-                            {isFirstLaunch ? (
-                                <>
-                                    <Stack.Screen
-                                        name="Onboarding1"
-                                        component={Onboarding1}
-                                    />
-                                    <Stack.Screen
-                                        name="Onboarding2"
-                                        component={Onboarding2}
-                                    />
-                                    <Stack.Screen
-                                        name="Onboarding3"
-                                        component={Onboarding3}
-                                    />
-                                    <Stack.Screen
-                                        name="Onboarding4"
-                                        component={Onboarding4}
-                                    />
-                                    <Stack.Screen
-                                        name="Welcome"
-                                        component={Welcome}
-                                    />
-                                </>
-                            ) : (
-                                <Stack.Screen
-                                    name="Welcome"
-                                    component={Welcome}
-                                />
-                            )}
+                            <Stack.Screen name="Welcome" component={Welcome} />
                             {/* VETERINARIANS */}
                             <Stack.Screen
                                 name="VetLogin"

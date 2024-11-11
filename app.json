@@ -27,7 +27,8 @@
       },
       "permissions": [
         "android.permission.CAMERA"
-      ]
+      ],
+      "package": "com.kaimantin1303.sjcpawtection"
     },
     "web": {
       "favicon": "./assets/images/icon.png"

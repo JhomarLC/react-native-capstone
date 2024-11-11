@@ -42,14 +42,13 @@ const EditProfile = ({ navigation }) => {
     const [selectedBarangay, setSelectedBarangay] = useState(
         pet_owner.addr_brgy
     )
-    RNPickerSelect
     const pet_s = pet_owner.addr_brgy
     useEffect(() => {
         // Set the initial barangay from profile data
-        if (initialBarangay) {
-            setSelectedBarangay(initialBarangay)
+        if (selectedBarangay) {
+            setSelectedBarangay(selectedBarangay)
         }
-    }, [initialBarangay])
+    }, [selectedBarangay])
 
     const barangays = [
         { label: 'A. Pascual', value: 'A. Pascual' },

@@ -24,7 +24,6 @@ import {
 } from '../../services/AuthService'
 import { STORAGE_URL } from '@env'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { Picker } from '@react-native-picker/picker'
 
 const VetEditProfile = ({ route, navigation }) => {
     const { setUser } = useContext(AuthContext)
@@ -48,46 +47,6 @@ const VetEditProfile = ({ route, navigation }) => {
     const [isImageFromLibrary, setIsImageFromLibrary] = useState(false)
     const [inputValues, setInputValues] = useState(initialState.inputValues)
     const [loading, setLoading] = useState(false)
-    const barangays = [
-        'A. Pascual',
-        'Abar Ist',
-        'Abar 2nd',
-        'Bagong Sikat',
-        'Caanawan',
-        'Calaocan',
-        'Camanacsacan',
-        'Culaylay',
-        'Dizol',
-        'Kaliwanagan',
-        'Kita-Kita',
-        'Malasin',
-        'Manicla',
-        'Palestina',
-        'Parang Mangga',
-        'Villa Joson',
-        'Pinili',
-        'Rafael Rueda, Sr. Pob.',
-        'Ferdinand E. Marcos Pob.',
-        'Canuto Ramos Pob.',
-        'Raymundo Eugenio Pob.',
-        'Crisanto Sanchez Pob.',
-        'Porais',
-        'San Agustin',
-        'San Juan',
-        'San Mauricio',
-        'Santo Niño 1st',
-        'Santo Niño 2nd',
-        'Santo Tomas',
-        'Sibut',
-        'Sinipit Bubon',
-        'Santo Niño 3rd',
-        'Tabulac',
-        'Tayabo',
-        'Tondod',
-        'Tulat',
-        'Villa Floresca',
-        'Villa Marina',
-    ]
 
     // Handle text input changes
     const inputChangedHandler = (inputId, inputValue) => {
