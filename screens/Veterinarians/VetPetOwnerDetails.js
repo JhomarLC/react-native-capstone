@@ -5,6 +5,7 @@ import {
     TouchableOpacity,
     Image,
     FlatList,
+    ActivityIndicator,
 } from 'react-native'
 import React, { useState, useRef, userEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -30,13 +31,17 @@ import NotFoundCardPet from '../../components/NotFoundCardPet'
 const VetPetOwnerDetails = ({ route, navigation }) => {
     const { petowner } = route.params
     const [pets, setPets] = useState([])
+    const [loading, setLoading] = useState(true) // New loading state
 
     const fetchPets = async () => {
+        setLoading(true)
         try {
             const { data } = await loadPets(petowner.id)
             setPets(data)
         } catch (e) {
             console.log('Failed to load Pets', e)
+        } finally {
+            setLoading(false)
         }
     }
     useFocusEffect(
@@ -76,7 +81,7 @@ const VetPetOwnerDetails = ({ route, navigation }) => {
                         Pet Owner
                     </Text>
                 </View>
-                <View style={styles.viewRight}>
+                {/* <View style={styles.viewRight}>
                     <TouchableOpacity>
                         <Image
                             source={icons.moreCircle}
@@ -89,7 +94,7 @@ const VetPetOwnerDetails = ({ route, navigation }) => {
                             ]}
                         />
                     </TouchableOpacity>
-                </View>
+                </View> */}
             </View>
         )
     }
@@ -268,109 +273,6 @@ const VetPetOwnerDetails = ({ route, navigation }) => {
         )
     }
 
-    const renderTopDoctors = () => {
-        const [selectedCategories, setSelectedCategories] = useState(['0'])
-
-        const filteredDoctors = recommendedDoctors.filter(
-            (doctor) =>
-                selectedCategories.includes('0') ||
-                selectedCategories.includes(doctor.categoryId)
-        )
-
-        // Category item
-        const renderCategoryItem = ({ item }) => (
-            <TouchableOpacity
-                style={{
-                    backgroundColor: selectedCategories.includes(item.id)
-                        ? COLORS.primary
-                        : 'transparent',
-                    padding: 10,
-                    marginVertical: 5,
-                    borderColor: COLORS.primary,
-                    borderWidth: 1.3,
-                    borderRadius: 24,
-                    marginRight: 12,
-                }}
-                onPress={() => toggleCategory(item.id)}
-            >
-                <Text
-                    style={{
-                        color: selectedCategories.includes(item.id)
-                            ? COLORS.white
-                            : COLORS.primary,
-                    }}
-                >
-                    {item.name}
-                </Text>
-            </TouchableOpacity>
-        )
-
-        // Toggle category selection
-        const toggleCategory = (categoryId) => {
-            const updatedCategories = [...selectedCategories]
-            const index = updatedCategories.indexOf(categoryId)
-
-            if (index === -1) {
-                updatedCategories.push(categoryId)
-            } else {
-                updatedCategories.splice(index, 1)
-            }
-
-            setSelectedCategories(updatedCategories)
-        }
-
-        return (
-            <View style={{ paddingHorizontal: 20 }}>
-                <View
-                    style={[
-                        styles.separateLine,
-                        {
-                            backgroundColor: COLORS.grayscale200,
-                        },
-                    ]}
-                />
-                <SubHeaderItem
-                    title="Pet Profiles"
-                    // navTitle="See All"
-                    onPress={() => navigation.navigate('Search')}
-                />
-                <FlatList
-                    data={categories}
-                    keyExtractor={(item) => item.id}
-                    showsHorizontalScrollIndicator={false}
-                    horizontal
-                    renderItem={renderCategoryItem}
-                />
-                <View
-                    style={{
-                        backgroundColor: COLORS.secondaryWhite,
-                        marginVertical: 16,
-                    }}
-                >
-                    <FlatList
-                        data={filteredDoctors}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => {
-                            return (
-                                <HorizontalDoctorCard
-                                    name={item.name}
-                                    image={item.image}
-                                    type={item.type}
-                                    petBreed={item.petBreed}
-                                    isAvailable={item.isAvailable}
-                                    onPress={() =>
-                                        navigation.navigate(
-                                            'VetSide_PetDetails'
-                                        )
-                                    }
-                                />
-                            )
-                        }}
-                    />
-                </View>
-            </View>
-        )
-    }
     const renderPets = () => {
         const [selectedPetTypes, setSelectedPetTypes] = useState(['0'])
 
@@ -411,12 +313,10 @@ const VetPetOwnerDetails = ({ route, navigation }) => {
         const selectCategory = (categoryId) => {
             setSelectedPetTypes([categoryId])
         }
-
         return (
             <View style={{ paddingHorizontal: 20 }}>
                 <SubHeaderItem
                     title="Pet Profiles"
-                    // navTitle="Add New Pet"
                     onPress={() => navigation.navigate('CreatePetProfile')}
                 />
                 <FlatList
@@ -426,10 +326,15 @@ const VetPetOwnerDetails = ({ route, navigation }) => {
                     horizontal
                     renderItem={renderCategoryItem}
                 />
-
-                {pets.length === 0 ? (
+                {loading ? (
+                    <ActivityIndicator
+                        size="large"
+                        color={COLORS.primary}
+                        style={{ marginTop: 20 }}
+                    />
+                ) : pets.length === 0 ? (
                     <View style={styles.noPetsContainer}>
-                        <NotFoundCardPet message="Sorry no pets found for this Pet Owner." />
+                        <NotFoundCardPet message="Sorry, no pets found for this Pet Owner." />
                     </View>
                 ) : (
                     <View
@@ -441,32 +346,25 @@ const VetPetOwnerDetails = ({ route, navigation }) => {
                         <FlatList
                             data={filteredPets}
                             keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => {
-                                return (
-                                    <HorizontalDoctorCard
-                                        name={item.name}
-                                        image={{
-                                            uri: `${STORAGE_URL}/pet_profile/${item.image}`,
-                                        }}
-                                        color_description={
-                                            item.color_description
-                                        }
-                                        petBreed={item.breed}
-                                        pet_type={item.pet_type}
-                                        status={item.status}
-                                        age={item.age}
-                                        onPress={() =>
-                                            navigation.navigate(
-                                                'VetPetDetails',
-                                                {
-                                                    pet: item,
-                                                    petowner: petowner,
-                                                }
-                                            )
-                                        }
-                                    />
-                                )
-                            }}
+                            renderItem={({ item }) => (
+                                <HorizontalDoctorCard
+                                    name={item.name}
+                                    image={{
+                                        uri: `${STORAGE_URL}/pet_profile/${item.image}`,
+                                    }}
+                                    color_description={item.color_description}
+                                    petBreed={item.breed}
+                                    pet_type={item.pet_type}
+                                    status={item.status}
+                                    age={item.age}
+                                    onPress={() =>
+                                        navigation.navigate('VetPetDetails', {
+                                            pet: item,
+                                            petowner: petowner,
+                                        })
+                                    }
+                                />
+                            )}
                         />
                     </View>
                 )}

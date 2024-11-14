@@ -93,8 +93,11 @@ import VetVaccineList from './Veterinarians/VetVaccineList'
 import VetAddVaccination from './Veterinarians/VetAddVaccination'
 import VetEditProfile from './Veterinarians/VetEditProfile'
 import VetScanQR from './Veterinarians/VetScanQR'
+import VetPetownerProfileSeeAll from './Veterinarians/VetPetownerProfileSeeAll'
+
 export {
     // VET
+    VetPetownerProfileSeeAll,
     VetLogin,
     VetSignup,
     VetPetOwnerLists,

@@ -15,7 +15,14 @@ import React, {
     useCallback,
     useReducer,
 } from 'react'
-import { COLORS, SIZES, icons, images, FONTS } from '../../constants'
+import {
+    COLORS,
+    SIZES,
+    icons,
+    images,
+    FONTS,
+    illustrations,
+} from '../../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
     categories,
@@ -43,6 +50,7 @@ import {
     addMedication,
     loadMedicationNames,
 } from '../../services/MedicationService'
+import CustomModal from '../../components/CustomModal'
 
 const isTestMode = true
 
@@ -60,18 +68,24 @@ const initialState = {
 
 const VetAddVaccination = ({ route, navigation }) => {
     const [medicationName, setMedicationName] = useState({})
-    const { medication, pet_id } = route.params
+    const { medication, pet_id, pet_status, pet, petowner } = route.params
 
     const [error, setError] = useState()
     const [formState, dispatchFormState] = useReducer(reducer, initialState)
-    const [modalVisible, setModalVisible] = useState(false)
     const [selectedRemarks, setSelectedRemarks] = useState('')
     const [selectedORNO, setSelectedORNO] = useState('')
     const [selectedMedName, setSelectedMedName] = useState('')
 
+    const [modalVisible, setModalVisible] = useState(false)
+    const [modal, setModal] = useState({
+        title: '',
+        message: '',
+        icon: '',
+        action: '',
+    })
     const remarksOption = [
         { label: 'Walk-in', value: 'Walk-in' },
-        { label: 'Mass Vaccination', value: 'Mass Vaccination' },
+        { label: 'Mass', value: 'Mass' },
     ]
     const orNo = [
         { label: 'Registered', value: 'Registered' },
@@ -148,29 +162,71 @@ const VetAddVaccination = ({ route, navigation }) => {
             next_vaccination: nextVaccinationDate || '',
             remarks: selectedRemarks || '',
             or_number: selectedORNO || '',
-            fee: formState.inputValues.registration_fee || '',
+            fee: formState.inputValues.registration_fee || 0,
         }
 
-        try {
-            const data = await addMedication(pet_id, vaccinationData)
-            console.log(data)
+        // Check if any required field is missing
+        const missingFields = []
 
-            navigation.replace('VetVaccineList', {
-                pet_id: pet_id,
-                medication: medication,
+        if (!vaccinationData.medication_name_id)
+            missingFields.push('Medication Name')
+        if (!vaccinationData.batch_number) missingFields.push('Batch Number')
+        if (!vaccinationData.expiry_date) missingFields.push('Expiry Date')
+        if (!vaccinationData.medication_date)
+            missingFields.push('Vaccination Date')
+        if (!vaccinationData.remarks) missingFields.push('Remarks')
+        if (!vaccinationData.or_number) missingFields.push('OR Number')
+
+        if (missingFields.length > 0) {
+            // Log missing fields and prevent submission
+
+            setModalVisible(true)
+            setModal({
+                title: 'Oops!',
+                message:
+                    'Please complete all required fields before proceeding. Required Fields: ' +
+                    missingFields.join(', '),
+                icon: illustrations.notFound,
+                action: () => {
+                    setModalVisible(false)
+                },
+            })
+            return
+        }
+
+        // Proceed with adding vaccination only if all fields are present
+        try {
+            await addMedication(pet_id, vaccinationData)
+            // console.log(data)
+            setModalVisible(true)
+            setModal({
+                title: 'Success!',
+                message: 'Medication Successfully Added!',
+                icon: illustrations.star,
+                action: () => {
+                    setModalVisible(false)
+                    navigation.replace('VetVaccineList', {
+                        pet_id: pet_id,
+                        medication: medication,
+                        pet_status: pet_status,
+                        pet: pet,
+                        petowner: petowner,
+                    })
+                },
             })
         } catch (e) {
-            console.log(e.response.data.errors)
+            console.log('====================================')
+            console.log(e.response.data.message)
+            console.log('====================================')
 
             if (e.response?.status === 422) {
                 console.log(e.response)
-
                 setError(e.response.data.errors)
             } else if (e.response?.status == 401) {
                 setMessage(e.response.data.message)
             } else {
                 showMessage({
-                    message: 'Login failed. Please try again.',
+                    message: 'Adding vaccination failed. Please try again.',
                     type: 'danger',
                 })
             }
@@ -307,6 +363,13 @@ const VetAddVaccination = ({ route, navigation }) => {
 
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
+            <CustomModal
+                visible={modalVisible}
+                onClose={modal.action}
+                title={modal.title}
+                message={modal.message}
+                icon={modal.icon}
+            />
             <DatePickerModal
                 open={openExpiryDatePicker}
                 startDate={startDate}
@@ -578,7 +641,7 @@ const VetAddVaccination = ({ route, navigation }) => {
                             </View>
                             <View style={{ marginTop: 10, width: '45%' }}>
                                 <Text style={[styles.VaccineDetails]}>
-                                    Next Vaccination Date * :
+                                    Next Vaccination Date :
                                 </Text>
                                 <TouchableOpacity
                                     style={[
@@ -668,13 +731,6 @@ const VetAddVaccination = ({ route, navigation }) => {
                     </View>
                 </View>
 
-                {/* <DatePickerModal
-                    open={openStartDatePicker}
-                    startDate={startDate}
-                    selectedDate={startedDate}
-                    onClose={() => setOpenStartDatePicker(false)}
-                    onChangeStartDate={(date) => setStartedDate(date)}
-                /> */}
                 <View style={styles.bottomContainer}>
                     <Button
                         title="Add Record"

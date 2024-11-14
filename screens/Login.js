@@ -28,6 +28,7 @@ import AuthContext from '../contexts/AuthContext'
 import { showMessage, hideMessage } from 'react-native-flash-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
+import CustomModal from '../components/CustomModal'
 
 const isTestMode = true
 
@@ -48,8 +49,15 @@ const Login = ({ navigation }) => {
 
     const [formState, dispatchFormState] = useReducer(reducer, initialState)
     const [error, setError] = useState(null)
-    const [message, setMessage] = useState('')
+    // const [message, setMessage] = useState('')
     const [loading, setLoading] = useState(false) // Loading state for login button
+    const [modalVisible, setModalVisible] = useState(false)
+    const [modal, setModal] = useState({
+        title: '',
+        message: '',
+        icon: '',
+        action: '',
+    })
 
     const inputChangedHandler = useCallback(
         (inputId, inputValue) => {
@@ -70,18 +78,9 @@ const Login = ({ navigation }) => {
         }
     }, [error])
 
-    useEffect(() => {
-        if (message) {
-            showMessage({
-                message: message,
-                type: 'danger',
-            })
-        }
-    }, [message])
-
     const onLoginPress = async () => {
         if (loading) return // Prevent multiple requests if already loading
-        setMessage('')
+
         setError(null)
 
         if (!formState.formIsValid) {
@@ -108,10 +107,18 @@ const Login = ({ navigation }) => {
             console.log(e)
             if (e.response?.status === 422) {
                 console.log(e.response)
-
                 setError(e.response.data.errors)
-            } else if (e.response?.status == 401) {
-                setMessage(e.response.data.message)
+            } else if (e.response?.status == 401 || e.response?.status == 403) {
+                setModalVisible(true)
+                setModal({
+                    title: 'Oops!',
+                    message: e.response.data.message,
+                    icon: illustrations.notFound,
+                    action: () => {
+                        setModalVisible(false)
+                        navigation.navigate('VetLogin')
+                    },
+                })
             } else {
                 showMessage({
                     message: 'Login failed. Please try again.',
@@ -129,6 +136,13 @@ const Login = ({ navigation }) => {
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 <Header title="Pet Owner" />
+                <CustomModal
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    title={modal.title}
+                    message={modal.message}
+                    icon={illustrations.notFound}
+                />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={styles.logoContainer}>
                         <Image

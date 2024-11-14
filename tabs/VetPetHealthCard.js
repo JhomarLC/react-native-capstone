@@ -19,17 +19,17 @@ import QRCode from 'react-native-qrcode-svg'
 import * as FileSystem from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library'
 
-const VetPetHealthCard = ({ petData, petowner }) => {
+const VetPetHealthCard = ({ pet, petowner }) => {
     const refRBSheet = useRef()
     const refRBSheet2 = useRef()
-    const [pet, setPet] = useState(petData)
+    const [petData, setPetData] = useState(pet)
     const [isApproving, setIsApproving] = useState(false)
     const qrCodeRef = useRef()
 
     const loadPetData = async () => {
         try {
-            const updatedPet = await loadPetProfile(petowner.id, petData.id) // Fetch latest pet data
-            setPet(updatedPet.data)
+            const updatedPet = await loadPetProfile(pet.id, pet.id) // Fetch latest pet data
+            setPetData(updatedPet.data)
         } catch (error) {
             console.error('Failed to load pet data:', error)
         }
@@ -39,7 +39,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
         loadPetData() // Initial data load
     }, [])
 
-    if (!pet) {
+    if (!petData) {
         return (
             <View style={styles.loadingContainer}>
                 <Text style={styles.loadingText}>
@@ -62,7 +62,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                 })
             })
 
-            const uri = `${FileSystem.cacheDirectory}${pet.id}_qrcode.png`
+            const uri = `${FileSystem.cacheDirectory}${petData.id}_qrcode.png`
             await FileSystem.writeAsStringAsync(uri, base64Data, {
                 encoding: FileSystem.EncodingType.Base64,
             })
@@ -103,7 +103,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                         >
                             <Image
                                 source={{
-                                    uri: `${STORAGE_URL}/pet_profile/${pet.image}`,
+                                    uri: `${STORAGE_URL}/pet_profile/${petData.image}`,
                                 }}
                                 resizeMode="contain"
                                 style={styles.doctorImage}
@@ -117,7 +117,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                         },
                                     ]}
                                 >
-                                    {pet.name}
+                                    {petData.name}
                                 </Text>
                                 <View
                                     style={[
@@ -137,18 +137,18 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                         }}
                                     >
                                         {' '}
-                                        {pet.color_description}
+                                        {petData.color_description}
                                     </Text>
                                     <Text
                                         style={{
                                             color: COLORS.grayscale700,
                                         }}
                                     >
-                                        {'  '}| {pet.breed}
+                                        {'  '}| {petData.breed}
                                     </Text>
                                 </View>
 
-                                {pet.status === 'pending' ? (
+                                {petData.status === 'pending' ? (
                                     <TouchableOpacity
                                         onPress={() =>
                                             refRBSheet2.current.open()
@@ -168,7 +168,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                             </Text>
                                         </View>
                                     </TouchableOpacity>
-                                ) : pet.status === 'approved' ? (
+                                ) : petData.status === 'approved' ? (
                                     <TouchableOpacity>
                                         <View style={styles.statusContainer}>
                                             <Text style={[styles.statusText]}>
@@ -176,7 +176,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                             </Text>
                                         </View>
                                     </TouchableOpacity>
-                                ) : pet.status === 'declined' ? (
+                                ) : petData.status === 'declined' ? (
                                     <View
                                         style={styles.statusDeclinedContainer}
                                     >
@@ -237,7 +237,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                         },
                                     ]}
                                 >
-                                    : {pet.gender}
+                                    : {petData.gender}
                                 </Text>
                             </View>
                         </View>
@@ -275,7 +275,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                         },
                                     ]}
                                 >
-                                    : {pet.color_description}
+                                    : {petData.color_description}
                                 </Text>
                             </View>
                         </View>
@@ -313,7 +313,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                         },
                                     ]}
                                 >
-                                    : {pet.weight} kg
+                                    : {petData.weight} kg
                                 </Text>
                             </View>
                         </View>
@@ -351,7 +351,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                         },
                                     ]}
                                 >
-                                    : {pet.size}
+                                    : {petData.size}
                                 </Text>
                             </View>
                         </View>
@@ -411,7 +411,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                     },
                                 ]}
                             >
-                                {formatDate(pet.date_of_birth)}
+                                {formatDate(petData.date_of_birth)}
                             </Text>
                             <Text
                                 style={[
@@ -421,7 +421,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                                     },
                                 ]}
                             >
-                                {pet.age}
+                                {petData.age}
                             </Text>
                         </View>
                         {/* <Text
@@ -485,7 +485,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                             onPress={async () => {
                                 setIsApproving(true) // Start loading indicator
                                 try {
-                                    await declinePet(pet.id)
+                                    await declinePet(petData.id)
                                     await loadPetData() // Reload data after approval
                                 } catch (e) {
                                     console.log('Error:', e)
@@ -509,7 +509,7 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                             onPress={async () => {
                                 setIsApproving(true) // Start loading indicator
                                 try {
-                                    await approvePet(pet.id)
+                                    await approvePet(petData.id)
                                     await loadPetData() // Reload data after approval
                                 } catch (e) {
                                     console.log('Error:', e)
@@ -576,10 +576,10 @@ const VetPetHealthCard = ({ petData, petowner }) => {
                             <QRCode
                                 size={250}
                                 logo={{
-                                    uri: `${STORAGE_URL}/pet_profile/${pet.image}`,
+                                    uri: `${STORAGE_URL}/pet_profile/${petData.image}`,
                                 }}
                                 value={JSON.stringify({
-                                    pet_id: pet.id,
+                                    pet_id: petData.id,
                                     petowner_id: petowner.id,
                                 })}
                                 logoBorderRadius={50}

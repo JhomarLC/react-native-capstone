@@ -8,7 +8,7 @@ import {
     ActivityIndicator,
 } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import { COLORS, SIZES, icons } from '../../constants'
+import { COLORS, SIZES, icons, illustrations } from '../../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Header from '../../components/Header'
 import Input from '../../components/Input'
@@ -24,10 +24,19 @@ import {
 } from '../../services/AuthService'
 import { STORAGE_URL } from '@env'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import CustomModal from '../../components/CustomModal'
 
 const VetEditProfile = ({ route, navigation }) => {
     const { setUser } = useContext(AuthContext)
     const { veterinarian } = route.params
+    const [modalVisible, setModalVisible] = useState(false)
+    const [modal, setModal] = useState({
+        title: '',
+        message: '',
+        icon: '',
+        action: '',
+    })
+
     useEffect(() => {
         setImage({
             uri: `${STORAGE_URL}/vet_profile/${veterinarian.image}`,
@@ -102,11 +111,16 @@ const VetEditProfile = ({ route, navigation }) => {
             await updateVetprofile(veterinarian.id, formData)
             const updatedUser = await loadVetUser()
             setUser(updatedUser)
-            showMessage({
+            setModalVisible(true)
+            setModal({
+                title: 'Success!',
                 message: 'Profile updated successfully!',
-                type: 'success',
+                icon: illustrations.star,
+                action: () => {
+                    setModalVisible(false)
+                    navigation.navigate('VetProfile')
+                },
             })
-            navigation.navigate('VetProfile')
         } catch (e) {
             console.log(e)
 
@@ -130,6 +144,13 @@ const VetEditProfile = ({ route, navigation }) => {
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 <Header title="Edit Profile" />
+                <CustomModal
+                    visible={modalVisible}
+                    onClose={modal.action}
+                    title={modal.title}
+                    message={modal.message}
+                    icon={modal.icon}
+                />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ alignItems: 'center', marginVertical: 12 }}>
                         <View style={styles.avatarContainer}>

@@ -9,10 +9,13 @@ import {
     ScrollView,
     KeyboardAvoidingView,
     Platform,
+    Alert,
+    Modal,
+    TouchableWithoutFeedback,
 } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { COLORS, SIZES, icons, images } from '../../constants'
+import { COLORS, SIZES, icons, illustrations, images } from '../../constants'
 import Button from '../../components/Button'
 import { launchImagePicker } from '../../utils/ImagePickerHelper'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -23,12 +26,67 @@ const { width } = Dimensions.get('window')
 const ITEM_SIZE = width / 2 - 24 // Adjusting size to fit 2 items per row
 
 const SetPetProfile = ({ navigation, formData, setFormData }) => {
-    const [image, setImage] = useState(formData.image?.uri || null)
+    const [image, setImage] = useState(formData.image)
+    const [modalVisible, setModalVisible] = useState(false)
+
     const genders = [
         { label: 'Male', value: 'Male' },
         { label: 'Female', value: 'Female' },
     ]
-    const [gender, setGender] = useState(formData.gender)
+    // Render modal
+    const renderModal = () => {
+        return (
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+            >
+                <TouchableWithoutFeedback
+                    onPress={() => setModalVisible(false)}
+                >
+                    <View style={[styles.modalContainer]}>
+                        <View
+                            style={[
+                                styles.modalSubContainer,
+                                {
+                                    backgroundColor: COLORS.secondaryWhite,
+                                },
+                            ]}
+                        >
+                            <Image
+                                source={illustrations.star}
+                                resizeMode="contain"
+                                style={styles.modalIllustration}
+                            />
+                            <Text style={styles.modalTitle}>Oops!</Text>
+                            <Text
+                                style={[
+                                    styles.modalSubtitle,
+                                    {
+                                        color: COLORS.greyscale900,
+                                    },
+                                ]}
+                            >
+                                Please complete all fields before proceeding to
+                                the next step.
+                            </Text>
+                            <Button
+                                title="Okay"
+                                filled
+                                onPress={() => {
+                                    setModalVisible(false)
+                                }}
+                                style={{
+                                    width: '100%',
+                                    marginTop: 12,
+                                }}
+                            />
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+        )
+    }
     const pickImage = async () => {
         try {
             const imageData = await launchImagePicker() // Get the image data (uri, fileName, mimeType)
@@ -69,12 +127,15 @@ const SetPetProfile = ({ navigation, formData, setFormData }) => {
                     <View style={styles.progress} />
                 </View>
             </View>
+            {renderModal()}
             <ScrollView showsHorizontalScrollIndicator={false}>
                 <View style={{ alignItems: 'center', marginVertical: 12 }}>
                     <View style={styles.logoContainer}>
                         <Image
                             source={
-                                image ? { uri: image } : formData.image // Fallback image
+                                image
+                                    ? { uri: image }
+                                    : formData.image || icons.userDefault2 // Fallback image
                             }
                             resizeMode="cover"
                             style={styles.avatar}
@@ -137,7 +198,7 @@ const SetPetProfile = ({ navigation, formData, setFormData }) => {
                                 />
                             </View>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Gender</Text>
+                                <Text style={styles.label}>Gender *</Text>
                                 <View style={{ marginTop: 5 }}>
                                     <RNPickerSelect
                                         placeholder={{
@@ -198,9 +259,6 @@ const SetPetProfile = ({ navigation, formData, setFormData }) => {
                             </View>
                         </View>
                     </View>
-                    <View>
-                        {/* <Button title="Open" onPress={() => setOpen(true)} /> */}
-                    </View>
                 </View>
             </ScrollView>
             <View
@@ -220,7 +278,21 @@ const SetPetProfile = ({ navigation, formData, setFormData }) => {
                     title="Next"
                     filled
                     style={styles.btnSubmit}
-                    onPress={() => navigation.navigate('SelectDOB')}
+                    onPress={() => {
+                        console.log('Current formData:', formData) // Log formData to verify
+                        // Optional: Add validation checks
+                        if (
+                            !formData.image ||
+                            !formData.name ||
+                            !formData.color_description ||
+                            !formData.weight ||
+                            !formData.gender
+                        ) {
+                            setModalVisible(true)
+                        } else {
+                            navigation.navigate('SelectDOB')
+                        }
+                    }}
                 />
             </View>
         </SafeAreaView>
@@ -314,6 +386,53 @@ const styles = StyleSheet.create({
     },
     inputContainerHidden: {
         display: 'none',
+    },
+
+    closeBtn: {
+        width: 42,
+        height: 42,
+        borderRadius: 999,
+        backgroundColor: COLORS.white,
+        position: 'absolute',
+        right: 16,
+        top: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontFamily: 'bold',
+        color: COLORS.primary,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalSubtitle: {
+        fontSize: 16,
+        fontFamily: 'regular',
+        color: COLORS.black2,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+    },
+    modalSubContainer: {
+        height: 494,
+        width: SIZES.width * 0.9,
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+    },
+    modalIllustration: {
+        height: 180,
+        width: 180,
+        marginVertical: 22,
     },
 })
 

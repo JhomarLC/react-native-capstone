@@ -49,19 +49,21 @@ export async function approvePet(pet_id) {
     const { data: pet_approved } = await axios.post(`/pets/${pet_id}/approve`)
     return pet_approved
 }
+
 export async function declinePet(pet_id) {
     const { data: declined_pet } = await axios.post(`/pets/${pet_id}/decline`)
     return declined_pet
 }
+
 export async function loadPetMedication(pet_id) {
     const { data: pet_medications } = await axios.get(
-        `/pets/${pet_id}/medications`
+        `/pets/${pet_id}/medications?status=active`
     )
     return pet_medications
 }
 
 export async function loadMedications() {
-    const { data: medications } = await axios.get(`/medtype`)
+    const { data: medications } = await axios.get(`/medtype?status=active`)
     return medications
 }
 

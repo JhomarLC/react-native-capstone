@@ -6,6 +6,9 @@ import {
     Alert,
     FlatList,
     RefreshControl,
+    TouchableWithoutFeedback,
+    Modal,
+    Text,
 } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import Button from '../components/Button'
@@ -17,7 +20,7 @@ import {
     getFileType,
     launchMultipleImagePicker,
 } from '../utils/ImagePickerHelper'
-import { COLORS, SIZES } from '../constants'
+import { COLORS, illustrations, SIZES } from '../constants'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import NotFoundCard from '../components/NotFoundCard'
 
@@ -29,6 +32,7 @@ const PetPictures = ({ pet_id }) => {
     const [visible, setIsVisible] = useState(false)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [refreshing, setRefreshing] = useState(false)
+    const [modalVisible, setModalVisible] = useState(false)
 
     const loadPetPicturesData = async () => {
         if (pet_owner?.id && pet_id) {
@@ -96,7 +100,8 @@ const PetPictures = ({ pet_id }) => {
                         uri,
                     })),
                 ])
-                setPreviewImages([]) // Clear preview images after saving
+                setPreviewImages([])
+                setModalVisible(true)
             } catch (error) {
                 console.error('Failed to save images:', error)
                 Alert.alert(
@@ -107,8 +112,61 @@ const PetPictures = ({ pet_id }) => {
         }
     }
 
+    const renderModal = () => {
+        return (
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+            >
+                <TouchableWithoutFeedback
+                    onPress={() => setModalVisible(false)}
+                >
+                    <View style={[styles.modalContainer]}>
+                        <View
+                            style={[
+                                styles.modalSubContainer,
+                                {
+                                    backgroundColor: COLORS.secondaryWhite,
+                                },
+                            ]}
+                        >
+                            <Image
+                                source={illustrations.star}
+                                resizeMode="contain"
+                                style={styles.modalIllustration}
+                            />
+                            <Text style={styles.modalTitle}>Success!</Text>
+                            <Text
+                                style={[
+                                    styles.modalSubtitle,
+                                    {
+                                        color: COLORS.greyscale900,
+                                    },
+                                ]}
+                            >
+                                Pet Image successfully uploaded.
+                            </Text>
+                            <Button
+                                title="Okay"
+                                filled
+                                onPress={() => {
+                                    setModalVisible(false)
+                                }}
+                                style={{
+                                    width: '100%',
+                                    marginTop: 12,
+                                }}
+                            />
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+        )
+    }
     return (
         <View style={styles.wrapper}>
+            {renderModal()}
             {combinedPhotos.length > 0 ? (
                 <FlatList
                     data={combinedPhotos}
@@ -242,6 +300,53 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         backgroundColor: COLORS.white,
+    },
+
+    closeBtn: {
+        width: 42,
+        height: 42,
+        borderRadius: 999,
+        backgroundColor: COLORS.white,
+        position: 'absolute',
+        right: 16,
+        top: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontFamily: 'bold',
+        color: COLORS.primary,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalSubtitle: {
+        fontSize: 16,
+        fontFamily: 'regular',
+        color: COLORS.black2,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+    },
+    modalSubContainer: {
+        height: 494,
+        width: SIZES.width * 0.9,
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+    },
+    modalIllustration: {
+        height: 180,
+        width: 180,
+        marginVertical: 22,
     },
 })
 

@@ -6,9 +6,11 @@ import {
     Image,
     TouchableOpacity,
     ActivityIndicator,
+    Modal,
+    TouchableWithoutFeedback,
 } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import { COLORS, SIZES, icons } from '../constants'
+import { COLORS, SIZES, icons, illustrations } from '../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Header from '../components/Header'
 import Input from '../components/Input'
@@ -24,6 +26,7 @@ import RNPickerSelect from 'react-native-picker-select'
 const EditProfile = ({ navigation }) => {
     const { user, setUser } = useContext(AuthContext)
     const pet_owner = user?.pet_owner || {}
+    const [modalVisible, setModalVisible] = useState(false)
 
     const initialState = {
         inputValues: {
@@ -42,7 +45,7 @@ const EditProfile = ({ navigation }) => {
     const [selectedBarangay, setSelectedBarangay] = useState(
         pet_owner.addr_brgy
     )
-    const pet_s = pet_owner.addr_brgy
+    // const pet_s = pet_owner.addr_brgy
     useEffect(() => {
         // Set the initial barangay from profile data
         if (selectedBarangay) {
@@ -157,11 +160,7 @@ const EditProfile = ({ navigation }) => {
 
             const updatedUser = await loadUser()
             setUser(updatedUser)
-            showMessage({
-                message: 'Profile updated successfully!',
-                type: 'success',
-            })
-            navigation.navigate('Profile')
+            setModalVisible(true)
         } catch (e) {
             console.log(e)
             showMessage({
@@ -173,10 +172,67 @@ const EditProfile = ({ navigation }) => {
         }
     }
 
+    // Render modal
+    const renderModal = () => {
+        return (
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+            >
+                <TouchableWithoutFeedback
+                    onPress={() => setModalVisible(false)}
+                >
+                    <View style={[styles.modalContainer]}>
+                        <View
+                            style={[
+                                styles.modalSubContainer,
+                                {
+                                    backgroundColor: COLORS.secondaryWhite,
+                                },
+                            ]}
+                        >
+                            <Image
+                                source={illustrations.star}
+                                resizeMode="contain"
+                                style={styles.modalIllustration}
+                            />
+                            <Text style={styles.modalTitle}>
+                                Congratulations!
+                            </Text>
+                            <Text
+                                style={[
+                                    styles.modalSubtitle,
+                                    {
+                                        color: COLORS.greyscale900,
+                                    },
+                                ]}
+                            >
+                                Your account is successfully updated.
+                            </Text>
+                            <Button
+                                title="Continue"
+                                filled
+                                onPress={() => {
+                                    setModalVisible(false)
+                                    navigation.navigate('Profile')
+                                }}
+                                style={{
+                                    width: '100%',
+                                    marginTop: 12,
+                                }}
+                            />
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+        )
+    }
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 <Header title="Edit Profile" />
+                {renderModal()}
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ alignItems: 'center', marginVertical: 12 }}>
                         <View style={styles.avatarContainer}>
@@ -203,6 +259,7 @@ const EditProfile = ({ navigation }) => {
                             </TouchableOpacity>
                         </View>
                     </View>
+
                     <View style={styles.inputSection}>
                         <Text style={styles.label}>Full Name</Text>
                         <Input
@@ -343,6 +400,53 @@ const styles = StyleSheet.create({
         color: COLORS.gray,
         marginBottom: 4,
         marginLeft: 8,
+    },
+
+    closeBtn: {
+        width: 42,
+        height: 42,
+        borderRadius: 999,
+        backgroundColor: COLORS.white,
+        position: 'absolute',
+        right: 16,
+        top: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontFamily: 'bold',
+        color: COLORS.primary,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalSubtitle: {
+        fontSize: 16,
+        fontFamily: 'regular',
+        color: COLORS.black2,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+    },
+    modalSubContainer: {
+        height: 494,
+        width: SIZES.width * 0.9,
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+    },
+    modalIllustration: {
+        height: 180,
+        width: 180,
+        marginVertical: 22,
     },
 })
 

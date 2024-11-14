@@ -66,6 +66,8 @@ const VetPetVaccination = ({ petowner, pet }) => {
                                     pet_owner_id: petowner.id,
                                     medication: item,
                                     pet_status: pet.status,
+                                    petowner: petowner,
+                                    pet: pet,
                                 })
                             }
                         >

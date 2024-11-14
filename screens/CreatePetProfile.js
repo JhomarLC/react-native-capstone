@@ -16,16 +16,18 @@ import SelectDOB from './CreatePetProfile/SelectDOB'
 const Stack = createStackNavigator()
 
 export default function App() {
+    const today = new Date()
+    const formattedDate = today.toISOString().split('T')[0]
     const [formData, setFormData] = useState({
         type: '',
         breed: '',
         gender: '',
-        image: icons.userDefault2,
+        image: '',
         name: '',
         color_description: '',
         weight: '',
         size: '',
-        dob: dayjs().format('YYYY-MM-DD'),
+        dob: formattedDate,
     })
 
     return (

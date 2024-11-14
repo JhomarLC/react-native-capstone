@@ -6,6 +6,8 @@ import {
     Image,
     TouchableOpacity,
     ActivityIndicator,
+    Modal,
+    TouchableWithoutFeedback,
 } from 'react-native'
 import React, {
     useCallback,
@@ -15,7 +17,7 @@ import React, {
     useState,
 } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { COLORS, SIZES, icons, images } from '../../constants'
+import { COLORS, SIZES, icons, illustrations, images } from '../../constants'
 import Header from '../../components/Header'
 import { reducer } from '../../utils/reducers/formReducers'
 import { validateInput } from '../../utils/actions/formActions'
@@ -30,6 +32,7 @@ import {
 import AuthContext from '../../contexts/AuthContext'
 import { showMessage, hideMessage } from 'react-native-flash-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import CustomModal from '../../components/CustomModal'
 
 const isTestMode = true
 
@@ -50,8 +53,14 @@ const VetLogin = ({ navigation }) => {
 
     const [formState, dispatchFormState] = useReducer(reducer, initialState)
     const [error, setError] = useState(null)
-    const [message, setMessage] = useState('')
     const [loading, setLoading] = useState(false) // Loading state for login button
+    const [modalVisible, setModalVisible] = useState(false)
+    const [modal, setModal] = useState({
+        title: '',
+        message: '',
+        icon: '',
+        action: '',
+    })
 
     const inputChangedHandler = useCallback(
         (inputId, inputValue) => {
@@ -72,18 +81,9 @@ const VetLogin = ({ navigation }) => {
         }
     }, [error])
 
-    useEffect(() => {
-        if (message) {
-            showMessage({
-                message: message,
-                type: 'danger',
-            })
-        }
-    }, [message])
-
     const onLoginPress = async () => {
         if (loading) return // Prevent multiple requests if already loading
-        setMessage('')
+        setModal({ title: '', message: '' })
         setError(null)
 
         if (!formState.formIsValid) {
@@ -100,17 +100,27 @@ const VetLogin = ({ navigation }) => {
             const email = formState.inputValues.email
             const password = formState.inputValues.password
             await loginAsVet({ email, password })
+
             const user = await loadVetUser()
             setRole('veterinarian')
             await AsyncStorage.setItem('role', 'veterinarian')
             setUser(user)
-
             navigation.replace('VetMain')
         } catch (e) {
+            console.log(e.response.data)
             if (e.response?.status === 422) {
                 setError(e.response.data.errors)
-            } else if (e.response?.status == 401) {
-                setMessage(e.response.data.message)
+            } else if (e.response?.status == 401 || e.response?.status == 403) {
+                setModalVisible(true)
+                setModal({
+                    title: 'Oops!',
+                    message: e.response.data.message,
+                    icon: illustrations.notFound,
+                    action: () => {
+                        setModalVisible(false)
+                        navigation.navigate('VetLogin')
+                    },
+                })
             } else {
                 showMessage({
                     message: 'Login failed. Please try again.',
@@ -121,10 +131,18 @@ const VetLogin = ({ navigation }) => {
             setLoading(false) // Set loading back to false after login attempt
         }
     }
+
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 <Header title="Veterinarian" />
+                <CustomModal
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    title={modal.title}
+                    message={modal.message}
+                    icon={illustrations.notFound}
+                />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={styles.logoContainer}>
                         <Image

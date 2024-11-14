@@ -22,9 +22,9 @@ import { TabView, TabBar } from 'react-native-tab-view'
 
 const VetPetDetails = ({ route, navigation }) => {
     const layout = useWindowDimensions()
-    const { pet, petowner } = route.params
+    const { pet, petowner, initialTabIndex = 0 } = route.params // set default to 0 for "About" tab
 
-    const [index, setIndex] = React.useState(0)
+    const [index, setIndex] = React.useState(initialTabIndex)
     const [routes] = React.useState([
         { key: 'first', title: 'About' },
         { key: 'second', title: 'Pictures' },
@@ -35,7 +35,7 @@ const VetPetDetails = ({ route, navigation }) => {
     const renderScene = ({ route }) => {
         switch (route.key) {
             case 'first':
-                return <VetPetHealthCard petData={pet} petowner={petowner} />
+                return <VetPetHealthCard pet={pet} petowner={petowner} />
             case 'second':
                 return <VetPetPictures pet={pet} petowner={petowner} />
             case 'third':
@@ -96,20 +96,6 @@ const VetPetDetails = ({ route, navigation }) => {
                     >
                         Health Card
                     </Text>
-                </View>
-                <View style={styles.viewRight}>
-                    <TouchableOpacity onPress={() => setModalVisible(true)}>
-                        <Image
-                            source={icons.moreCircle}
-                            resizeMode="contain"
-                            style={[
-                                styles.moreIcon,
-                                {
-                                    tintColor: COLORS.black,
-                                },
-                            ]}
-                        />
-                    </TouchableOpacity>
                 </View>
             </View>
         )

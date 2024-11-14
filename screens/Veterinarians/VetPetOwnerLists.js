@@ -6,6 +6,7 @@ import {
     TextInput,
     FlatList,
     Image,
+    ActivityIndicator,
 } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { COLORS, SIZES, icons, images } from '../../constants'
@@ -30,15 +31,26 @@ const VetPetOwnerLists = ({ navigation }) => {
     const { user } = useContext(AuthContext)
     const veterinarian = user.user
     const [petowners, setPetowners] = useState([])
+    const [loading, setLoading] = useState(true) // New loading state
+
+    const [refreshing, setRefreshing] = useState(false)
 
     const fetchPetOwners = async () => {
+        setLoading(true)
         try {
             const { data } = await loadPetOwners()
             setPetowners(data)
-            console.log(petowners)
         } catch (e) {
             console.log('Failed to load Pet Owners', e)
+        } finally {
+            setLoading(false) // Hide loading indicator
         }
+    }
+
+    const onRefresh = async () => {
+        setRefreshing(true)
+        await fetchPetOwners()
+        setRefreshing(false)
     }
 
     useFocusEffect(
@@ -97,12 +109,12 @@ const VetPetOwnerLists = ({ navigation }) => {
     const renderSearchBar = () => {
         const handleInputFocus = () => {
             // Redirect to another screen
-            navigation.navigate('PetProfileSeeAll')
+            navigation.navigate('VetPetownerProfileSeeAll')
         }
 
         return (
             <TouchableOpacity
-                onPress={() => navigation.navigate('PetProfileSeeAll')}
+                onPress={() => navigation.navigate('VetPetownerProfileSeeAll')}
                 style={[
                     styles.searchBarContainer,
                     {
@@ -123,13 +135,13 @@ const VetPetOwnerLists = ({ navigation }) => {
                     style={styles.searchInput}
                     onFocus={handleInputFocus}
                 />
-                <TouchableOpacity>
+                {/* <TouchableOpacity>
                     <Image
                         source={icons.filter}
                         resizeMode="contain"
                         style={styles.filterIcon}
                     />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </TouchableOpacity>
         )
     }
@@ -203,56 +215,48 @@ const VetPetOwnerLists = ({ navigation }) => {
     }
 
     const renderPetOwners = () => {
-        const [selectedCategories, setSelectedCategories] = useState(['1'])
-
-        const filteredDoctors = petOwnerList.filter(
-            (doctor) =>
-                selectedCategories.includes('0') ||
-                selectedCategories.includes(doctor.categoryId)
-        )
-
         return (
-            <View>
+            <>
                 <SubHeaderItem title="Pet Owners" />
-
-                <View
-                    style={{
-                        backgroundColor: COLORS.secondaryWhite,
-                    }}
-                >
-                    <FlatList
-                        data={petowners}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => {
-                            return (
-                                <HorizontalPetOwnerCard
-                                    name={item.name}
-                                    image={{
-                                        uri: `${STORAGE_URL}/petowners_profile/${item.image}`,
-                                    }}
-                                    // distance={item.distance}
-                                    // price={item.price}
-                                    // consultationFee={item.consultationFee}
-                                    addr_zone={item.addr_zone}
-                                    addr_brgy={item.addr_brgy}
-                                    email={item.email}
-                                    // rating={item.rating}
-                                    // numReviews={item.numReviews}
-                                    // isAvailable={item.isAvailable}
-                                    onPress={() =>
-                                        navigation.navigate(
-                                            'VetPetOwnerDetails',
-                                            {
-                                                petowner: item,
-                                            }
-                                        )
-                                    }
-                                />
-                            )
+                {/* Results container  */}
+                <View style={{ flex: 1, marginBottom: 40 }}>
+                    {/* Events result list */}
+                    <View
+                        style={{
+                            backgroundColor: COLORS.secondaryWhite,
                         }}
-                    />
+                    >
+                        <FlatList
+                            data={petowners}
+                            keyExtractor={(item) => item.id}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={({ item }) => {
+                                return (
+                                    <HorizontalPetOwnerCard
+                                        name={item.name}
+                                        image={{
+                                            uri: `${STORAGE_URL}/petowners_profile/${item.image}`,
+                                        }}
+                                        addr_zone={item.addr_zone}
+                                        addr_brgy={item.addr_brgy}
+                                        email={item.email}
+                                        onPress={() =>
+                                            navigation.navigate(
+                                                'VetPetOwnerDetails',
+                                                {
+                                                    petowner: item,
+                                                }
+                                            )
+                                        }
+                                    />
+                                )
+                            }}
+                            refreshing={refreshing}
+                            onRefresh={onRefresh} // Enables pull-to-refresh
+                        />
+                    </View>
                 </View>
-            </View>
+            </>
         )
     }
     return (
@@ -260,14 +264,19 @@ const VetPetOwnerLists = ({ navigation }) => {
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 {renderHeader()}
                 {renderSearchBar()}
-                <ScrollView
-                    style={{ marginBottom: '10%' }}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {renderBanner()}
-                    {/* {renderCategories()} */}
-                    {renderPetOwners()}
-                </ScrollView>
+                {renderBanner()}
+                {loading ? (
+                    <>
+                        <SubHeaderItem title="Pet Owners" />
+                        <ActivityIndicator
+                            size="large"
+                            color={COLORS.primary}
+                            style={{ marginTop: 20 }}
+                        />
+                    </>
+                ) : (
+                    renderPetOwners()
+                )}
             </View>
         </SafeAreaView>
     )

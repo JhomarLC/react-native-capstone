@@ -9,6 +9,7 @@ export async function login(credentials) {
 export async function loginAsVet(credentials) {
     const { data } = await axios.post('/veterinarian/login', credentials)
     await setToken(data.api_token)
+    return data
 }
 
 export async function register(formData) {

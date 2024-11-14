@@ -7,6 +7,7 @@ import {
     Switch,
     TextInput,
     FlatList,
+    ActivityIndicator,
 } from 'react-native'
 import React, { useState, useRef, useEffect } from 'react'
 import { COLORS, SIZES, icons, images } from '../constants'
@@ -28,19 +29,22 @@ const Veterinarians = ({ navigation }) => {
     const [filteredVeterinarians, setFilteredVeterinarians] = useState([])
     const [refreshing, setRefreshing] = useState(false)
     const [resultsCount, setResultsCount] = useState(0)
-
+    const [loading, setLoading] = useState(true) // New loading state
     /**
      * Render header
      */
+    // Load veterinarians function
     const loadVets = async () => {
+        setLoading(true) // Show loading indicator
         try {
             const result = await loadVeterinarians()
             setVeterinarians(result.data)
             setFilteredVeterinarians(result.data)
-
             setResultsCount(result.data.length)
         } catch (e) {
             console.log('Failed to load Veterinarians', e)
+        } finally {
+            setLoading(false) // Hide loading indicator
         }
     }
 
@@ -74,18 +78,6 @@ const Veterinarians = ({ navigation }) => {
                         Veterinarian
                     </Text>
                 </View>
-                <TouchableOpacity>
-                    <Image
-                        source={icons.moreCircle}
-                        resizeMode="contain"
-                        style={[
-                            styles.headerIcon,
-                            {
-                                tintColor: COLORS.greyscale900,
-                            },
-                        ]}
-                    />
-                </TouchableOpacity>
             </TouchableOpacity>
         )
     }
@@ -106,6 +98,47 @@ const Veterinarians = ({ navigation }) => {
             )
             setFilteredVeterinarians(allVeterinarians)
             setResultsCount(allVeterinarians.length)
+        }
+
+        if (loading) {
+            return (
+                <>
+                    <View
+                        onPress={() => console.log('Search')}
+                        style={[
+                            styles.searchBarContainer,
+                            {
+                                backgroundColor: COLORS.secondaryWhite,
+                            },
+                        ]}
+                    >
+                        <TouchableOpacity onPress={handleSearch}>
+                            <Image
+                                source={icons.search2}
+                                resizeMode="contain"
+                                style={styles.searchIcon}
+                            />
+                        </TouchableOpacity>
+                        <TextInput
+                            placeholder="Search"
+                            placeholderTextColor={COLORS.gray}
+                            style={[
+                                styles.searchInput,
+                                {
+                                    color: COLORS.greyscale900,
+                                },
+                            ]}
+                            value={searchQuery}
+                            onChangeText={(text) => setSearchQuery(text)}
+                        />
+                    </View>
+                    <ActivityIndicator
+                        size="large"
+                        color={COLORS.primary}
+                        style={{ marginTop: 20 }}
+                    />
+                </>
+            )
         }
 
         return (
@@ -140,58 +173,54 @@ const Veterinarians = ({ navigation }) => {
                         onChangeText={(text) => setSearchQuery(text)}
                     />
                 </View>
-                <ScrollView
-                    style={[styles.scrollView]}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* Results container  */}
-                    <View style={{ marginBottom: '30%' }}>
-                        {/* Events result list */}
-                        <View
-                            style={{
-                                backgroundColor: COLORS.secondaryWhite,
-                                marginVertical: 16,
-                            }}
-                        >
-                            {resultsCount && resultsCount > 0 ? (
-                                <>
-                                    {
-                                        <FlatList
-                                            data={filteredVeterinarians}
-                                            keyExtractor={(item) => item.id}
-                                            showsVerticalScrollIndicator={false}
-                                            renderItem={({ item }) => {
-                                                return (
-                                                    <HorizontalVeterinarianCard
-                                                        vetName={item.name}
-                                                        image={item.image}
-                                                        position={item.position}
-                                                        email={item.email}
-                                                        isAvailable={
-                                                            item.isAvailable
-                                                        }
-                                                        onPress={() =>
-                                                            navigation.navigate(
-                                                                'VeterinarianDetails',
-                                                                {
-                                                                    vet_id: item.id,
-                                                                }
-                                                            )
-                                                        }
-                                                    />
-                                                )
-                                            }}
-                                            refreshing={refreshing}
-                                            onRefresh={onRefresh}
-                                        />
-                                    }
-                                </>
-                            ) : (
-                                <NotFoundCard />
-                            )}
-                        </View>
+
+                {/* Results container  */}
+                <View style={{ marginBottom: '30%' }}>
+                    {/* Events result list */}
+                    <View
+                        style={{
+                            backgroundColor: COLORS.secondaryWhite,
+                            marginVertical: 16,
+                        }}
+                    >
+                        {resultsCount && resultsCount > 0 ? (
+                            <>
+                                {
+                                    <FlatList
+                                        data={filteredVeterinarians}
+                                        keyExtractor={(item) => item.id}
+                                        showsVerticalScrollIndicator={false}
+                                        renderItem={({ item }) => {
+                                            return (
+                                                <HorizontalVeterinarianCard
+                                                    vetName={item.name}
+                                                    image={item.image}
+                                                    position={item.position}
+                                                    email={item.email}
+                                                    isAvailable={
+                                                        item.isAvailable
+                                                    }
+                                                    onPress={() =>
+                                                        navigation.navigate(
+                                                            'VeterinarianDetails',
+                                                            {
+                                                                vet_id: item.id,
+                                                            }
+                                                        )
+                                                    }
+                                                />
+                                            )
+                                        }}
+                                        refreshing={refreshing}
+                                        onRefresh={onRefresh} // Enables pull-to-refresh
+                                    />
+                                }
+                            </>
+                        ) : (
+                            <NotFoundCard />
+                        )}
                     </View>
-                </ScrollView>
+                </View>
             </View>
         )
     }

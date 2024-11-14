@@ -171,7 +171,7 @@ const VetPetPictures = ({ petowner, pet }) => {
                 />
             ) : (
                 <View>
-                    <NotFoundCard message="No photos found for your pet. Please add image." />
+                    <NotFoundCard message="No photos found for this pet." />
                 </View>
             )}
 

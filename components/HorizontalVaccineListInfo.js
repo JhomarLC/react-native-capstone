@@ -27,7 +27,6 @@ const HorizontalVaccineListInfo = ({
     return (
         <TouchableOpacity
             onPress={() => refRBSheet.current.open()}
-            // onPress={onPress}
             style={[
                 styles.cardContainer,
                 {
@@ -36,7 +35,6 @@ const HorizontalVaccineListInfo = ({
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.05,
                     shadowRadius: 4,
-                    // Shadow for Android
                     elevation: 4,
                 },
             ]}
@@ -261,7 +259,16 @@ const HorizontalVaccineListInfo = ({
                                             >
                                                 Next Vaccination Date
                                             </Text>
-                                            <Text>{item.next_vaccination}</Text>
+
+                                            {item.next_vaccination ? (
+                                                <>
+                                                    <Text>
+                                                        {item.next_vaccination}
+                                                    </Text>
+                                                </>
+                                            ) : (
+                                                <Text>None</Text>
+                                            )}
                                         </View>
                                     </View>
 

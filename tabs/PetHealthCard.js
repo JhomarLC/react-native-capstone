@@ -6,10 +6,12 @@ import {
     TouchableOpacity,
     Image,
     Alert,
+    Modal,
+    TouchableWithoutFeedback,
 } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { upcomingAppointments } from '../data'
-import { SIZES, COLORS, icons, images } from '../constants'
+import { SIZES, COLORS, icons, images, illustrations } from '../constants'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../components/Button'
 import { useNavigation } from '@react-navigation/native'
@@ -22,6 +24,9 @@ import { STORAGE_URL } from '@env'
 import QRCode from 'react-native-qrcode-svg'
 import * as FileSystem from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library'
+import LottieView from 'lottie-react-native'
+import animations from '../constants/animations'
+import Loading from '../screens/Lottie/Loading'
 
 const PetHealthCard = ({ pet_id }) => {
     const [pet, setPet] = useState(null)
@@ -29,6 +34,7 @@ const PetHealthCard = ({ pet_id }) => {
     const pet_owner = user?.pet_owner
     const refRBSheet = useRef()
     const qrCodeRef = useRef()
+    const [modalVisible, setModalVisible] = useState(false)
 
     useEffect(() => {
         async function runEffect() {
@@ -50,11 +56,13 @@ const PetHealthCard = ({ pet_id }) => {
             </View>
         )
     }
+
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' }
         const date = new Date(dateString)
         return date.toLocaleDateString(undefined, options)
     }
+
     const downloadQRCode = async () => {
         try {
             const base64Data = await new Promise((resolve, reject) => {
@@ -79,14 +87,69 @@ const PetHealthCard = ({ pet_id }) => {
 
             const asset = await MediaLibrary.createAssetAsync(uri)
             await MediaLibrary.createAlbumAsync('Download', asset, false)
-            Alert.alert('Success', 'QR Code saved to your gallery!')
+            setModalVisible(true)
+            // Alert.alert('Success', 'QR Code saved to your gallery!')
         } catch (error) {
             console.log('Error saving QR Code:', error)
             Alert.alert('Error', 'Failed to save QR Code. Please try again.')
         }
     }
+    // Render modal
+    const renderModal = () => {
+        return (
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+            >
+                <TouchableWithoutFeedback
+                    onPress={() => setModalVisible(false)}
+                >
+                    <View style={[styles.modalContainer]}>
+                        <View
+                            style={[
+                                styles.modalSubContainer,
+                                {
+                                    backgroundColor: COLORS.secondaryWhite,
+                                },
+                            ]}
+                        >
+                            <Image
+                                source={illustrations.star}
+                                resizeMode="contain"
+                                style={styles.modalIllustration}
+                            />
+                            <Text style={styles.modalTitle}>Success!</Text>
+                            <Text
+                                style={[
+                                    styles.modalSubtitle,
+                                    {
+                                        color: COLORS.greyscale900,
+                                    },
+                                ]}
+                            >
+                                QR Code saved to your gallery!
+                            </Text>
+                            <Button
+                                title="Okay"
+                                filled
+                                onPress={() => {
+                                    setModalVisible(false)
+                                }}
+                                style={{
+                                    width: '100%',
+                                    marginTop: 12,
+                                }}
+                            />
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+        )
+    }
     return (
         <View style={[styles.wrapper]}>
+            {renderModal()}
             <ScrollView
                 style={[styles.scrollView]}
                 showsVerticalScrollIndicator={false}
@@ -611,9 +674,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingBottom: 16,
     },
-    // scrollView: {
-    //     backgroundColor: COLORS.tertiaryWhite
-    // },
     headerLeft: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -790,6 +850,53 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         justifyContent: 'center',
         paddingHorizontal: 15,
+    },
+
+    closeBtn: {
+        width: 42,
+        height: 42,
+        borderRadius: 999,
+        backgroundColor: COLORS.white,
+        position: 'absolute',
+        right: 16,
+        top: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontFamily: 'bold',
+        color: COLORS.primary,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalSubtitle: {
+        fontSize: 16,
+        fontFamily: 'regular',
+        color: COLORS.black2,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+    },
+    modalSubContainer: {
+        height: 494,
+        width: SIZES.width * 0.9,
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+    },
+    modalIllustration: {
+        height: 180,
+        width: 180,
+        marginVertical: 22,
     },
 })
 

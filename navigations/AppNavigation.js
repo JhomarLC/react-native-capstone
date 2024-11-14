@@ -84,6 +84,7 @@ import {
     VetVaccineList,
     VetAddVaccination,
     VetEditProfile,
+    VetPetownerProfileSeeAll,
 } from '../screens'
 import BottomTabNavigation from './BottomTabNavigation'
 import { loadUser, loadVetUser } from '../services/AuthService'
@@ -93,8 +94,17 @@ import VetLogin from '../screens/Veterinarians/VetLogin.js'
 import VetSignup from '../screens/Veterinarians/VetSignup.js'
 import VetBottomTabNavigation from './VetBottomTabNavigation.js'
 import * as Notifications from 'expo-notifications'
+import { addNotificationToken } from '../services/NotificationService.js'
 
 const Stack = createNativeStackNavigator()
+
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+    }),
+})
 
 const AppNavigation = () => {
     const [isFirstLaunch, setIsFirstLaunch] = useState(null)
@@ -124,6 +134,24 @@ const AppNavigation = () => {
                     const pushTokenData =
                         await Notifications.getExpoPushTokenAsync()
                     console.log(pushTokenData)
+                    console.log(user.pet_owner.id)
+
+                    try {
+                        const res = await addNotificationToken({
+                            pet_owner_id: user.pet_owner.id,
+                            token: pushTokenData.data,
+                        })
+                        console.log(res)
+                    } catch (e) {
+                        console.log(e)
+                        if (e.response?.status === 422) {
+                            console.log(e.response.data)
+                        } else if (e.response?.status == 401) {
+                            console.log(e.response)
+                        } else {
+                            console.log(e)
+                        }
+                    }
                     // Store the flag to prevent repeated prompts
                     await AsyncStorage.setItem('hasRequestedPermission', 'true')
                 } else {
@@ -155,17 +183,6 @@ const AppNavigation = () => {
                     loadedUser = await loadUser()
                 }
                 setUser(loadedUser)
-
-                // Check if it's the first launch
-                const alreadyLaunched =
-                    await AsyncStorage.getItem('alreadyLaunched')
-                if (alreadyLaunched === null) {
-                    await AsyncStorage.setItem('alreadyLaunched', 'true')
-                    setIsFirstLaunch(true)
-                } else {
-                    setIsFirstLaunch(false)
-                }
-                console.log(user)
             } catch (error) {
                 console.log('Initialization error:', error)
             } finally {
@@ -188,12 +205,13 @@ const AppNavigation = () => {
                     {user ? (
                         // If user is logged in, go directly to the main app screens
                         <>
-                            {role === 'veterinarian' ? (
+                            {role === 'veterinarian' && (
                                 <Stack.Screen
                                     name="VetMain"
                                     component={VetBottomTabNavigation}
                                 />
-                            ) : (
+                            )}
+                            {role === 'petowner' && (
                                 <Stack.Screen
                                     name="Main"
                                     component={BottomTabNavigation}
@@ -229,6 +247,10 @@ const AppNavigation = () => {
                             <Stack.Screen
                                 name="VetEditProfile"
                                 component={VetEditProfile}
+                            />
+                            <Stack.Screen
+                                name="VetPetownerProfileSeeAll"
+                                component={VetPetownerProfileSeeAll}
                             />
                             {/* PETOWNER */}
                             {/* <Stack.Screen

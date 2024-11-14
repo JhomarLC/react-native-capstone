@@ -6,10 +6,12 @@ import {
     Image,
     TouchableOpacity,
     ActivityIndicator,
+    Modal,
+    TouchableWithoutFeedback,
 } from 'react-native'
 import React, { useCallback, useContext, useReducer, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { COLORS, SIZES, icons, images } from '../../constants'
+import { COLORS, SIZES, icons, illustrations, images } from '../../constants'
 import Header from '../../components/Header'
 import { reducer } from '../../utils/reducers/formReducers'
 import { validateInput } from '../../utils/actions/formActions'
@@ -33,6 +35,7 @@ import {
 import { setToken } from '../../services/TokenService'
 import AuthContext from '../../contexts/AuthContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import CustomModal from '../../components/CustomModal'
 const isTestMode = true
 
 const initialState = {
@@ -66,7 +69,13 @@ const VetSignup = ({ navigation }) => {
     const [isChecked, setChecked] = useState(false)
     const [image, setImage] = useState(null)
     const [signature, setSignature] = useState(null)
-
+    const [modalVisible, setModalVisible] = useState(false)
+    const [modal, setModal] = useState({
+        title: '',
+        message: '',
+        icon: '',
+        action: '',
+    })
     const inputChangedHandler = useCallback(
         (inputId, inputValue) => {
             setError({})
@@ -158,17 +167,19 @@ const VetSignup = ({ navigation }) => {
 
         setIsLoading(true)
         try {
-            const data = await registerVet(formData)
-            console.log(data)
-
-            await setToken(data.api_token)
-            const user = await loadVetUser()
-
-            setRole('veterinarian')
-            await AsyncStorage.setItem('role', 'veterinarian')
-            console.log(user)
-            setUser(user)
-            navigation.replace('VetMain')
+            await registerVet(formData)
+            setModalVisible(true)
+            setModal({
+                title: 'Success!',
+                message:
+                    'Your account is pending admin verification. You’ll be notified once it’s approved.',
+                icon: illustrations.star,
+                action: () => {
+                    setModalVisible(false)
+                    navigation.navigate('VetLogin')
+                },
+            })
+            setModalVisible(false)
         } catch (e) {
             setIsLoading(false)
             console.log(e)
@@ -187,11 +198,74 @@ const VetSignup = ({ navigation }) => {
             setIsLoading(false) // Set loading back to false after login attempt
         }
     }
+    // // Render modal
+    // const renderModal = () => {
+    //     return (
+    //         <Modal
+    //             animationType="slide"
+    //             transparent={true}
+    //             visible={modalVisible}
+    //         >
+    //             <TouchableWithoutFeedback
+    //                 onPress={() => setModalVisible(false)}
+    //             >
+    //                 <View style={[styles.modalContainer]}>
+    //                     <View
+    //                         style={[
+    //                             styles.modalSubContainer,
+    //                             {
+    //                                 backgroundColor: COLORS.secondaryWhite,
+    //                             },
+    //                         ]}
+    //                     >
+    //                         <Image
+    //                             source={illustrations.star}
+    //                             resizeMode="contain"
+    //                             style={styles.modalIllustration}
+    //                         />
+    //                         <Text style={styles.modalTitle}>Success!</Text>
+    //                         <Text
+    //                             style={[
+    //                                 styles.modalSubtitle,
+    //                                 {
+    //                                     color: COLORS.greyscale900,
+    //                                 },
+    //                             ]}
+    //                         >
+    //                             Your account is pending admin verification.
+    //                             You’ll be notified once it’s approved.
+    //                         </Text>
+    //                         <Button
+    //                             title="Okay"
+    //                             filled
+    //                             onPress={() => {
+    //                                 setModalVisible(false)
+    //                                 navigation.replace('VetLogin')
+    //                             }}
+    //                             style={{
+    //                                 width: '100%',
+    //                                 marginTop: 12,
+    //                             }}
+    //                         />
+    //                     </View>
+    //                 </View>
+    //             </TouchableWithoutFeedback>
+    //         </Modal>
+    //     )
+    // }
 
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 <Header title="Signup as Veterinarians" />
+                {/* {renderModal()} */}
+                <CustomModal
+                    visible={modalVisible}
+                    onClose={modal.action}
+                    title={modal.title}
+                    message={modal.message}
+                    icon={modal.icon}
+                />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View
                         style={{
@@ -490,6 +564,53 @@ const styles = StyleSheet.create({
         marginVertical: 6,
         width: SIZES.width - 32,
         borderRadius: 30,
+    },
+
+    closeBtn: {
+        width: 42,
+        height: 42,
+        borderRadius: 999,
+        backgroundColor: COLORS.white,
+        position: 'absolute',
+        right: 16,
+        top: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontFamily: 'bold',
+        color: COLORS.primary,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalSubtitle: {
+        fontSize: 16,
+        fontFamily: 'regular',
+        color: COLORS.black2,
+        textAlign: 'center',
+        marginVertical: 12,
+    },
+    modalContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+    },
+    modalSubContainer: {
+        height: 494,
+        width: SIZES.width * 0.9,
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+    },
+    modalIllustration: {
+        height: 180,
+        width: 180,
+        marginVertical: 22,
     },
 })
 

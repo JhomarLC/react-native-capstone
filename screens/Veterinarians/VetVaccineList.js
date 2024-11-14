@@ -8,8 +8,9 @@ import {
     FlatList,
     ActivityIndicator,
     Alert,
+    BackHandler,
 } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { COLORS, SIZES, icons } from '../../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import NotFoundCard from '../../components/NotFoundCard'
@@ -17,9 +18,10 @@ import HorizontalVaccineListInfo from '../../components/HorizontalVaccineListInf
 import { ScrollView } from 'react-native-virtualized-view'
 import { loadPetMedication } from '../../services/PetsService'
 import { formatDate } from '../../services/FormatDate'
+import { useFocusEffect } from '@react-navigation/native'
 
 const VetVaccineList = ({ route, navigation }) => {
-    const { pet_id, medication, pet_status } = route.params
+    const { pet_id, medication, pet_status, pet, petowner } = route.params
     // State for medications, search query, filtered results, and loading
     const [medications, setMedications] = useState([]) // Original list of medications
     const [searchQuery, setSearchQuery] = useState('')
@@ -65,12 +67,39 @@ const VetVaccineList = ({ route, navigation }) => {
             setFilteredMedication(filtered)
         }
     }
+    useFocusEffect(
+        React.useCallback(() => {
+            const onBackPress = () => {
+                navigation.navigate('VetPetDetails', {
+                    pet: pet,
+                    petowner: petowner,
+                    initialTabIndex: 2,
+                })
+                return true
+            }
 
+            BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+            return () =>
+                BackHandler.removeEventListener(
+                    'hardwareBackPress',
+                    onBackPress
+                )
+        }, [navigation, pet, petowner])
+    )
     // Render header
     const renderHeader = () => (
         <View style={styles.headerContainer}>
             <View style={styles.headerLeft}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
+                <TouchableOpacity
+                    onPress={() =>
+                        navigation.navigate('VetPetDetails', {
+                            pet: pet,
+                            petowner: petowner,
+                            initialTabIndex: 2,
+                        })
+                    }
+                >
                     <Image
                         source={icons.back}
                         resizeMode="contain"
@@ -122,6 +151,9 @@ const VetVaccineList = ({ route, navigation }) => {
                         navigation.navigate('VetAddVaccination', {
                             medication: medication,
                             pet_id: pet_id,
+                            pet_status: pet_status,
+                            pet: pet,
+                            petowner: petowner,
                         })
                     }
                 >
