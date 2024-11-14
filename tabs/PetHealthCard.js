@@ -10,13 +10,10 @@ import {
     TouchableWithoutFeedback,
 } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { upcomingAppointments } from '../data'
 import { SIZES, COLORS, icons, images, illustrations } from '../constants'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../components/Button'
-import { useNavigation } from '@react-navigation/native'
 import { FontAwesome } from '@expo/vector-icons'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { ScrollView } from 'react-native-virtualized-view'
 import { loadPetProfile } from '../services/PetsService'
 import AuthContext from '../contexts/AuthContext'
@@ -24,9 +21,6 @@ import { STORAGE_URL } from '@env'
 import QRCode from 'react-native-qrcode-svg'
 import * as FileSystem from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library'
-import LottieView from 'lottie-react-native'
-import animations from '../constants/animations'
-import Loading from '../screens/Lottie/Loading'
 
 const PetHealthCard = ({ pet_id }) => {
     const [pet, setPet] = useState(null)
@@ -499,7 +493,7 @@ const PetHealthCard = ({ pet_id }) => {
                                 fontSize: 16,
                             }}
                         >
-                            View QR Code
+                            Generate QR Code
                         </Text>
                     </View>
                 </TouchableOpacity>

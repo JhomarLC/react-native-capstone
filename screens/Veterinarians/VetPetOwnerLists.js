@@ -8,7 +8,7 @@ import {
     Image,
     ActivityIndicator,
 } from 'react-native'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { COLORS, SIZES, icons, images } from '../../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ScrollView } from 'react-native-virtualized-view'
@@ -25,6 +25,11 @@ import AuthContext from '../../contexts/AuthContext'
 import { STORAGE_URL } from '@env'
 import { loadPetOwners } from '../../services/PetsOwnerService'
 import { useFocusEffect } from '@react-navigation/native'
+import { loadEvents } from '../../services/EventService'
+import {
+    formatDate,
+    formatUpcommingEventsDate,
+} from '../../services/FormatDate'
 
 const VetPetOwnerLists = ({ navigation }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -34,6 +39,35 @@ const VetPetOwnerLists = ({ navigation }) => {
     const [loading, setLoading] = useState(true) // New loading state
 
     const [refreshing, setRefreshing] = useState(false)
+    const [announcement, setAnnouncement] = useState([])
+    const [eventCount, setEventCount] = useState(0)
+
+    const fetchEvents = async () => {
+        try {
+            const response = await loadEvents()
+            const now = new Date()
+
+            // Filter for upcoming events and sort by date_time in ascending order
+            const upcomingEvents = response.data
+                .filter((event) => new Date(event.date_time) > now)
+                .sort((a, b) => new Date(a.date_time) - new Date(b.date_time))
+                .slice(0, 3)
+
+            if (upcomingEvents.length !== eventCount) {
+                setAnnouncement(upcomingEvents)
+                setEventCount(upcomingEvents.length)
+            }
+        } catch (error) {
+            console.error('Error fetching events:', error)
+        }
+    }
+
+    useEffect(() => {
+        fetchEvents()
+
+        const intervalId = setInterval(fetchEvents, 5000)
+        return () => clearInterval(intervalId)
+    }, [eventCount])
 
     const fetchPetOwners = async () => {
         setLoading(true)
@@ -50,12 +84,14 @@ const VetPetOwnerLists = ({ navigation }) => {
     const onRefresh = async () => {
         setRefreshing(true)
         await fetchPetOwners()
+        await fetchEvents()
         setRefreshing(false)
     }
 
     useFocusEffect(
         React.useCallback(() => {
             fetchPetOwners()
+            fetchEvents()
         }, [])
     )
     /**
@@ -135,13 +171,6 @@ const VetPetOwnerLists = ({ navigation }) => {
                     style={styles.searchInput}
                     onFocus={handleInputFocus}
                 />
-                {/* <TouchableOpacity>
-                    <Image
-                        source={icons.filter}
-                        resizeMode="contain"
-                        style={styles.filterIcon}
-                    />
-                </TouchableOpacity> */}
             </TouchableOpacity>
         )
     }
@@ -150,40 +179,20 @@ const VetPetOwnerLists = ({ navigation }) => {
         <View style={styles.bannerContainer}>
             <View style={styles.bannerTopContainer}>
                 <View>
-                    <Text style={styles.bannerDicount}>Announcement</Text>
+                    <Text style={styles.bannerDicount}>Upcoming Events</Text>
                     {/* <Text style={styles.bannerDicount}>{item.discount} Announcement</Text> */}
-                    <Text style={styles.bannerDiscountName}>
-                        {item.discountName}
-                    </Text>
+                    <Text style={styles.bannerDiscountName}>{item.name}</Text>
                 </View>
                 {/* <Text style={styles.bannerDiscountNum}>{item.discount}</Text> */}
             </View>
             <View style={styles.bannerBottomContainer}>
-                <Text style={styles.bannerBottomTitle}>{item.bottomTitle}</Text>
+                <Text style={styles.bannerBottomTitle}>{item.place}</Text>
                 <Text style={styles.bannerBottomSubtitle}>
-                    {item.bottomSubtitle}
+                    {formatUpcommingEventsDate(item.date_time)}
                 </Text>
             </View>
         </View>
     )
-
-    const keyExtractor = (item) => item.id.toString()
-
-    const handleEndReached = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length)
-    }
-
-    const renderDot = (index) => {
-        return (
-            <View
-                style={[
-                    styles.dot,
-                    index === currentIndex ? styles.activeDot : null,
-                ]}
-                key={index}
-            />
-        )
-    }
 
     /**
      * Render banner
@@ -192,14 +201,12 @@ const VetPetOwnerLists = ({ navigation }) => {
         return (
             <View style={styles.bannerItemContainer}>
                 <FlatList
-                    data={banners}
+                    data={announcement}
                     renderItem={renderBannerItem}
-                    keyExtractor={keyExtractor}
+                    keyExtractor={(item) => item.id.toString()}
                     horizontal
                     pagingEnabled
                     showsHorizontalScrollIndicator={false}
-                    onEndReached={handleEndReached}
-                    onEndReachedThreshold={0.5}
                     onMomentumScrollEnd={(event) => {
                         const newIndex = Math.round(
                             event.nativeEvent.contentOffset.x / SIZES.width
@@ -208,7 +215,17 @@ const VetPetOwnerLists = ({ navigation }) => {
                     }}
                 />
                 <View style={styles.dotContainer}>
-                    {banners.map((_, index) => renderDot(index))}
+                    {announcement.map((_, index) => (
+                        <View
+                            style={[
+                                styles.dot,
+                                index === currentIndex
+                                    ? styles.activeDot
+                                    : null,
+                            ]}
+                            key={index}
+                        />
+                    ))}
                 </View>
             </View>
         )

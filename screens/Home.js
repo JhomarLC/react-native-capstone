@@ -6,6 +6,7 @@ import {
     TextInput,
     FlatList,
     Image,
+    ActivityIndicator,
 } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { COLORS, SIZES, icons, images } from '../constants'
@@ -22,6 +23,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { loadEvents } from '../services/EventService'
 import NotFoundCard from '../components/NotFoundCard'
 import NotFoundCardPet from '../components/NotFoundCardPet'
+import { formatUpcommingEventsDate } from '../services/FormatDate'
 
 const Home = ({ navigation }) => {
     const { user } = useContext(AuthContext)
@@ -31,34 +33,102 @@ const Home = ({ navigation }) => {
     }
     const [currentIndex, setCurrentIndex] = useState(0)
     const [pets, setPets] = useState([])
-    const [events, setEvents] = useState([])
+    const [announcement, setAnnouncement] = useState([])
+    const [eventCount, setEventCount] = useState(0)
+    const [loading, setLoading] = useState(true)
+    const [refreshing, setRefreshing] = useState(false)
+    const [selectedPetTypes, setSelectedPetTypes] = useState(['0'])
 
-    const fetchPets = async () => {
+    const fetchEvents = async () => {
         try {
-            const { data } = await loadPets(pet_owner.id)
-            setPets(data)
-        } catch (e) {
-            console.log('Failed to load Pets', e)
-        }
-    }
-    const fetchAnnouncements = async () => {
-        try {
-            const { data } = await loadEvents(pet_owner.id)
-            setEvents(data)
-            console.log(data)
-        } catch (e) {
-            console.log('Failed to load Pets', e)
+            const response = await loadEvents()
+            const now = new Date()
+
+            // Filter for upcoming events and sort by date_time in ascending order
+            const upcomingEvents = response.data
+                .filter((event) => new Date(event.date_time) > now)
+                .sort((a, b) => new Date(a.date_time) - new Date(b.date_time))
+                .slice(0, 3)
+
+            if (upcomingEvents.length !== eventCount) {
+                setAnnouncement(upcomingEvents)
+                setEventCount(upcomingEvents.length)
+            }
+        } catch (error) {
+            console.error('Error fetching events:', error)
         }
     }
 
     useEffect(() => {
-        fetchAnnouncements()
+        fetchEvents()
+        const intervalId = setInterval(fetchEvents, 5000)
+        return () => clearInterval(intervalId)
     }, [])
+
+    const fetchPets = async () => {
+        console.log('Fetching pets...')
+        setLoading(true)
+        try {
+            const { data } = await loadPets(pet_owner.id)
+            setPets(data)
+            console.log('Pets loaded:', data)
+        } catch (e) {
+            console.log('Failed to load pets:', e)
+        } finally {
+            setLoading(false)
+            console.log('Loading set to false')
+        }
+    }
+
+    const onRefresh = async () => {
+        setRefreshing(true)
+        await fetchPets()
+        await fetchEvents()
+        setRefreshing(false)
+    }
+
     useFocusEffect(
         React.useCallback(() => {
             fetchPets()
         }, [])
     )
+    const filteredPets = pets.filter(
+        (pet) =>
+            selectedPetTypes.includes('0') || // Include all pets if '0' is selected
+            selectedPetTypes.includes(pet.pet_type === 'dog' ? '1' : '2') // Otherwise, filter by pet_type
+    )
+
+    // Category item
+    const renderCategoryItem = ({ item }) => (
+        <TouchableOpacity
+            style={{
+                backgroundColor: selectedPetTypes.includes(item.id)
+                    ? COLORS.primary
+                    : 'transparent',
+                padding: 10,
+                marginVertical: 5,
+                borderColor: COLORS.primary,
+                borderWidth: 1.3,
+                borderRadius: 24,
+                marginRight: 12,
+            }}
+            onPress={() => selectCategory(item.id)}
+        >
+            <Text
+                style={{
+                    color: selectedPetTypes.includes(item.id)
+                        ? COLORS.white
+                        : COLORS.primary,
+                }}
+            >
+                {item.name}
+            </Text>
+        </TouchableOpacity>
+    )
+
+    const selectCategory = (categoryId) => {
+        setSelectedPetTypes([categoryId])
+    }
 
     /**
      * Render header
@@ -143,40 +213,20 @@ const Home = ({ navigation }) => {
         <View style={styles.bannerContainer}>
             <View style={styles.bannerTopContainer}>
                 <View>
-                    <Text style={styles.bannerDicount}>Announcement</Text>
+                    <Text style={styles.bannerDicount}>Upcoming Events</Text>
                     {/* <Text style={styles.bannerDicount}>{item.discount} Announcement</Text> */}
-                    <Text style={styles.bannerDiscountName}>
-                        {item.discountName}
-                    </Text>
+                    <Text style={styles.bannerDiscountName}>{item.name}</Text>
                 </View>
                 {/* <Text style={styles.bannerDiscountNum}>{item.discount}</Text> */}
             </View>
             <View style={styles.bannerBottomContainer}>
-                <Text style={styles.bannerBottomTitle}>{item.bottomTitle}</Text>
+                <Text style={styles.bannerBottomTitle}>{item.place}</Text>
                 <Text style={styles.bannerBottomSubtitle}>
-                    {item.bottomSubtitle}
+                    {formatUpcommingEventsDate(item.date_time)}
                 </Text>
             </View>
         </View>
     )
-
-    const keyExtractor = (item) => item.id.toString()
-
-    const handleEndReached = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length)
-    }
-
-    const renderDot = (index) => {
-        return (
-            <View
-                style={[
-                    styles.dot,
-                    index === currentIndex ? styles.activeDot : null,
-                ]}
-                key={index}
-            />
-        )
-    }
 
     /**
      * Render banner
@@ -185,14 +235,12 @@ const Home = ({ navigation }) => {
         return (
             <View style={styles.bannerItemContainer}>
                 <FlatList
-                    data={banners}
+                    data={announcement}
                     renderItem={renderBannerItem}
-                    keyExtractor={keyExtractor}
+                    keyExtractor={(item) => item.id.toString()}
                     horizontal
                     pagingEnabled
                     showsHorizontalScrollIndicator={false}
-                    onEndReached={handleEndReached}
-                    onEndReachedThreshold={0.5}
                     onMomentumScrollEnd={(event) => {
                         const newIndex = Math.round(
                             event.nativeEvent.contentOffset.x / SIZES.width
@@ -201,80 +249,28 @@ const Home = ({ navigation }) => {
                     }}
                 />
                 <View style={styles.dotContainer}>
-                    {banners.map((_, index) => renderDot(index))}
+                    {announcement.map((_, index) => (
+                        <View
+                            style={[
+                                styles.dot,
+                                index === currentIndex
+                                    ? styles.activeDot
+                                    : null,
+                            ]}
+                            key={index}
+                        />
+                    ))}
                 </View>
             </View>
         )
     }
 
     const renderPets = () => {
-        const [selectedPetTypes, setSelectedPetTypes] = useState(['0'])
-
-        const filteredPets = pets.filter(
-            (pet) =>
-                selectedPetTypes.includes('0') || // Include all pets if '0' is selected
-                selectedPetTypes.includes(pet.pet_type === 'dog' ? '1' : '2') // Otherwise, filter by pet_type
-        )
-
-        // Category item
-        const renderCategoryItem = ({ item }) => (
-            <TouchableOpacity
-                style={{
-                    backgroundColor: selectedPetTypes.includes(item.id)
-                        ? COLORS.primary
-                        : 'transparent',
-                    padding: 10,
-                    marginVertical: 5,
-                    borderColor: COLORS.primary,
-                    borderWidth: 1.3,
-                    borderRadius: 24,
-                    marginRight: 12,
-                }}
-                onPress={() => selectCategory(item.id)}
-            >
-                <Text
-                    style={{
-                        color: selectedPetTypes.includes(item.id)
-                            ? COLORS.white
-                            : COLORS.primary,
-                    }}
-                >
-                    {item.name}
-                </Text>
-            </TouchableOpacity>
-        )
-
-        const selectCategory = (categoryId) => {
-            setSelectedPetTypes([categoryId])
-        }
-
         return (
             <View>
-                <SubHeaderItem title="Pet Profiles" />
-                <FlatList
-                    data={categories}
-                    keyExtractor={(item) => item.id}
-                    showsHorizontalScrollIndicator={false}
-                    horizontal
-                    renderItem={renderCategoryItem}
-                />
-
                 {pets.length === 0 ? (
                     <View style={styles.noPetsContainer}>
                         <NotFoundCardPet message="Sorry no pets found, please add your pet by clicking the plus button bellow." />
-                        {/* <Text style={styles.noPetsText}>
-                            No pets available.
-                        </Text> */}
-                        {/* <TouchableOpacity
-                            style={styles.createPetButton}
-                            onPress={() =>
-                                navigation.navigate('CreatePetProfile')
-                            } // Navigate to CreatePet screen
-                        >
-                            <Text style={styles.createPetButtonText}>
-                                Create Now
-                            </Text>
-                        </TouchableOpacity> */}
                     </View>
                 ) : (
                     <View
@@ -286,6 +282,7 @@ const Home = ({ navigation }) => {
                         <FlatList
                             data={filteredPets}
                             keyExtractor={(item) => item.id}
+                            showsVerticalScrollIndicator={false}
                             renderItem={({ item }) => {
                                 return (
                                     <HorizontalDoctorCard
@@ -308,6 +305,8 @@ const Home = ({ navigation }) => {
                                     />
                                 )
                             }}
+                            refreshing={refreshing}
+                            onRefresh={onRefresh} // Enables pull-to-refresh
                         />
                     </View>
                 )}
@@ -319,12 +318,32 @@ const Home = ({ navigation }) => {
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 {renderHeader()}
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    {renderSearchBar()}
-                    {renderBanner()}
-                    {/* {renderCategories()} */}
-                    {renderPets()}
-                </ScrollView>
+                {/* <ScrollView showsVerticalScrollIndicator={false}> */}
+                {renderSearchBar()}
+                {renderBanner()}
+                <SubHeaderItem title="Pet Profiles" />
+                <View>
+                    <FlatList
+                        data={categories}
+                        keyExtractor={(item) => item.id}
+                        showsHorizontalScrollIndicator={false}
+                        horizontal
+                        renderItem={renderCategoryItem}
+                    />
+                </View>
+                {loading ? (
+                    <>
+                        <ActivityIndicator
+                            size="large"
+                            color={COLORS.primary}
+                            style={{ marginTop: 20 }}
+                        />
+                    </>
+                ) : (
+                    renderPets()
+                )}
+                {/* {renderCategories()} */}
+                {/* </ScrollView> */}
             </View>
             {/** Floating "Add New Pet" Button **/}
             <TouchableOpacity

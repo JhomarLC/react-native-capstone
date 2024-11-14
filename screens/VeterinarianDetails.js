@@ -55,20 +55,6 @@ const VeterinarianDetails = ({ route, navigation }) => {
                         Veterinarian
                     </Text>
                 </View>
-                <View style={styles.viewRight}>
-                    <TouchableOpacity>
-                        <Image
-                            source={icons.moreCircle}
-                            resizeMode="contain"
-                            style={[
-                                styles.moreIcon,
-                                {
-                                    tintColor: COLORS.black,
-                                },
-                            ]}
-                        />
-                    </TouchableOpacity>
-                </View>
             </View>
         )
     }

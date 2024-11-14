@@ -6,12 +6,10 @@ import { FontAwesome } from '@expo/vector-icons'
 const HorizontalDoctorCard = ({
     name,
     image,
-    color_description,
     petBreed,
     status,
     onPress,
     pet_type,
-    date_of_birth,
     age,
 }) => {
     const getStatusStyle = (status) => {

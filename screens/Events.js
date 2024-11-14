@@ -21,6 +21,7 @@ import { loadEvents } from '../services/EventService'
 const Events = ({ navigation }) => {
     const [items, setItems] = useState({})
     const [refreshing, setRefreshing] = useState(false)
+    const [eventCount, setEventCount] = useState(0)
 
     const fetchEvents = async () => {
         try {
@@ -58,8 +59,15 @@ const Events = ({ navigation }) => {
     }
 
     useEffect(() => {
+        // Initial fetch
         fetchEvents()
-    }, [])
+
+        // Set up polling interval to fetch events every 5 seconds
+        const intervalId = setInterval(fetchEvents, 5000)
+
+        // Clean up interval on unmount
+        return () => clearInterval(intervalId)
+    }, [eventCount])
 
     /**
      * render header
@@ -125,13 +133,14 @@ const Events = ({ navigation }) => {
 
         return (
             <ScrollView
-                contentContainerStyle={styles.emptyContainer}
+                contentContainerStyle={[styles.emptyContainer, { flexGrow: 1 }]}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
                     />
                 }
+                showsVerticalScrollIndicator={false}
             >
                 <Text style={styles.emptyText}>No events for today</Text>
 
@@ -263,15 +272,16 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
+        minHeight: '100%', // Ensures the container takes up the full screen height
         alignItems: 'center',
-        paddingHorizontal: 20,
+        paddingBottom: 100,
+        paddingHorizontal: 10,
     },
     emptyText: {
         fontSize: 18,
         color: '#AAA',
         marginBottom: 20,
+        marginTop: 20,
         fontWeight: '500',
     },
     upcomingContainer: {

@@ -7,6 +7,7 @@ import {
     TextInput,
     FlatList,
     RefreshControl,
+    ActivityIndicator,
 } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { COLORS, SIZES, icons } from '../constants'
@@ -32,14 +33,17 @@ const Search = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [filteredPets, setFilteredPets] = useState([])
     const [refreshing, setRefreshing] = useState(false)
-
+    const [loading, setLoading] = useState(false)
     const fetchPets = async () => {
+        setLoading(true)
         try {
             const { data } = await loadPets(pet_owner.id)
             setPets(data)
             setFilteredPets(data) // Set initial filtered list to full pet list
         } catch (e) {
             console.log('Failed to load Pets', e)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -89,23 +93,6 @@ const Search = ({ navigation }) => {
      */
     const renderContent = () => (
         <View>
-            <View style={styles.searchBarContainer}>
-                <TouchableOpacity onPress={handleSearch}>
-                    <Image
-                        source={icons.search2}
-                        resizeMode="contain"
-                        style={styles.searchIcon}
-                    />
-                </TouchableOpacity>
-                <TextInput
-                    placeholder="Search"
-                    placeholderTextColor={COLORS.gray}
-                    style={styles.searchInput}
-                    value={searchQuery}
-                    onChangeText={(text) => setSearchQuery(text)}
-                />
-            </View>
-
             <View style={styles.resultsContainer}>
                 {filteredPets.length > 0 ? (
                     <FlatList
@@ -132,12 +119,8 @@ const Search = ({ navigation }) => {
                                 }
                             />
                         )}
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={refreshing}
-                                onRefresh={onRefresh}
-                            />
-                        }
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
                     />
                 ) : (
                     <NotFoundCard />
@@ -223,7 +206,33 @@ const Search = ({ navigation }) => {
         <SafeAreaView style={styles.area}>
             <View style={styles.container}>
                 {renderHeader()}
-                {renderContent()}
+                <View style={styles.searchBarContainer}>
+                    <TouchableOpacity onPress={handleSearch}>
+                        <Image
+                            source={icons.search2}
+                            resizeMode="contain"
+                            style={styles.searchIcon}
+                        />
+                    </TouchableOpacity>
+                    <TextInput
+                        placeholder="Search"
+                        placeholderTextColor={COLORS.gray}
+                        style={styles.searchInput}
+                        value={searchQuery}
+                        onChangeText={(text) => setSearchQuery(text)}
+                    />
+                </View>
+                {loading ? (
+                    <>
+                        <ActivityIndicator
+                            size="large"
+                            color={COLORS.primary}
+                            style={{ marginTop: 20 }}
+                        />
+                    </>
+                ) : (
+                    renderContent()
+                )}
                 <RBSheet
                     ref={refRBSheet}
                     closeOnDragDown
@@ -366,6 +375,7 @@ const styles = StyleSheet.create({
     resultsContainer: {
         backgroundColor: COLORS.secondaryWhite,
         marginVertical: 16,
+        marginBottom: 100,
     },
 })
 

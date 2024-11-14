@@ -13,11 +13,20 @@ import { useNavigation } from '@react-navigation/native'
 import { FontAwesome } from '@expo/vector-icons'
 import { ScrollView } from 'react-native-virtualized-view'
 import AuthContext from '../contexts/AuthContext'
-import { loadMedications } from '../services/PetsService'
+import { loadMedications, loadPetProfile } from '../services/PetsService'
 
 const VetPetVaccination = ({ petowner, pet }) => {
     const [vaccine, setVaccine] = useState(VaccineName)
     const navigation = useNavigation()
+
+    const loadPetData = async () => {
+        try {
+            const updatedPet = await loadPetProfile(petowner.id, pet.id) // Fetch latest pet data
+            setPetData(updatedPet.data)
+        } catch (error) {
+            console.error('Failed to load pet data:', error)
+        }
+    }
 
     useEffect(() => {
         async function runEffect() {

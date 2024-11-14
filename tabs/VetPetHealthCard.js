@@ -8,7 +8,7 @@ import {
     Alert,
 } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
-import { SIZES, COLORS, icons } from '../constants'
+import { SIZES, COLORS, icons, illustrations } from '../constants'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../components/Button'
 import { FontAwesome } from '@expo/vector-icons'
@@ -18,6 +18,7 @@ import { STORAGE_URL } from '@env'
 import QRCode from 'react-native-qrcode-svg'
 import * as FileSystem from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library'
+import CustomModal from '../components/CustomModal'
 
 const VetPetHealthCard = ({ pet, petowner }) => {
     const refRBSheet = useRef()
@@ -26,9 +27,17 @@ const VetPetHealthCard = ({ pet, petowner }) => {
     const [isApproving, setIsApproving] = useState(false)
     const qrCodeRef = useRef()
 
+    const [modalVisible, setModalVisible] = useState(false)
+    const [modal, setModal] = useState({
+        title: '',
+        message: '',
+        icon: '',
+        action: '',
+    })
+
     const loadPetData = async () => {
         try {
-            const updatedPet = await loadPetProfile(pet.id, pet.id) // Fetch latest pet data
+            const updatedPet = await loadPetProfile(petowner.id, pet.id) // Fetch latest pet data
             setPetData(updatedPet.data)
         } catch (error) {
             console.error('Failed to load pet data:', error)
@@ -36,9 +45,10 @@ const VetPetHealthCard = ({ pet, petowner }) => {
     }
 
     useEffect(() => {
-        loadPetData() // Initial data load
-    }, [])
-
+        if (pet.id) {
+            loadPetData()
+        }
+    }, [pet.id])
     if (!petData) {
         return (
             <View style={styles.loadingContainer}>
@@ -48,6 +58,7 @@ const VetPetHealthCard = ({ pet, petowner }) => {
             </View>
         )
     }
+
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' }
         const date = new Date(dateString)
@@ -69,16 +80,30 @@ const VetPetHealthCard = ({ pet, petowner }) => {
 
             const { status } = await MediaLibrary.requestPermissionsAsync()
             if (status !== 'granted') {
-                Alert.alert(
-                    'Permission required',
-                    'Permission to access media library is required to save QR code.'
-                )
+                setModalVisible(true)
+                setModal({
+                    title: 'Permission required',
+                    message:
+                        'Permission to access media library is required to save QR code.',
+                    icon: illustrations.notFound,
+                    action: () => {
+                        setModalVisible(false)
+                    },
+                })
                 return
             }
 
             const asset = await MediaLibrary.createAssetAsync(uri)
             await MediaLibrary.createAlbumAsync('Download', asset, false)
-            Alert.alert('Success', 'QR Code saved to your gallery!')
+            setModalVisible(true)
+            setModal({
+                title: 'Success!',
+                message: 'QR Code saved to your gallery!',
+                icon: illustrations.star,
+                action: () => {
+                    setModalVisible(false)
+                },
+            })
         } catch (error) {
             console.log('Error saving QR Code:', error)
             Alert.alert('Error', 'Failed to save QR Code. Please try again.')
@@ -86,6 +111,13 @@ const VetPetHealthCard = ({ pet, petowner }) => {
     }
     return (
         <View style={[styles.wrapper]}>
+            <CustomModal
+                visible={modalVisible}
+                onClose={modal.action}
+                title={modal.title}
+                message={modal.message}
+                icon={modal.icon}
+            />
             <ScrollView
                 style={[styles.scrollView]}
                 showsVerticalScrollIndicator={false}
@@ -402,7 +434,6 @@ const VetPetHealthCard = ({ pet, petowner }) => {
                             >
                                 Birthday
                             </Text>
-                            {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
                             <Text
                                 style={[
                                     styles.BirthDate,
@@ -424,20 +455,7 @@ const VetPetHealthCard = ({ pet, petowner }) => {
                                 {petData.age}
                             </Text>
                         </View>
-                        {/* <Text
-                            style={[
-                                styles.BirthCount,
-                                {
-                                    color: COLORS.grayscale700,
-                                },
-                            ]}
-                        >
-                            {pet.age}
-                        </Text> */}
                     </View>
-                    {/* <View>
-                        <QRCode value={pet.id} />
-                    </View> */}
                 </View>
                 <RBSheet
                     ref={refRBSheet2}
@@ -523,19 +541,22 @@ const VetPetHealthCard = ({ pet, petowner }) => {
                 </RBSheet>
             </ScrollView>
             <View style={styles.bottomContainerQR}>
-                <TouchableOpacity onPress={() => refRBSheet.current.open()}>
-                    <View style={styles.btn}>
-                        <Text
-                            style={{
-                                color: COLORS.white,
-                                fontFamily: 'bold',
-                                fontSize: 16,
-                            }}
-                        >
-                            View QR Code
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                {petData.status !== 'declined' && (
+                    <TouchableOpacity onPress={() => refRBSheet.current.open()}>
+                        <View style={styles.btn}>
+                            <Text
+                                style={{
+                                    color: COLORS.white,
+                                    fontFamily: 'bold',
+                                    fontSize: 16,
+                                }}
+                            >
+                                Generate QR Code
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                )}
+
                 {/* Pet profile status */}
                 <RBSheet
                     ref={refRBSheet}

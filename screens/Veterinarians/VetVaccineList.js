@@ -11,14 +11,15 @@ import {
     BackHandler,
 } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import { COLORS, SIZES, icons } from '../../constants'
+import { COLORS, SIZES, icons, illustrations } from '../../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import NotFoundCard from '../../components/NotFoundCard'
 import HorizontalVaccineListInfo from '../../components/HorizontalVaccineListInfo'
 import { ScrollView } from 'react-native-virtualized-view'
-import { loadPetMedication } from '../../services/PetsService'
+import { loadPetMedication, loadPetProfile } from '../../services/PetsService'
 import { formatDate } from '../../services/FormatDate'
 import { useFocusEffect } from '@react-navigation/native'
+import CustomModal from '../../components/CustomModal'
 
 const VetVaccineList = ({ route, navigation }) => {
     const { pet_id, medication, pet_status, pet, petowner } = route.params
@@ -27,13 +28,31 @@ const VetVaccineList = ({ route, navigation }) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [filteredMedication, setFilteredMedication] = useState([]) // Filtered list based on search
     const [isLoading, setIsLoading] = useState(true)
+    const [petData, setPetData] = useState(pet)
+    const [modalVisible, setModalVisible] = useState(false)
+    const [modal, setModal] = useState({
+        title: '',
+        message: '',
+        icon: '',
+        action: '',
+    })
 
+    const loadPetData = async () => {
+        try {
+            const updatedPet = await loadPetProfile(petowner.id, pet.id) // Fetch latest pet data
+            setPetData(updatedPet.data)
+        } catch (error) {
+            console.error('Failed to load pet data:', error)
+        }
+    }
     // Load medications data on component mount
     useEffect(() => {
+        loadPetData()
         async function fetchMedications() {
             try {
                 setIsLoading(true) // Start loading
                 const result = await loadPetMedication(pet_id, medication.id)
+
                 const filteredData = result.data.filter(
                     (medicationItem) =>
                         medicationItem.medicationname.medication_type_id ===
@@ -145,7 +164,7 @@ const VetVaccineList = ({ route, navigation }) => {
                     onChangeText={setSearchQuery}
                 />
             </View>
-            {pet_status === 'approved' ? (
+            {petData.status === 'approved' ? (
                 <TouchableOpacity
                     onPress={() =>
                         navigation.navigate('VetAddVaccination', {
@@ -181,12 +200,17 @@ const VetVaccineList = ({ route, navigation }) => {
                 </TouchableOpacity>
             ) : (
                 <TouchableOpacity
-                    onPress={() =>
-                        Alert.alert(
-                            `Pet is ${pet_status}`,
-                            `The pet is ${pet_status}, it should be "Approved"`
-                        )
-                    }
+                    onPress={() => {
+                        setModalVisible(true)
+                        setModal({
+                            title: `Pet is ${pet_status}`,
+                            message: `The pet is ${pet_status}`,
+                            icon: illustrations.notFound,
+                            action: () => {
+                                setModalVisible(false)
+                            },
+                        })
+                    }}
                 >
                     <View style={styles.btnAddVaccine}>
                         <Image
@@ -249,6 +273,13 @@ const VetVaccineList = ({ route, navigation }) => {
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
+                <CustomModal
+                    visible={modalVisible}
+                    onClose={modal.action}
+                    title={modal.title}
+                    message={modal.message}
+                    icon={modal.icon}
+                />
                 {renderHeader()}
                 {renderContent()}
             </View>

@@ -1,5 +1,5 @@
 import { View, Platform, Image, Text, Animated } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { COLORS, FONTS, icons } from '../constants'
 import {
@@ -9,10 +9,41 @@ import {
     Events,
     VetProfile,
 } from '../screens'
+import { loadEvents } from '../services/PetsService'
 
 const Tab = createBottomTabNavigator()
 
 const VetBottomTabNavigation = () => {
+    const [eventCount, setEventCount] = useState(0)
+
+    const fetchEvents = async () => {
+        try {
+            const response = await loadEvents()
+            const now = new Date()
+            const upcomingEvents = response.data.filter(
+                (event) => new Date(event.date_time) > now
+            )
+
+            // Only update eventCount if there's a change in the length of upcoming events
+            if (upcomingEvents.length !== eventCount) {
+                setEventCount(upcomingEvents.length)
+            }
+        } catch (error) {
+            console.error('Error fetching events:', error)
+        }
+    }
+
+    useEffect(() => {
+        // Initial fetch
+        fetchEvents()
+
+        // Set up polling interval to fetch events every 5 seconds
+        const intervalId = setInterval(fetchEvents, 5000)
+
+        // Clean up interval on unmount
+        return () => clearInterval(intervalId)
+    }, [eventCount]) // Dependency on eventCount ensures it updates when length changes
+
     return (
         <Tab.Navigator
             screenOptions={{
@@ -178,7 +209,7 @@ const VetBottomTabNavigation = () => {
                                         : COLORS.gray3,
                                 }}
                             >
-                                Calendar
+                                Events
                             </Text>
                             <View
                                 style={{
@@ -199,7 +230,7 @@ const VetBottomTabNavigation = () => {
                                         fontSize: 12,
                                     }}
                                 >
-                                    3
+                                    {eventCount}
                                 </Text>
                             </View>
                         </View>
