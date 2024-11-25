@@ -94,7 +94,10 @@ import VetLogin from '../screens/Veterinarians/VetLogin.js'
 import VetSignup from '../screens/Veterinarians/VetSignup.js'
 import VetBottomTabNavigation from './VetBottomTabNavigation.js'
 import * as Notifications from 'expo-notifications'
-import { addNotificationToken } from '../services/NotificationService.js'
+import {
+    addNotificationToken,
+    addVetNotificationToken,
+} from '../services/NotificationService.js'
 
 const Stack = createNativeStackNavigator()
 
@@ -113,73 +116,15 @@ const AppNavigation = () => {
     const [role, setRole] = useState()
 
     useEffect(() => {
-        // Only configure push notifications if the user is logged in
-        if (user) {
-            configurePushNotifications()
-        }
-    }, [user])
-
-    async function configurePushNotifications() {
-        const hasRequestedPermission = await AsyncStorage.getItem(
-            'hasRequestedPermission'
-        )
-
-        // Only ask for permission if it hasn't been requested before
-        if (!hasRequestedPermission) {
-            const { status } = await Notifications.getPermissionsAsync()
-            if (status !== 'granted') {
-                const { status: newStatus } =
-                    await Notifications.requestPermissionsAsync()
-                if (newStatus === 'granted') {
-                    const pushTokenData =
-                        await Notifications.getExpoPushTokenAsync()
-                    console.log(pushTokenData)
-                    console.log(user.pet_owner.id)
-
-                    try {
-                        const res = await addNotificationToken({
-                            pet_owner_id: user.pet_owner.id,
-                            token: pushTokenData.data,
-                        })
-                        console.log(res)
-                    } catch (e) {
-                        console.log(e)
-                        if (e.response?.status === 422) {
-                            console.log(e.response.data)
-                        } else if (e.response?.status == 401) {
-                            console.log(e.response)
-                        } else {
-                            console.log(e)
-                        }
-                    }
-                    // Store the flag to prevent repeated prompts
-                    await AsyncStorage.setItem('hasRequestedPermission', 'true')
-                } else {
-                    Alert.alert(
-                        'Permission Required',
-                        'Please enable notifications in settings to receive updates.'
-                    )
-                }
-            }
-        }
-
-        if (Platform.OS === 'android') {
-            Notifications.setNotificationChannelAsync('default', {
-                name: 'default',
-                importance: Notifications.AndroidImportance.DEFAULT,
-            })
-        }
-    }
-    useEffect(() => {
         const initializeApp = async () => {
             try {
-                let loadedUser
-                const storedRole = await AsyncStorage.getItem('role') // or get from another source if needed
-                setRole(storedRole)
+                const storedRole = await AsyncStorage.getItem('role')
+                setRole(storedRole) // Update role state for usage elsewhere
 
-                if (role === 'veterinarian' || storedRole === 'veterinarian') {
+                let loadedUser
+                if (storedRole === 'veterinarian') {
                     loadedUser = await loadVetUser()
-                } else if (role === 'petowner' || storedRole === 'petowner') {
+                } else if (storedRole === 'petowner') {
                     loadedUser = await loadUser()
                 }
                 setUser(loadedUser)
@@ -192,6 +137,59 @@ const AppNavigation = () => {
 
         initializeApp()
     }, [])
+
+    useEffect(() => {
+        if (user && role) {
+            configurePushNotifications()
+        }
+    }, [user, role])
+
+    async function configurePushNotifications() {
+        const { status } = await Notifications.getPermissionsAsync()
+        if (status !== 'granted') {
+            const { status: newStatus } =
+                await Notifications.requestPermissionsAsync()
+            if (newStatus === 'granted') {
+                const pushTokenData =
+                    await Notifications.getExpoPushTokenAsync()
+
+                try {
+                    if (role === 'veterinarian') {
+                        await addVetNotificationToken({
+                            veterinarians_id: user.user.id,
+                            token: pushTokenData.data,
+                        })
+                    } else if (role === 'petowner') {
+                        await addNotificationToken({
+                            pet_owner_id: user.pet_owner.id,
+                            token: pushTokenData.data,
+                        })
+                    }
+                } catch (e) {
+                    console.log(e)
+                    if (e.response?.status === 422) {
+                        console.log(e.response.data)
+                    } else if (e.response?.status == 401) {
+                        console.log(e.response)
+                    } else {
+                        console.log(e)
+                    }
+                }
+            } else {
+                Alert.alert(
+                    'Permission Required',
+                    'Please enable notifications in settings to receive updates.'
+                )
+            }
+        }
+
+        // if (Platform.OS === 'android') {
+        //     Notifications.setNotificationChannelAsync('default', {
+        //         name: 'default',
+        //         importance: Notifications.AndroidImportance.DEFAULT,
+        //     })
+        // }
+    }
 
     // Show a loading screen or splash screen while initializing
     if (isLoading) {
@@ -500,6 +498,22 @@ const AppNavigation = () => {
                                 name="Messaging"
                                 component={Messaging}
                             />
+                            <Stack.Screen
+                                name="ForgotPasswordMethods"
+                                component={ForgotPasswordMethods}
+                            />
+                            <Stack.Screen
+                                name="ForgotPasswordEmail"
+                                component={ForgotPasswordEmail}
+                            />
+                            <Stack.Screen
+                                name="ForgotPasswordPhoneNumber"
+                                component={ForgotPasswordPhoneNumber}
+                            />
+                            <Stack.Screen
+                                name="OTPVerification"
+                                component={OTPVerification}
+                            />
                         </>
                     ) : (
                         <>
@@ -536,6 +550,10 @@ const AppNavigation = () => {
                             <Stack.Screen
                                 name="OTPVerification"
                                 component={OTPVerification}
+                            />
+                            <Stack.Screen
+                                name="CreateNewPassword"
+                                component={CreateNewPassword}
                             />
                         </>
                     )}

@@ -2,7 +2,9 @@ import axios from '../utils/axios'
 import { setToken } from './TokenService'
 
 export async function loadVeterinarians() {
-    const { data: veterinarians } = await axios.get('/veterinarians')
+    const { data: veterinarians } = await axios.get(
+        '/veterinarians?status=approved'
+    )
     return veterinarians
 }
 

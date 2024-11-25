@@ -191,7 +191,9 @@ const Login = ({ navigation }) => {
 
                     <TouchableOpacity
                         onPress={() =>
-                            navigation.navigate('ForgotPasswordMethods')
+                            navigation.navigate('ForgotPasswordEmail', {
+                                user: 'petowner',
+                            })
                         }
                     >
                         <Text style={styles.forgotPasswordBtnText}>

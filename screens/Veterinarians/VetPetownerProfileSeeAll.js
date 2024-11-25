@@ -127,7 +127,7 @@ const VetPetownerProfileSeeAll = ({ navigation }) => {
                         />
                     </TouchableOpacity>
                     <TextInput
-                        placeholder="Search"
+                        placeholder="Search Pet Owner Name"
                         placeholderTextColor={COLORS.gray}
                         style={[
                             styles.searchInput,
@@ -138,13 +138,6 @@ const VetPetownerProfileSeeAll = ({ navigation }) => {
                         value={searchQuery}
                         onChangeText={(text) => setSearchQuery(text)}
                     />
-                    <TouchableOpacity onPress={() => refRBSheet.current.open()}>
-                        <Image
-                            source={icons.filter}
-                            resizeMode="contain"
-                            style={styles.filterIcon}
-                        />
-                    </TouchableOpacity>
                 </View>
             </View>
         )
@@ -157,7 +150,7 @@ const VetPetownerProfileSeeAll = ({ navigation }) => {
             <View>
                 {renderSearch()}
                 {/* Results container  */}
-                <View>
+                <View style={{ marginBottom: 135 }}>
                     {/* Events result list */}
                     <View
                         style={{

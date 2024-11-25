@@ -29,9 +29,11 @@ const VetPetPictures = ({ petowner, pet }) => {
     const [visible, setIsVisible] = useState(false)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [refreshing, setRefreshing] = useState(false)
+    const [loading, setLoading] = useState(true) // Add loading state
 
     const loadPetPicturesData = async () => {
         if (petowner?.id && pet) {
+            setLoading(true) // Start loading
             try {
                 const pet_pictures = await loadPetPictures(petowner.id, pet.id)
                 console.log(pet_pictures)
@@ -39,6 +41,8 @@ const VetPetPictures = ({ petowner, pet }) => {
                 setPetPhotos(pet_pictures.data)
             } catch (e) {
                 console.log('Failed to load pet pictures', e)
+            } finally {
+                setLoading(false) // End loading
             }
         }
     }
@@ -160,6 +164,7 @@ const VetPetPictures = ({ petowner, pet }) => {
                         />
                     }
                     numColumns={3}
+                    columnWrapperStyle={{ justifyContent: 'space-between' }}
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
@@ -203,15 +208,13 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
     },
     petImage: {
-        width: 110,
-        height: 110,
+        flex: 1,
+        aspectRatio: 1,
         margin: 5,
         borderRadius: 8,
     },
     imageContainer: {
-        position: 'relative',
-        alignItems: 'center',
-        justifyContent: 'center',
+        flex: 1, // Ensures equal spacing and size in each column
     },
     removeIcon: {
         position: 'absolute',

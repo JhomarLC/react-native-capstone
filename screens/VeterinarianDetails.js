@@ -89,6 +89,7 @@ const VeterinarianDetails = ({ route, navigation }) => {
                             <Text
                                 style={[
                                     styles.doctorName,
+
                                     {
                                         color: COLORS.greyscale900,
                                     },

@@ -5,15 +5,46 @@ import {
     TouchableOpacity,
     Image,
     FlatList,
+    RefreshControl,
 } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { COLORS, icons } from '../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ScrollView } from 'react-native-virtualized-view'
 import NotificationCard from '../components/NotificationCard'
-import { notifications } from '../data'
+import { loadNotifications } from '../services/NotificationService'
 
 const Notifications = ({ navigation }) => {
+    const [notifications, setNotifications] = useState([])
+    const [refreshing, setRefreshing] = useState(false)
+
+    // Fetch notifications from the API
+    const fetchNotifications = async () => {
+        try {
+            const response = await loadNotifications()
+            setNotifications(response.data || [])
+        } catch (error) {
+            console.error('Error fetching notifications:', error)
+        }
+    }
+
+    // Pull-to-refresh handler
+    const onRefresh = async () => {
+        setRefreshing(true)
+        await fetchNotifications()
+        setRefreshing(false)
+    }
+
+    // Interval to fetch notifications every 30 seconds
+    useEffect(() => {
+        fetchNotifications() // Initial fetch
+        const interval = setInterval(() => {
+            fetchNotifications()
+        }, 5000) // 30 seconds
+
+        return () => clearInterval(interval) // Clear interval on unmount
+    }, [])
+
     /**
      * Render header
      */
@@ -59,7 +90,15 @@ const Notifications = ({ navigation }) => {
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 {renderHeader()}
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                        />
+                    }
+                >
                     <View style={styles.headerNoti}>
                         <View style={styles.headerNotiLeft}>
                             <Text
@@ -70,25 +109,30 @@ const Notifications = ({ navigation }) => {
                                     },
                                 ]}
                             >
-                                Recent
+                                All
                             </Text>
                             <View style={styles.headerNotiView}>
-                                <Text style={styles.headerNotiTitle}>4</Text>
+                                <Text style={styles.headerNotiTitle}>
+                                    {notifications.length}
+                                </Text>
                             </View>
                         </View>
                         <TouchableOpacity>
-                            <Text style={styles.clearAll}>Clear All</Text>
+                            {/* <Text style={styles.clearAll}>Clear All</Text> */}
                         </TouchableOpacity>
                     </View>
                     <FlatList
                         data={notifications}
-                        keyExtractor={(item) => item.id}
+                        keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }) => (
                             <NotificationCard
                                 title={item.title}
                                 description={item.description}
-                                icon={item.icon}
-                                date={item.date}
+                                icon={item.action}
+                                date={item.created_at}
+                                onPress={() => {
+                                    navigation.navigate('Calendar')
+                                }}
                             />
                         )}
                     />

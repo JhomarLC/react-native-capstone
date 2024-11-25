@@ -45,9 +45,7 @@ const EditProfile = ({ navigation }) => {
     const [selectedBarangay, setSelectedBarangay] = useState(
         pet_owner.addr_brgy
     )
-    // const pet_s = pet_owner.addr_brgy
     useEffect(() => {
-        // Set the initial barangay from profile data
         if (selectedBarangay) {
             setSelectedBarangay(selectedBarangay)
         }
@@ -97,17 +95,16 @@ const EditProfile = ({ navigation }) => {
         { label: 'Villa Marina', value: 'Villa Marina' },
     ]
 
-    // Load initial image from pet_owner profile
     useEffect(() => {
         if (pet_owner?.image) {
             setImage({
                 uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
             })
+
             setIsImageFromLibrary(false)
         }
     }, [pet_owner])
 
-    // Handle text input changes
     const inputChangedHandler = (inputId, inputValue) => {
         setInputValues((prevValues) => ({
             ...prevValues,
@@ -121,6 +118,9 @@ const EditProfile = ({ navigation }) => {
             const imageData = await launchImagePicker()
             if (!imageData) return
             setImage(imageData)
+            console.log('====================================')
+            console.log(image)
+            console.log('====================================')
             setIsImageFromLibrary(true)
             console.log(imageData)
         } catch (error) {
@@ -241,7 +241,9 @@ const EditProfile = ({ navigation }) => {
                                     image
                                         ? { uri: image }
                                         : {
-                                              uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
+                                              uri: decodeURIComponent(
+                                                  `${STORAGE_URL}/petowners_profile/${pet_owner.image}`
+                                              ),
                                           }
                                 }
                                 resizeMode="cover"
@@ -330,7 +332,22 @@ const EditProfile = ({ navigation }) => {
                 <Button
                     title={
                         loading ? (
-                            <ActivityIndicator color={COLORS.white} />
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: COLORS.white,
+                                        marginLeft: 8,
+                                    }}
+                                >
+                                    Loading...
+                                </Text>
+                                <ActivityIndicator color={COLORS.white} />
+                            </View>
                         ) : (
                             'Update'
                         )

@@ -1,30 +1,53 @@
-import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity } from 'react-native';
-import React, { useCallback, useEffect, useReducer, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SIZES, icons, images } from '../constants';
-import Header from '../components/Header';
-import { reducer } from '../utils/reducers/formReducers';
-import { validateInput } from '../utils/actions/formActions';
-import Input from '../components/Input';
-import Checkbox from 'expo-checkbox';
-import Button from '../components/Button';
+import {
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
+    Image,
+    Alert,
+    TouchableOpacity,
+} from 'react-native'
+import React, { useCallback, useEffect, useReducer, useState } from 'react'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { COLORS, SIZES, icons, illustrations, images } from '../constants'
+import Header from '../components/Header'
+import { reducer } from '../utils/reducers/formReducers'
+import { validateInput } from '../utils/actions/formActions'
+import Input from '../components/Input'
+import Checkbox from 'expo-checkbox'
+import Button from '../components/Button'
+import { forgotPassword, forgotVetPassword } from '../services/PassswordService'
+import CustomModal from '../components/CustomModal'
+import { showMessage, hideMessage } from 'react-native-flash-message'
 
-const isTestMode = true;
+const isTestMode = true
 
 const initialState = {
     inputValues: {
         email: isTestMode ? 'example@gmail.com' : '',
     },
     inputValidities: {
-        email: false
+        email: false,
     },
     formIsValid: false,
 }
 
-const ForgotPasswordEmail = ({ navigation }) => {
-    const [formState, dispatchFormState] = useReducer(reducer, initialState);
-    const [error, setError] = useState(null);
-    const [isChecked, setChecked] = useState(false);
+const ForgotPasswordEmail = ({ route, navigation }) => {
+    const { user } = route.params
+    console.log(user)
+
+    const [formState, dispatchFormState] = useReducer(reducer, initialState)
+    const [error, setError] = useState(null)
+    const [isChecked, setChecked] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+
+    const [modalVisible, setModalVisible] = useState(false)
+    const [modal, setModal] = useState({
+        title: '',
+        message: '',
+        icon: '',
+        action: '',
+    })
 
     const inputChangedHandler = useCallback(
         (inputId, inputValue) => {
@@ -36,25 +59,89 @@ const ForgotPasswordEmail = ({ navigation }) => {
 
     useEffect(() => {
         if (error) {
-            Alert.alert('An error occured', error)
+            Alert.alert('An error occurred', error)
         }
     }, [error])
 
+    const handleForgotPassword = async () => {
+        if (isLoading) {
+            return
+        }
+        setIsLoading(true)
+
+        try {
+            const email = formState.inputValues.email
+
+            let data
+
+            if (user === 'veterinarian') {
+                console.log('vet1')
+                data = await forgotVetPassword(email)
+            } else if (user === 'petowner') {
+                console.log('petowner1')
+                data = await forgotPassword(email)
+            } else {
+                // Handle other user types or throw an error
+                throw new Error('Invalid user type')
+            }
+            console.log(data)
+
+            setModalVisible(true)
+            setModal({
+                title: 'Success!',
+                message: data.message,
+                icon: illustrations.star,
+                action: () => {
+                    setModalVisible(false)
+                    navigation.replace('OTPVerification', {
+                        email: email,
+                        user: user,
+                    })
+                },
+            })
+        } catch (e) {
+            setIsLoading(false)
+            console.log(e)
+            if (e.response?.status === 422) {
+                showMessage({
+                    message: e.response.data.message,
+                    type: 'danger',
+                })
+            } else if (e.response?.status === 401) {
+                showMessage({
+                    message: e.response.data.message[0],
+                    type: 'danger',
+                })
+            } else {
+                console.log('An error occurred. Please try again.')
+            }
+        } finally {
+            setIsLoading(false) // Set loading back to false after login attempt
+        }
+    }
     return (
-        <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
-            <View style={[styles.container, { backgroundColor: COLORS.white }]}>
+        <SafeAreaView style={styles.area}>
+            <View style={styles.container}>
                 <Header title="Forgot Password" />
-                <ScrollView style={{ marginVertical: 54 }} showsVerticalScrollIndicator={false}>
+                <CustomModal
+                    visible={modalVisible}
+                    onClose={modal.action}
+                    title={modal.title}
+                    message={modal.message}
+                    icon={modal.icon}
+                />
+                <ScrollView
+                    contentContainerStyle={styles.scrollViewContent}
+                    showsVerticalScrollIndicator={false}
+                >
                     <View style={styles.logoContainer}>
                         <Image
                             source={images.logo}
-                            resizeMode='contain'
+                            resizeMode="contain"
                             style={styles.logo}
                         />
                     </View>
-                    <Text style={[styles.title, {
-                        color: COLORS.black
-                    }]}>Enter to Your Email</Text>
+                    <Text style={styles.title}>Enter Your Email</Text>
                     <Input
                         id="email"
                         onInputChanged={inputChangedHandler}
@@ -64,149 +151,61 @@ const ForgotPasswordEmail = ({ navigation }) => {
                         icon={icons.email}
                         keyboardType="email-address"
                     />
-                    <View style={styles.checkBoxContainer}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <Checkbox
-                                style={styles.checkbox}
-                                value={isChecked}
-                                color={isChecked ? COLORS.primary : "gray"}
-                                onValueChange={setChecked}
-                            />
-                            <View style={{ flex: 1 }}>
-                                <Text style={[styles.privacy, {
-                                    color: COLORS.black
-                                }]}>Remenber me</Text>
-                            </View>
-                        </View>
-                    </View>
+                </ScrollView>
+                <View style={styles.buttonContainer}>
                     <Button
-                        title="Reset Password"
+                        title={isLoading ? 'Loading...' : 'Reset Password'}
                         filled
-                        onPress={() => navigation.navigate("OTPVerification")}
+                        onPress={handleForgotPassword}
                         style={styles.button}
                     />
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("Login")}>
-                        <Text style={styles.forgotPasswordBtnText}>Remenber the password?</Text>
-                    </TouchableOpacity>
-                    <View>
-                    </View>
-                </ScrollView>
-                <View style={styles.bottomContainer}>
-                    <Text style={[styles.bottomLeft, {
-                        color: COLORS.black
-                    }]}>Don't have an account ?</Text>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("Signup")}>
-                        <Text style={styles.bottomRight}>{"  "}Sign Up</Text>
-                    </TouchableOpacity>
                 </View>
             </View>
         </SafeAreaView>
     )
-};
+}
 
 const styles = StyleSheet.create({
     area: {
         flex: 1,
-        backgroundColor: COLORS.white
+        backgroundColor: COLORS.white,
     },
     container: {
         flex: 1,
         padding: 16,
-        backgroundColor: COLORS.white
+        backgroundColor: COLORS.white,
+    },
+    scrollViewContent: {
+        paddingBottom: 100, // Ensure there's space above the button
     },
     logo: {
         width: 100,
         height: 100,
-        // tintColor: COLORS.primary
     },
     logoContainer: {
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 32
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 32,
     },
     title: {
         fontSize: 28,
-        fontFamily: "bold",
+        fontFamily: 'bold',
         color: COLORS.black,
-        textAlign: "center"
+        textAlign: 'center',
+        marginBottom: 22,
     },
-    center: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    title: {
-        fontSize: 26,
-        fontFamily: "semiBold",
-        color: COLORS.black,
-        textAlign: "center",
-        marginBottom: 22
-    },
-    checkBoxContainer: {
-        flexDirection: "row",
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginVertical: 18,
-    },
-    checkbox: {
-        marginRight: 8,
-        height: 16,
-        width: 16,
-        borderRadius: 4,
-        borderColor: COLORS.primary,
-        borderWidth: 2,
-    },
-    privacy: {
-        fontSize: 12,
-        fontFamily: "regular",
-        color: COLORS.black,
-    },
-    socialTitle: {
-        fontSize: 19.25,
-        fontFamily: "medium",
-        color: COLORS.black,
-        textAlign: "center",
-        marginVertical: 26
-    },
-    socialBtnContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    bottomContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 18,
-        position: "absolute",
-        bottom: 12,
-        right: 0,
+    buttonContainer: {
+        position: 'absolute',
+        bottom: 0,
         left: 0,
-    },
-    bottomLeft: {
-        fontSize: 14,
-        fontFamily: "regular",
-        color: "black"
-    },
-    bottomRight: {
-        fontSize: 16,
-        fontFamily: "medium",
-        color: COLORS.primary
+        right: 0,
+        padding: 16,
+        backgroundColor: COLORS.white,
     },
     button: {
-        marginVertical: 6,
+        borderRadius: 30,
         width: SIZES.width - 32,
-        borderRadius: 30
     },
-    forgotPasswordBtnText: {
-        fontSize: 16,
-        fontFamily: "semiBold",
-        color: COLORS.primary,
-        textAlign: "center",
-        marginTop: 12
-    }
 })
 
 export default ForgotPasswordEmail

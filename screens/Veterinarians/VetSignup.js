@@ -179,7 +179,6 @@ const VetSignup = ({ navigation }) => {
                     navigation.navigate('VetLogin')
                 },
             })
-            setModalVisible(false)
         } catch (e) {
             setIsLoading(false)
             console.log(e)

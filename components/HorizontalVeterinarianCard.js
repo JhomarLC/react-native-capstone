@@ -11,8 +11,6 @@ const HorizontalVeterinarianCard = ({
     image,
     onPress,
 }) => {
-    const [isFavourite, setIsFavourite] = useState(false)
-
     return (
         <TouchableOpacity
             onPress={onPress}
@@ -30,13 +28,7 @@ const HorizontalVeterinarianCard = ({
                 resizeMode="cover"
                 style={styles.image}
             />
-            {/* {
-                isAvailable && isAvailable === true && (
-                    <View style={styles.reviewContainer}>
-                        <Text style={styles.rating}>ACTIVE</Text>
-                    </View>
-                )
-            } */}
+
             <View style={styles.columnContainer}>
                 <View style={styles.topViewContainer}>
                     <Text
@@ -51,7 +43,6 @@ const HorizontalVeterinarianCard = ({
                     </Text>
                 </View>
                 <View style={styles.viewContainer}>
-                    {/* <FontAwesome name="star" size={14} color="rgb(250, 159, 28)" /> */}
                     <Text
                         style={[
                             styles.location,
@@ -62,7 +53,6 @@ const HorizontalVeterinarianCard = ({
                     >
                         {position}
                     </Text>
-                    {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
                 </View>
                 <Text
                     style={[
@@ -74,22 +64,6 @@ const HorizontalVeterinarianCard = ({
                 >
                     {email}
                 </Text>
-                {/* <Text style={[styles.location, {
-                    color: COLORS.grayscale700,
-                }]}></Text> */}
-                {/* <View style={styles.bottomViewContainer}>
-                    <View style={styles.priceContainer}>
-                        <Text style={styles.price}>{}</Text>
-                        <Text style={styles.price}>{type}</Text>
-                    </View>
-                    <TouchableOpacity onPress={() => setIsFavourite(!isFavourite)}>
-                        <Image
-                            source={isFavourite ? icons.heart2 : icons.heart2Outline}
-                            resizeMode='contain'
-                            style={styles.heartIcon}
-                        />
-                    </TouchableOpacity>
-                </View> */}
             </View>
         </TouchableOpacity>
     )

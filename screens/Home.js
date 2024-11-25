@@ -267,7 +267,7 @@ const Home = ({ navigation }) => {
 
     const renderPets = () => {
         return (
-            <View>
+            <View style={{ marginBottom: 450 }}>
                 {pets.length === 0 ? (
                     <View style={styles.noPetsContainer}>
                         <NotFoundCardPet message="Sorry no pets found, please add your pet by clicking the plus button bellow." />
@@ -320,7 +320,7 @@ const Home = ({ navigation }) => {
                 {renderHeader()}
                 {/* <ScrollView showsVerticalScrollIndicator={false}> */}
                 {renderSearchBar()}
-                {renderBanner()}
+                {announcement.length > 0 && renderBanner()}
                 <SubHeaderItem title="Pet Profiles" />
                 <View>
                     <FlatList

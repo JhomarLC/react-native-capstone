@@ -215,7 +215,7 @@ const Search = ({ navigation }) => {
                         />
                     </TouchableOpacity>
                     <TextInput
-                        placeholder="Search"
+                        placeholder="Search Pet Name"
                         placeholderTextColor={COLORS.gray}
                         style={styles.searchInput}
                         value={searchQuery}

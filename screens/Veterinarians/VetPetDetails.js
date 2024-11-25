@@ -28,7 +28,7 @@ const VetPetDetails = ({ route, navigation }) => {
     const [routes] = React.useState([
         { key: 'first', title: 'About' },
         { key: 'second', title: 'Pictures' },
-        { key: 'third', title: 'Vaccination' },
+        { key: 'third', title: 'Health Records' },
     ])
 
     // Custom render scene to pass pet_id to each tab
@@ -94,7 +94,7 @@ const VetPetDetails = ({ route, navigation }) => {
                             },
                         ]}
                     >
-                        Health Card
+                        Pet Profile
                     </Text>
                 </View>
             </View>

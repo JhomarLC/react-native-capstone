@@ -31,6 +31,7 @@ import { loadUser, register } from '../services/AuthService'
 import { setToken } from '../services/TokenService'
 import AuthContext from '../contexts/AuthContext'
 import RNPickerSelect from 'react-native-picker-select'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 const isTestMode = true
 
 const initialState = {
@@ -56,7 +57,8 @@ const initialState = {
 }
 
 const Signup = ({ navigation }) => {
-    const { setUser } = useContext(AuthContext)
+    const { setUser, setRole } = useContext(AuthContext)
+
     const [formState, dispatchFormState] = useReducer(reducer, initialState)
     const [isLoading, setIsLoading] = useState(false)
     const [selectedBarangay, setSelectedBarangay] = useState()
@@ -186,6 +188,8 @@ const Signup = ({ navigation }) => {
 
             await setToken(data.api_token)
             const user = await loadUser()
+            setRole('petowner')
+            await AsyncStorage.setItem('role', 'petowner')
             setUser(user)
             navigation.replace('Main')
         } catch (e) {

@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
     Modal,
     Text,
+    ActivityIndicator,
 } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import Button from '../components/Button'
@@ -33,14 +34,18 @@ const PetPictures = ({ pet_id }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [refreshing, setRefreshing] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
+    const [loading, setLoading] = useState(true) // Add loading state
 
     const loadPetPicturesData = async () => {
         if (pet_owner?.id && pet_id) {
+            setLoading(true) // Start loading
             try {
                 const pet_pictures = await loadPetPictures(pet_owner.id, pet_id)
                 setPetPhotos(pet_pictures.data)
             } catch (e) {
                 console.log('Failed to load pet pictures', e)
+            } finally {
+                setLoading(false) // End loading
             }
         }
     }
@@ -167,7 +172,12 @@ const PetPictures = ({ pet_id }) => {
     return (
         <View style={styles.wrapper}>
             {renderModal()}
-            {combinedPhotos.length > 0 ? (
+            {loading ? (
+                // Show a loading spinner while images are being fetched
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                </View>
+            ) : combinedPhotos.length > 0 ? (
                 <FlatList
                     data={combinedPhotos}
                     keyExtractor={(item, index) => index.toString()}
@@ -215,6 +225,7 @@ const PetPictures = ({ pet_id }) => {
                         />
                     }
                     numColumns={3}
+                    columnWrapperStyle={{ justifyContent: 'space-between' }} // Ensures equal spacing
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
@@ -270,15 +281,16 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
     },
     petImage: {
-        width: 110,
-        height: 110,
+        flex: 1,
+        aspectRatio: 1,
         margin: 5,
         borderRadius: 8,
     },
     imageContainer: {
-        position: 'relative',
-        alignItems: 'center',
-        justifyContent: 'center',
+        flex: 1, // Ensures equal spacing and size in each column
+        // position: 'relative',
+        // alignItems: 'center',
+        // justifyContent: 'center',
     },
     removeIcon: {
         position: 'absolute',

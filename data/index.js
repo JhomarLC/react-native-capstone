@@ -881,7 +881,7 @@ export const notifications = [
         icon: icons.chat,
         title: 'Dr. Smith sent you a message',
         description: 'Tap to see the message',
-        date: '2024-01-16T04:52:06.501Z',
+        date: '2024-11-22T05:59:06.501Z',
     },
     {
         id: '2',

@@ -281,7 +281,8 @@ const VetPetOwnerLists = ({ navigation }) => {
             <View style={[styles.container, { backgroundColor: COLORS.white }]}>
                 {renderHeader()}
                 {renderSearchBar()}
-                {renderBanner()}
+                {announcement.length > 0 && renderBanner()}
+                {/* {renderBanner()} */}
                 {loading ? (
                     <>
                         <SubHeaderItem title="Pet Owners" />

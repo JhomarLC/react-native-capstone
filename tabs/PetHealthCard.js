@@ -539,7 +539,11 @@ const PetHealthCard = ({ pet_id }) => {
                                 logo={{
                                     uri: `${STORAGE_URL}/pet_profile/${pet.image}`,
                                 }}
-                                value={pet.id}
+                                // value={pet.id}
+                                value={JSON.stringify({
+                                    pet_id: pet.id,
+                                    petowner_id: pet_owner.id,
+                                })}
                                 logoBorderRadius={50}
                                 quietZone={20}
                                 getRef={(ref) => (qrCodeRef.current = ref)}

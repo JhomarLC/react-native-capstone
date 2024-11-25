@@ -120,7 +120,7 @@ const Veterinarians = ({ navigation }) => {
                             />
                         </TouchableOpacity>
                         <TextInput
-                            placeholder="Search"
+                            placeholder="Search Veterinarian Name"
                             placeholderTextColor={COLORS.gray}
                             style={[
                                 styles.searchInput,
@@ -161,7 +161,7 @@ const Veterinarians = ({ navigation }) => {
                         />
                     </TouchableOpacity>
                     <TextInput
-                        placeholder="Search"
+                        placeholder="Search Veterinarian Name"
                         placeholderTextColor={COLORS.gray}
                         style={[
                             styles.searchInput,
@@ -175,7 +175,7 @@ const Veterinarians = ({ navigation }) => {
                 </View>
 
                 {/* Results container  */}
-                <View style={{ marginBottom: '30%' }}>
+                <View style={{ marginBottom: 235 }}>
                     {/* Events result list */}
                     <View
                         style={{
@@ -231,54 +231,6 @@ const Veterinarians = ({ navigation }) => {
                 {renderHeader()}
                 {renderContent()}
             </View>
-            {/* <RBSheet
-        ref={refRBSheet}
-        closeOnDragDown={true}
-        closeOnPressMask={false}
-        height={SIZES.height * .8}
-        customStyles={{
-          wrapper: {
-            backgroundColor: "rgba(0,0,0,0.5)",
-          },
-          draggableIcon: {
-            backgroundColor: COLORS.grayscale200,
-            height: 4
-          },
-          container: {
-            borderTopRightRadius: 32,
-            borderTopLeftRadius: 32,
-            height: 260,
-            backgroundColor: COLORS.white
-          }
-        }}
-      >
-        <Text style={styles.bottomTitle}>Logout</Text>
-        <View style={[styles.separateLine, {
-          backgroundColor: COLORS.grayscale200,
-        }]} />
-        <Text style={[styles.bottomSubtitle, {
-          color: COLORS.black
-        }]}>Are you sure you want to log out?</Text>
-        <View style={styles.bottomContainer}>
-          <Button
-            title="Cancel"
-            style={{
-              width: (SIZES.width - 32) / 2 - 8,
-              backgroundColor: COLORS.tansparentPrimary,
-              borderRadius: 32,
-              borderColor: COLORS.tansparentPrimary
-            }}
-            textColor={COLORS.primary}
-            onPress={() => refRBSheet.current.close()}
-          />
-          <Button
-            title="Yes, Logout"
-            filled
-            style={styles.logoutButton}
-            onPress={() => refRBSheet.current.close()}
-          />
-        </View>
-      </RBSheet> */}
         </SafeAreaView>
     )
 }

@@ -54,18 +54,20 @@ const Profile = ({ navigation }) => {
                         Profile
                     </Text>
                 </View>
-                <TouchableOpacity>
-                    <Image
-                        source={icons.moreCircle}
-                        resizeMode="contain"
-                        style={[
-                            styles.headerIcon,
-                            {
-                                tintColor: COLORS.greyscale900,
-                            },
-                        ]}
-                    />
-                </TouchableOpacity>
+                <View style={styles.viewRight}>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Notifications')}
+                    >
+                        <Image
+                            source={icons.notificationBell2}
+                            resizeMode="contain"
+                            style={[
+                                styles.headerIcon,
+                                { tintColor: COLORS.greyscale900 },
+                            ]}
+                        />
+                    </TouchableOpacity>
+                </View>
             </TouchableOpacity>
         )
     }
@@ -110,17 +112,17 @@ const Profile = ({ navigation }) => {
                     name="Edit Profile"
                     onPress={() => navigation.navigate('EditProfile')}
                 />
-                <SettingsItem
+                {/* <SettingsItem
                     icon={icons.bell2}
                     name="Notification"
                     onPress={() => navigation.navigate('SettingsNotifications')}
-                />
+                /> */}
 
-                <SettingsItem
+                {/* <SettingsItem
                     icon={icons.shieldOutline}
                     name="Security"
                     onPress={() => navigation.navigate('SettingsSecurity')}
-                />
+                /> */}
 
                 <SettingsItem
                     icon={icons.lockedComputerOutline}
@@ -232,6 +234,11 @@ const Profile = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    viewRight: {
+        marginRight: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     area: {
         flex: 1,
         backgroundColor: COLORS.white,

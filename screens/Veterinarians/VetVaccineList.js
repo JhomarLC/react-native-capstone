@@ -127,7 +127,7 @@ const VetVaccineList = ({ route, navigation }) => {
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'column' }}>
                     <Text style={[styles.name, { color: COLORS.greyscale900 }]}>
-                        Pet Medication
+                        Pet Health Records
                     </Text>
                     <Text
                         style={[

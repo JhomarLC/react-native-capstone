@@ -191,7 +191,9 @@ const VetLogin = ({ navigation }) => {
 
                     <TouchableOpacity
                         onPress={() =>
-                            navigation.navigate('ForgotPasswordMethods')
+                            navigation.navigate('ForgotPasswordEmail', {
+                                user: 'veterinarian',
+                            })
                         }
                     >
                         <Text style={styles.forgotPasswordBtnText}>
