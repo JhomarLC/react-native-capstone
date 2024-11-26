@@ -348,7 +348,8 @@ const Signup = ({ navigation }) => {
                                         },
                                     ]}
                                 >
-                                    By continuing you accept our Privacy Policy
+                                    By continuing, you confirm that all
+                                    information provided is accurate.
                                 </Text>
                             </View>
                         </View>

@@ -155,10 +155,6 @@ const AppNavigation = () => {
                     await Notifications.getExpoPushTokenAsync()
 
                 try {
-                    Alert.alert(
-                        'Push Token',
-                        `Token Received: ${pushTokenData.data}`
-                    )
                     if (role === 'veterinarian') {
                         const res = await addVetNotificationToken({
                             veterinarians_id: user.user.id,
@@ -561,6 +557,10 @@ const AppNavigation = () => {
                             <Stack.Screen
                                 name="CreateNewPassword"
                                 component={CreateNewPassword}
+                            />
+                            <Stack.Screen
+                                name="SettingsPrivacyPolicy"
+                                component={SettingsPrivacyPolicy}
                             />
                         </>
                     )}

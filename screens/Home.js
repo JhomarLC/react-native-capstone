@@ -273,42 +273,51 @@ const Home = ({ navigation }) => {
                         <NotFoundCardPet message="Sorry no pets found, please add your pet by clicking the plus button bellow." />
                     </View>
                 ) : (
-                    <View
-                        style={{
-                            backgroundColor: COLORS.secondaryWhite,
-                            marginVertical: 16,
-                        }}
-                    >
-                        <FlatList
-                            data={filteredPets}
-                            keyExtractor={(item) => item.id}
-                            showsVerticalScrollIndicator={false}
-                            renderItem={({ item }) => {
-                                return (
-                                    <HorizontalDoctorCard
-                                        name={item.name}
-                                        image={{
-                                            uri: `${STORAGE_URL}/pet_profile/${item.image}`,
-                                        }}
-                                        color_description={
-                                            item.color_description
-                                        }
-                                        petBreed={item.breed}
-                                        pet_type={item.pet_type}
-                                        status={item.status}
-                                        age={item.age}
-                                        onPress={() =>
-                                            navigation.navigate('PetDetails', {
-                                                pet_id: item.id,
-                                            })
-                                        }
-                                    />
-                                )
-                            }}
-                            refreshing={refreshing}
-                            onRefresh={onRefresh} // Enables pull-to-refresh
-                        />
-                    </View>
+                    <>
+                        {filteredPets.length > 0 ? (
+                            <View
+                                style={{
+                                    backgroundColor: COLORS.secondaryWhite,
+                                    marginVertical: 16,
+                                }}
+                            >
+                                <FlatList
+                                    data={filteredPets}
+                                    keyExtractor={(item) => item.id}
+                                    showsVerticalScrollIndicator={false}
+                                    renderItem={({ item }) => {
+                                        return (
+                                            <HorizontalDoctorCard
+                                                name={item.name}
+                                                image={{
+                                                    uri: `${STORAGE_URL}/pet_profile/${item.image}`,
+                                                }}
+                                                color_description={
+                                                    item.color_description
+                                                }
+                                                petBreed={item.breed}
+                                                pet_type={item.pet_type}
+                                                status={item.status}
+                                                age={item.age}
+                                                onPress={() =>
+                                                    navigation.navigate(
+                                                        'PetDetails',
+                                                        {
+                                                            pet_id: item.id,
+                                                        }
+                                                    )
+                                                }
+                                            />
+                                        )
+                                    }}
+                                    refreshing={refreshing}
+                                    onRefresh={onRefresh} // Enables pull-to-refresh
+                                />
+                            </View>
+                        ) : (
+                            <NotFoundCard message="No Pet to display" />
+                        )}
+                    </>
                 )}
             </View>
         )

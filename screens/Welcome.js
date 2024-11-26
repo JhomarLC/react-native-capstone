@@ -89,7 +89,9 @@ const Welcome = ({ navigation }) => {
                 >
                     By continuing, you accept the terms of use and
                 </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('SettingsPrivacyPolicy')}
+                >
                     <Text
                         style={[
                             styles.bottomSubtitle,
