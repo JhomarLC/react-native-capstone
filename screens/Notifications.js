@@ -13,16 +13,19 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { ScrollView } from 'react-native-virtualized-view'
 import NotificationCard from '../components/NotificationCard'
 import { loadNotifications } from '../services/NotificationService'
+import NotFoundCard from '../components/NotFoundCard'
 
 const Notifications = ({ navigation }) => {
     const [notifications, setNotifications] = useState([])
     const [refreshing, setRefreshing] = useState(false)
+    const [resultsCount, setResultsCount] = useState(0)
 
     // Fetch notifications from the API
     const fetchNotifications = async () => {
         try {
             const response = await loadNotifications()
             setNotifications(response.data || [])
+            setResultsCount(response.data.length)
         } catch (error) {
             console.error('Error fetching notifications:', error)
         }
@@ -121,21 +124,25 @@ const Notifications = ({ navigation }) => {
                             {/* <Text style={styles.clearAll}>Clear All</Text> */}
                         </TouchableOpacity>
                     </View>
-                    <FlatList
-                        data={notifications}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={({ item }) => (
-                            <NotificationCard
-                                title={item.title}
-                                description={item.description}
-                                icon={item.action}
-                                date={item.created_at}
-                                onPress={() => {
-                                    navigation.navigate('Calendar')
-                                }}
-                            />
-                        )}
-                    />
+                    {resultsCount && resultsCount > 0 ? (
+                        <FlatList
+                            data={notifications}
+                            keyExtractor={(item) => item.id.toString()}
+                            renderItem={({ item }) => (
+                                <NotificationCard
+                                    title={item.title}
+                                    description={item.description}
+                                    icon={item.action}
+                                    date={item.created_at}
+                                    onPress={() => {
+                                        navigation.navigate('Calendar')
+                                    }}
+                                />
+                            )}
+                        />
+                    ) : (
+                        <NotFoundCard message="No notifications yet!" />
+                    )}
                 </ScrollView>
             </View>
         </SafeAreaView>

@@ -353,6 +353,8 @@ const Signup = ({ navigation }) => {
                             </View>
                         </View>
                     </View>
+                </ScrollView>
+                <View style={styles.bottomContainer}>
                     <Button
                         title={isLoading ? 'Loading...' : 'Sign Up'}
                         filled
@@ -367,28 +369,6 @@ const Signup = ({ navigation }) => {
                             />
                         )}
                     </Button>
-                </ScrollView>
-                <View style={styles.bottomContainer}>
-                    <Text
-                        style={[
-                            styles.bottomLeft,
-                            {
-                                color: COLORS.black,
-                            },
-                        ]}
-                    >
-                        Already have an account ?
-                    </Text>
-                    <TouchableOpacity
-                        onPress={() =>
-                            navigation.navigate('Login', {
-                                email,
-                                password,
-                            })
-                        }
-                    >
-                        <Text style={styles.bottomRight}> Sign In</Text>
-                    </TouchableOpacity>
                 </View>
             </View>
             <FlashMessage position="top" />

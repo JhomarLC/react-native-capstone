@@ -22,7 +22,7 @@ import { showMessage, hideMessage } from 'react-native-flash-message'
 
 const OTPVerification = ({ route, navigation }) => {
     const { email, user } = route.params
-    const [time, setTime] = useState(5)
+    const [time, setTime] = useState(50)
     const [code, setCode] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [isSubmitLoading, setSubmitIsLoading] = useState(false)

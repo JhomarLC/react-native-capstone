@@ -19,11 +19,15 @@
             }
         },
         "android": {
+            "googleServicesFile": "./google-services.json",
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
             },
-            "permissions": ["android.permission.CAMERA"],
+            "permissions": [
+                "android.permission.CAMERA",
+                "android.permission.POST_NOTIFICATIONS"
+            ],
             "package": "com.kaimantin1303.sjcpawtection"
         },
         "web": {

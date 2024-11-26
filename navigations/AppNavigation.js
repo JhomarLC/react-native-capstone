@@ -98,6 +98,7 @@ import {
     addNotificationToken,
     addVetNotificationToken,
 } from '../services/NotificationService.js'
+import { Alert } from 'react-native'
 
 const Stack = createNativeStackNavigator()
 
@@ -154,16 +155,22 @@ const AppNavigation = () => {
                     await Notifications.getExpoPushTokenAsync()
 
                 try {
+                    Alert.alert(
+                        'Push Token',
+                        `Token Received: ${pushTokenData.data}`
+                    )
                     if (role === 'veterinarian') {
-                        await addVetNotificationToken({
+                        const res = await addVetNotificationToken({
                             veterinarians_id: user.user.id,
                             token: pushTokenData.data,
                         })
+                        console.log(res)
                     } else if (role === 'petowner') {
-                        await addNotificationToken({
+                        const res = await addNotificationToken({
                             pet_owner_id: user.pet_owner.id,
                             token: pushTokenData.data,
                         })
+                        console.log(res)
                     }
                 } catch (e) {
                     console.log(e)

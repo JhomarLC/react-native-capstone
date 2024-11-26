@@ -409,6 +409,8 @@ const VetSignup = ({ navigation }) => {
                             </View>
                         </View>
                     </View>
+                </ScrollView>
+                <View style={styles.bottomContainer}>
                     <Button
                         title={isLoading ? 'Loading...' : 'Sign Up'}
                         filled
@@ -423,8 +425,8 @@ const VetSignup = ({ navigation }) => {
                             />
                         )}
                     </Button>
-                </ScrollView>
-                <View style={styles.bottomContainer}>
+                </View>
+                {/* <View style={styles.bottomContainer}>
                     <Text
                         style={[
                             styles.bottomLeft,
@@ -445,7 +447,7 @@ const VetSignup = ({ navigation }) => {
                     >
                         <Text style={styles.bottomRight}> Sign In</Text>
                     </TouchableOpacity>
-                </View>
+                </View> */}
             </View>
             <FlashMessage position="top" />
         </SafeAreaView>

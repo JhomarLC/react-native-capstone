@@ -33,8 +33,13 @@ const SelectDOB = ({ navigation, formData, setFormData }) => {
     const { pet_owner } = user
     const [modalVisible, setModalVisible] = useState(false)
     const [message, setMessage] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
 
     const handleAddPet = async () => {
+        if (isLoading) {
+            return
+        }
+        setIsLoading(true)
         // Ensure type is correctly set using a type map
         const typeMap = { 1: 'Dog', 2: 'Cat' }
         const selectedType = typeMap[formData.type]
@@ -74,7 +79,9 @@ const SelectDOB = ({ navigation, formData, setFormData }) => {
                 `${updatedFormData.name} has been added as a ${updatedFormData.type}.`
             )
             setModalVisible(true)
+            setIsLoading(false)
         } catch (e) {
+            setIsLoading(false)
             console.log('Error Message:', e.message)
             console.log('Error Response Data:', e.response?.data)
             console.log('Error Status:', e.response?.status)
@@ -197,7 +204,7 @@ const SelectDOB = ({ navigation, formData, setFormData }) => {
                     onPress={() => navigation.navigate('SetPetProfile')}
                 />
                 <Button
-                    title="Add Pet"
+                    title={isLoading ? 'Loading...' : 'Add Pet'}
                     filled
                     style={styles.btnSubmit}
                     // onPress={() => navigation.navigate('FinalScreen')}

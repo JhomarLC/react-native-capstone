@@ -30,6 +30,7 @@ import {
     formatDate,
     formatUpcommingEventsDate,
 } from '../../services/FormatDate'
+import NotFoundCard from '../../components/NotFoundCard'
 
 const VetPetOwnerLists = ({ navigation }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -41,6 +42,7 @@ const VetPetOwnerLists = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false)
     const [announcement, setAnnouncement] = useState([])
     const [eventCount, setEventCount] = useState(0)
+    const [resultsCount, setResultsCount] = useState(0)
 
     const fetchEvents = async () => {
         try {
@@ -74,6 +76,7 @@ const VetPetOwnerLists = ({ navigation }) => {
         try {
             const { data } = await loadPetOwners()
             setPetowners(data)
+            setResultsCount(data.length)
         } catch (e) {
             console.log('Failed to load Pet Owners', e)
         } finally {
@@ -243,34 +246,38 @@ const VetPetOwnerLists = ({ navigation }) => {
                             backgroundColor: COLORS.secondaryWhite,
                         }}
                     >
-                        <FlatList
-                            data={petowners}
-                            keyExtractor={(item) => item.id}
-                            showsVerticalScrollIndicator={false}
-                            renderItem={({ item }) => {
-                                return (
-                                    <HorizontalPetOwnerCard
-                                        name={item.name}
-                                        image={{
-                                            uri: `${STORAGE_URL}/petowners_profile/${item.image}`,
-                                        }}
-                                        addr_zone={item.addr_zone}
-                                        addr_brgy={item.addr_brgy}
-                                        email={item.email}
-                                        onPress={() =>
-                                            navigation.navigate(
-                                                'VetPetOwnerDetails',
-                                                {
-                                                    petowner: item,
-                                                }
-                                            )
-                                        }
-                                    />
-                                )
-                            }}
-                            refreshing={refreshing}
-                            onRefresh={onRefresh} // Enables pull-to-refresh
-                        />
+                        {resultsCount && resultsCount > 0 ? (
+                            <FlatList
+                                data={petowners}
+                                keyExtractor={(item) => item.id}
+                                showsVerticalScrollIndicator={false}
+                                renderItem={({ item }) => {
+                                    return (
+                                        <HorizontalPetOwnerCard
+                                            name={item.name}
+                                            image={{
+                                                uri: `${STORAGE_URL}/petowners_profile/${item.image}`,
+                                            }}
+                                            addr_zone={item.addr_zone}
+                                            addr_brgy={item.addr_brgy}
+                                            email={item.email}
+                                            onPress={() =>
+                                                navigation.navigate(
+                                                    'VetPetOwnerDetails',
+                                                    {
+                                                        petowner: item,
+                                                    }
+                                                )
+                                            }
+                                        />
+                                    )
+                                }}
+                                refreshing={refreshing}
+                                onRefresh={onRefresh} // Enables pull-to-refresh
+                            />
+                        ) : (
+                            <NotFoundCard />
+                        )}
                     </View>
                 </View>
             </>
