@@ -3,7 +3,7 @@ import axios from '../utils/axios'
 
 export async function loadMedicationNames(medication_id) {
     const { data: medications_name } = await axios.get(
-        `/medtype/${medication_id}/medname/`
+        `/medtype/${medication_id}/medname?status=active`
     )
     return medications_name
 }

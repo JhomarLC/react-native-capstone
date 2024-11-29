@@ -86,6 +86,10 @@ const PetPictures = ({ pet_id }) => {
     }
 
     const handleSaveImages = async () => {
+        if (loading) {
+            return
+        }
+        setLoading(true)
         if (previewImages.length > 0) {
             const formData = new FormData()
             previewImages.forEach((image, index) => {
@@ -107,7 +111,9 @@ const PetPictures = ({ pet_id }) => {
                 ])
                 setPreviewImages([])
                 setModalVisible(true)
+                setLoading(false)
             } catch (error) {
+                setLoading(false)
                 console.error('Failed to save images:', error)
                 Alert.alert(
                     'Upload Error',
@@ -244,7 +250,11 @@ const PetPictures = ({ pet_id }) => {
             <View style={styles.bottomContainer}>
                 <Button
                     title={
-                        previewImages.length > 0 ? 'Save Images' : 'Add Image'
+                        loading
+                            ? 'Loading...' // Show a loading message when loading is true
+                            : previewImages.length > 0
+                              ? 'Save Images'
+                              : 'Add Image'
                     }
                     filled
                     style={styles.btn}

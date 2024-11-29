@@ -52,10 +52,11 @@ const VetVaccineList = ({ route, navigation }) => {
             try {
                 setIsLoading(true) // Start loading
                 const result = await loadPetMedication(pet_id, medication.id)
+                console.log(result)
 
                 const filteredData = result.data.filter(
                     (medicationItem) =>
-                        medicationItem.medicationname.medication_type_id ===
+                        medicationItem.medicationname.medtype.id ===
                         medication.id
                 )
                 setMedications(filteredData) // Set original data here
