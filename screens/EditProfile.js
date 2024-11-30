@@ -118,9 +118,7 @@ const EditProfile = ({ navigation }) => {
             const imageData = await launchImagePicker()
             if (!imageData) return
             setImage(imageData)
-            console.log('====================================')
-            console.log(image)
-            console.log('====================================')
+
             setIsImageFromLibrary(true)
             console.log(imageData)
         } catch (error) {
@@ -236,7 +234,7 @@ const EditProfile = ({ navigation }) => {
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ alignItems: 'center', marginVertical: 12 }}>
                         <View style={styles.avatarContainer}>
-                            <Image
+                            {/* <Image
                                 source={
                                     image
                                         ? { uri: image }
@@ -258,7 +256,7 @@ const EditProfile = ({ navigation }) => {
                                     size={24}
                                     color={COLORS.white}
                                 />
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     </View>
 
@@ -377,7 +375,7 @@ const styles = StyleSheet.create({
         marginVertical: 12,
         alignItems: 'center',
         width: 130,
-        height: 130,
+        height: 5,
         borderRadius: 65,
     },
     avatar: {

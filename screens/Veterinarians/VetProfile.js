@@ -10,28 +10,89 @@ import React, { useState, useRef, useContext, useEffect } from 'react'
 import { COLORS, SIZES, icons, images } from '../../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ScrollView } from 'react-native-virtualized-view'
-import { MaterialIcons } from '@expo/vector-icons'
-import { launchImagePicker } from '../../utils/ImagePickerHelper'
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons'
+import { getFileType, launchImagePicker } from '../../utils/ImagePickerHelper'
 import SettingsItem from '../../components/SettingsItem'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../../components/Button'
 import AuthContext from '../../contexts/AuthContext'
 import { STORAGE_URL } from '@env'
-import { logout } from '../../services/AuthService'
+import {
+    loadUser,
+    loadVetUser,
+    logout,
+    updateVetprofilepicture,
+} from '../../services/AuthService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Skeleton } from 'moti/skeleton'
 
 const VetProfile = ({ navigation }) => {
     const { user, setUser } = useContext(AuthContext)
     const veterinarian = user.user
 
     const refRBSheet = useRef()
+    const [image, setImage] = useState('')
+    const [isEditing, setIsEditing] = useState(false)
+    const [isImageFromLibrary, setIsImageFromLibrary] = useState(false)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        if (veterinarian?.image) {
+            setImage(`${STORAGE_URL}/vet_profiles/${veterinarian.image}`)
+        }
+    }, [veterinarian])
 
     const handleLogout = async () => {
         await logout()
         await AsyncStorage.removeItem('role')
         setUser(null)
     }
+    const pickImage = async () => {
+        try {
+            const imageData = await launchImagePicker()
+            if (imageData) {
+                setImage(imageData) // Update the preview
 
+                setIsImageFromLibrary(true)
+                setIsEditing(true) // Enable editing state for confirmation/cancellation
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }
+    const confirmImage = async () => {
+        const fileType = getFileType(image)
+        const formData = new FormData()
+
+        if (isImageFromLibrary && image) {
+            formData.append('image', {
+                uri: image.startsWith('file://') ? image : `file://${image}`,
+                name: `photo.${fileType.split('/')[1]}`,
+                type: fileType,
+            })
+        }
+        try {
+            setIsEditing(false) // Exit editing mode
+            await updateVetprofilepicture(veterinarian.id, formData)
+
+            const updatedUser = await loadVetUser()
+            setUser(updatedUser)
+            setLoading(true)
+        } catch (e) {
+            console.log(e)
+            showMessage({
+                message: 'An error occurred. Please try again.',
+                type: 'danger',
+            })
+        }
+        // Logic to save the selected image
+    }
+
+    const cancelImageEdit = () => {
+        setImage(`${STORAGE_URL}/vet_profiles/${veterinarian.image}`) // Revert to the original image
+        setIsImageFromLibrary(false)
+        setIsEditing(false)
+    }
     /**
      * Render header
      */
@@ -73,6 +134,14 @@ const VetProfile = ({ navigation }) => {
             </TouchableOpacity>
         )
     }
+    const SkeletonCommonProps = {
+        colorMode: 'light',
+        transition: {
+            type: 'timing',
+            duration: '2000',
+        },
+        backgroundColor: '#D4D4D4',
+    }
     /**
      * Render User Profile
      */
@@ -80,13 +149,55 @@ const VetProfile = ({ navigation }) => {
         return (
             <View style={styles.profileContainer}>
                 <View>
-                    <Image
-                        source={{
-                            uri: `${STORAGE_URL}/vet_profiles/${veterinarian?.image}`,
-                        }}
-                        resizeMode="cover"
-                        style={styles.avatar}
-                    />
+                    <Skeleton
+                        show={loading}
+                        {...SkeletonCommonProps}
+                        radius={999}
+                    >
+                        <Image
+                            source={{
+                                uri: image,
+                            }}
+                            onLoad={() => setLoading(false)}
+                            resizeMode="cover"
+                            style={styles.avatar}
+                        />
+                    </Skeleton>
+                    {isEditing ? (
+                        <View>
+                            <TouchableOpacity
+                                onPress={cancelImageEdit}
+                                style={styles.pickImageX}
+                            >
+                                <MaterialCommunityIcons
+                                    name="window-close"
+                                    size={24}
+                                    color={COLORS.white}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={confirmImage}
+                                style={styles.pickImageCheck}
+                            >
+                                <MaterialCommunityIcons
+                                    name="check"
+                                    size={24}
+                                    color={COLORS.white}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <TouchableOpacity
+                            onPress={pickImage}
+                            style={styles.pickImage}
+                        >
+                            <MaterialCommunityIcons
+                                name="pencil-outline"
+                                size={24}
+                                color={COLORS.white}
+                            />
+                        </TouchableOpacity>
+                    )}
                 </View>
                 <Text style={[styles.title, { color: COLORS.greyscale900 }]}>
                     {veterinarian?.name}
@@ -240,6 +351,39 @@ const VetProfile = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    pickImage: {
+        height: 42,
+        width: 42,
+        borderRadius: 21,
+        backgroundColor: COLORS.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+    },
+    pickImageX: {
+        height: 42,
+        width: 42,
+        borderRadius: 21,
+        backgroundColor: COLORS.red,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+    },
+    pickImageCheck: {
+        height: 42,
+        width: 42,
+        borderRadius: 21,
+        backgroundColor: COLORS.success,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+    },
     viewRight: {
         marginRight: 5,
         flexDirection: 'row',

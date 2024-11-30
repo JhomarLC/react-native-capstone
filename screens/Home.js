@@ -24,6 +24,7 @@ import { loadEvents } from '../services/EventService'
 import NotFoundCard from '../components/NotFoundCard'
 import NotFoundCardPet from '../components/NotFoundCardPet'
 import { formatUpcommingEventsDate } from '../services/FormatDate'
+import { Skeleton } from 'moti/skeleton'
 
 const Home = ({ navigation }) => {
     const { user } = useContext(AuthContext)
@@ -38,6 +39,7 @@ const Home = ({ navigation }) => {
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
     const [selectedPetTypes, setSelectedPetTypes] = useState(['0'])
+    const [loadingProfile, setLoadingProfile] = useState(true) // New loading state
 
     const fetchEvents = async () => {
         try {
@@ -126,6 +128,15 @@ const Home = ({ navigation }) => {
         </TouchableOpacity>
     )
 
+    const SkeletonCommonProps = {
+        colorMode: 'light',
+        transition: {
+            type: 'timing',
+            duration: '2000',
+        },
+        backgroundColor: '#D4D4D4',
+    }
+
     const selectCategory = (categoryId) => {
         setSelectedPetTypes([categoryId])
     }
@@ -137,11 +148,18 @@ const Home = ({ navigation }) => {
         return (
             <View style={styles.headerContainer}>
                 <View style={styles.viewLeft}>
-                    <Image
-                        source={image}
-                        resizeMode="contain"
-                        style={styles.userIcon}
-                    />
+                    <Skeleton
+                        show={loadingProfile}
+                        radius={999}
+                        {...SkeletonCommonProps}
+                    >
+                        <Image
+                            source={image}
+                            resizeMode="contain"
+                            onLoad={() => setLoadingProfile(false)}
+                            style={styles.userIcon}
+                        />
+                    </Skeleton>
                     <View style={styles.viewNameContainer}>
                         <Text style={styles.greeeting}>Good Day👋</Text>
                         <Text

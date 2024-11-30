@@ -154,7 +154,7 @@ const VetEditProfile = ({ route, navigation }) => {
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ alignItems: 'center', marginVertical: 12 }}>
                         <View style={styles.avatarContainer}>
-                            <Image
+                            {/* <Image
                                 source={
                                     image
                                         ? { uri: image }
@@ -174,7 +174,7 @@ const VetEditProfile = ({ route, navigation }) => {
                                     size={24}
                                     color={COLORS.white}
                                 />
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     </View>
                     <View style={styles.inputSection}>
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
         marginVertical: 12,
         alignItems: 'center',
         width: 130,
-        height: 130,
+        height: 10,
         borderRadius: 65,
     },
     avatar: {

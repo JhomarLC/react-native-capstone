@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
 import React, { useState } from 'react'
 import { COLORS, SIZES, icons } from '../../constants'
 import { FontAwesome } from '@expo/vector-icons'
+import { Skeleton } from 'moti/skeleton'
 
 const HorizontalPetOwnerCard = ({
     name,
@@ -20,8 +21,16 @@ const HorizontalPetOwnerCard = ({
     isAvailable,
     onPress,
 }) => {
-    const [isFavourite, setIsFavourite] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
+    const SkeletonCommonProps = {
+        colorMode: 'light',
+        transition: {
+            type: 'timing',
+            duration: '2000',
+        },
+        backgroundColor: '#D4D4D4',
+    }
     return (
         <TouchableOpacity
             onPress={onPress}
@@ -32,27 +41,52 @@ const HorizontalPetOwnerCard = ({
                 },
             ]}
         >
-            <Image source={image} resizeMode="cover" style={styles.image} />
-            {isAvailable && isAvailable === true && (
-                <View style={styles.reviewContainer}>
-                    <Text style={styles.rating}>ACTIVE</Text>
-                </View>
-            )}
-            <View style={styles.columnContainer}>
-                <View style={styles.topViewContainer}>
-                    <Text
-                        style={[
-                            styles.name,
-                            {
-                                color: COLORS.greyscale900,
-                            },
-                        ]}
-                    >
-                        {name}
-                    </Text>
-                </View>
-                <View style={styles.viewContainer}>
-                    {/* <FontAwesome name="star" size={14} color="rgb(250, 159, 28)" /> */}
+            <Skeleton.Group show={isLoading}>
+                <Skeleton
+                    width={100}
+                    radius={16}
+                    height={100}
+                    {...SkeletonCommonProps}
+                >
+                    <Image
+                        source={image}
+                        resizeMode="cover"
+                        onLoad={() => setIsLoading(false)}
+                        style={styles.image}
+                    />
+                </Skeleton>
+                {isAvailable && isAvailable === true && (
+                    <View style={styles.reviewContainer}>
+                        <Text style={styles.rating}>ACTIVE</Text>
+                    </View>
+                )}
+                <View style={styles.columnContainer}>
+                    <View style={styles.topViewContainer}>
+                        <Text
+                            style={[
+                                styles.name,
+                                {
+                                    color: COLORS.greyscale900,
+                                },
+                            ]}
+                        >
+                            {name}
+                        </Text>
+                    </View>
+                    <View style={styles.viewContainer}>
+                        {/* <FontAwesome name="star" size={14} color="rgb(250, 159, 28)" /> */}
+                        <Text
+                            style={[
+                                styles.location,
+                                {
+                                    color: COLORS.grayscale700,
+                                },
+                            ]}
+                        >
+                            Zone {addr_zone}, Brgy.{addr_brgy}, San Jose City
+                        </Text>
+                        {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
+                    </View>
                     <Text
                         style={[
                             styles.location,
@@ -61,24 +95,12 @@ const HorizontalPetOwnerCard = ({
                             },
                         ]}
                     >
-                        Zone {addr_zone}, Brgy.{addr_brgy}, San Jose City
+                        {email}
                     </Text>
-                    {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
-                </View>
-                <Text
-                    style={[
-                        styles.location,
-                        {
-                            color: COLORS.grayscale700,
-                        },
-                    ]}
-                >
-                    {email}
-                </Text>
-                {/* <Text style={[styles.location, {
+                    {/* <Text style={[styles.location, {
                     color: COLORS.grayscale700,
                 }]}></Text> */}
-                {/* <View style={styles.bottomViewContainer}>
+                    {/* <View style={styles.bottomViewContainer}>
                     <View style={styles.priceContainer}>
                         <Text style={styles.price}>{}</Text>
                         <Text style={styles.price}>{type}</Text>
@@ -91,7 +113,8 @@ const HorizontalPetOwnerCard = ({
                         />
                     </TouchableOpacity>
                 </View> */}
-            </View>
+                </View>
+            </Skeleton.Group>
         </TouchableOpacity>
     )
 }

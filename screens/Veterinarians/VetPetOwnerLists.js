@@ -31,6 +31,7 @@ import {
     formatUpcommingEventsDate,
 } from '../../services/FormatDate'
 import NotFoundCard from '../../components/NotFoundCard'
+import { Skeleton } from 'moti/skeleton'
 
 const VetPetOwnerLists = ({ navigation }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -38,6 +39,7 @@ const VetPetOwnerLists = ({ navigation }) => {
     const veterinarian = user.user
     const [petowners, setPetowners] = useState([])
     const [loading, setLoading] = useState(true) // New loading state
+    const [loadingProfile, setLoadingProfile] = useState(true) // New loading state
 
     const [refreshing, setRefreshing] = useState(false)
     const [announcement, setAnnouncement] = useState([])
@@ -83,7 +85,14 @@ const VetPetOwnerLists = ({ navigation }) => {
             setLoading(false) // Hide loading indicator
         }
     }
-
+    const SkeletonCommonProps = {
+        colorMode: 'light',
+        transition: {
+            type: 'timing',
+            duration: '2000',
+        },
+        backgroundColor: '#D4D4D4',
+    }
     const onRefresh = async () => {
         setRefreshing(true)
         await fetchPetOwners()
@@ -104,13 +113,20 @@ const VetPetOwnerLists = ({ navigation }) => {
         return (
             <View style={styles.headerContainer}>
                 <View style={styles.viewLeft}>
-                    <Image
-                        source={{
-                            uri: `${STORAGE_URL}/vet_profiles/${veterinarian?.image}`,
-                        }}
-                        resizeMode="contain"
-                        style={styles.userIcon}
-                    />
+                    <Skeleton
+                        show={loadingProfile}
+                        radius={999}
+                        {...SkeletonCommonProps}
+                    >
+                        <Image
+                            source={{
+                                uri: `${STORAGE_URL}/vet_profiles/${veterinarian?.image}`,
+                            }}
+                            onLoad={() => setLoadingProfile(false)}
+                            resizeMode="contain"
+                            style={styles.userIcon}
+                        />
+                    </Skeleton>
                     <View style={styles.viewNameContainer}>
                         <Text style={styles.greeeting}>Good Day👋</Text>
                         <Text

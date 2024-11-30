@@ -10,25 +10,155 @@ import React, { useState, useRef, useContext, useEffect } from 'react'
 import { COLORS, SIZES, icons, images } from '../constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ScrollView } from 'react-native-virtualized-view'
-import { MaterialIcons } from '@expo/vector-icons'
-import { launchImagePicker } from '../utils/ImagePickerHelper'
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons'
+import { getFileType, launchImagePicker } from '../utils/ImagePickerHelper'
 import SettingsItem from '../components/SettingsItem'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../components/Button'
 import AuthContext from '../contexts/AuthContext'
 import { STORAGE_URL } from '@env'
-import { logout } from '../services/AuthService'
+import { loadUser, logout, updateprofilepicture } from '../services/AuthService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Skeleton } from 'moti/skeleton'
 
 const Profile = ({ navigation }) => {
     const { user, setUser } = useContext(AuthContext)
     const { pet_owner } = user
     const refRBSheet = useRef()
+    const [image, setImage] = useState('')
+    const [isEditing, setIsEditing] = useState(false)
+    const [isImageFromLibrary, setIsImageFromLibrary] = useState(false)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        if (pet_owner?.image) {
+            setImage(`${STORAGE_URL}/petowners_profile/${pet_owner.image}`)
+        }
+    }, [pet_owner])
 
     const handleLogout = async () => {
         await logout()
         await AsyncStorage.removeItem('role')
         setUser(null)
+    }
+
+    const pickImage = async () => {
+        try {
+            const imageData = await launchImagePicker()
+            if (imageData) {
+                setImage(imageData) // Update the preview
+
+                setIsImageFromLibrary(true)
+                setIsEditing(true) // Enable editing state for confirmation/cancellation
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }
+    const confirmImage = async () => {
+        const fileType = getFileType(image)
+        const formData = new FormData()
+
+        if (isImageFromLibrary && image) {
+            formData.append('image', {
+                uri: image.startsWith('file://') ? image : `file://${image}`,
+                name: `photo.${fileType.split('/')[1]}`,
+                type: fileType,
+            })
+        }
+        try {
+            setIsEditing(false) // Exit editing mode
+            await updateprofilepicture(pet_owner.id, formData)
+            const updatedUser = await loadUser()
+            setUser(updatedUser)
+            setLoading(true)
+        } catch (e) {
+            console.log(e)
+            showMessage({
+                message: 'An error occurred. Please try again.',
+                type: 'danger',
+            })
+        }
+        // Logic to save the selected image
+    }
+
+    const cancelImageEdit = () => {
+        setImage(`${STORAGE_URL}/petowners_profile/${pet_owner.image}`) // Revert to the original image
+        setIsImageFromLibrary(false)
+        setIsEditing(false)
+    }
+    const SkeletonCommonProps = {
+        colorMode: 'light',
+        transition: {
+            type: 'timing',
+            duration: '2000',
+        },
+        backgroundColor: '#D4D4D4',
+    }
+    // Update renderProfile to handle new logic
+    const renderProfile = () => {
+        return (
+            <View style={styles.profileContainer}>
+                <View style={styles.avatarContainer}>
+                    <Skeleton
+                        show={loading}
+                        {...SkeletonCommonProps}
+                        radius={999}
+                    >
+                        <Image
+                            source={{
+                                uri: image,
+                            }}
+                            onLoad={() => setLoading(false)}
+                            resizeMode="cover"
+                            style={styles.avatar}
+                        />
+                    </Skeleton>
+                    {isEditing ? (
+                        <View>
+                            <TouchableOpacity
+                                onPress={cancelImageEdit}
+                                style={styles.pickImageX}
+                            >
+                                <MaterialCommunityIcons
+                                    name="window-close"
+                                    size={24}
+                                    color={COLORS.white}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={confirmImage}
+                                style={styles.pickImageCheck}
+                            >
+                                <MaterialCommunityIcons
+                                    name="check"
+                                    size={24}
+                                    color={COLORS.white}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <TouchableOpacity
+                            onPress={pickImage}
+                            style={styles.pickImage}
+                        >
+                            <MaterialCommunityIcons
+                                name="pencil-outline"
+                                size={24}
+                                color={COLORS.white}
+                            />
+                        </TouchableOpacity>
+                    )}
+                </View>
+
+                <Text style={[styles.title, { color: COLORS.greyscale900 }]}>
+                    {pet_owner.name}
+                </Text>
+                <Text style={[styles.subtitle, { color: COLORS.greyscale900 }]}>
+                    {pet_owner.email}
+                </Text>
+            </View>
+        )
     }
 
     /**
@@ -74,37 +204,84 @@ const Profile = ({ navigation }) => {
     /**
      * Render User Profile
      */
-    const renderProfile = () => {
-        return (
-            <View style={styles.profileContainer}>
-                <View>
-                    <Image
-                        source={{
-                            uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
-                        }}
-                        resizeMode="cover"
-                        style={styles.avatar}
-                    />
-                </View>
-                <Text style={[styles.title, { color: COLORS.greyscale900 }]}>
-                    {pet_owner.name}
-                </Text>
-                <Text style={[styles.subtitle, { color: COLORS.greyscale900 }]}>
-                    {pet_owner.email}
-                </Text>
-            </View>
-        )
-    }
+    // const renderProfile = () => {
+    //     return (
+    //         <View style={styles.profileContainer}>
+    //             {/* <View style={styles.avatarContainer}>
+    //                 <Image
+    //                     source={{
+    //                         uri: `${STORAGE_URL}/petowners_profile/${pet_owner.image}`,
+    //                     }}
+    //                     resizeMode="cover"
+    //                     style={styles.avatar}
+    //                 />
+    //                 <TouchableOpacity style={styles.pickImage}>
+    //                     <MaterialCommunityIcons
+    //                         name="pencil-outline"
+    //                         size={24}
+    //                         color={COLORS.white}
+    //                     />
+    //                 </TouchableOpacity>
+    //             </View> */}
+    //             <View style={styles.avatarContainer}>
+    //                 <Image
+    //                     source={{
+    //                         uri: image,
+    //                     }}
+    //                     resizeMode="cover"
+    //                     style={styles.avatar}
+    //                 />
+
+    //                 {isEditing ? (
+    //                     <>
+    //                         <TouchableOpacity
+    //                             // onPress={pickImage}
+    //                             style={styles.pickImageX}
+    //                         >
+    //                             <MaterialCommunityIcons
+    //                                 name="window-close"
+    //                                 size={24}
+    //                                 color={COLORS.white}
+    //                             />
+    //                         </TouchableOpacity>
+    //                         <TouchableOpacity
+    //                             // onPress={pickImage}
+    //                             style={styles.pickImageCheck}
+    //                         >
+    //                             <MaterialCommunityIcons
+    //                                 name="check"
+    //                                 size={24}
+    //                                 color={COLORS.white}
+    //                             />
+    //                         </TouchableOpacity>
+    //                     </>
+    //                 ) : (
+    //                     <TouchableOpacity
+    //                         onPress={pickImage}
+    //                         style={styles.pickImage}
+    //                     >
+    //                         <MaterialCommunityIcons
+    //                             name="pencil-outline"
+    //                             size={24}
+    //                             color={COLORS.white}
+    //                         />
+    //                     </TouchableOpacity>
+    //                 )}
+    //             </View>
+
+    //             <Text style={[styles.title, { color: COLORS.greyscale900 }]}>
+    //                 {pet_owner.name}
+    //             </Text>
+    //             <Text style={[styles.subtitle, { color: COLORS.greyscale900 }]}>
+    //                 {pet_owner.email}
+    //             </Text>
+    //         </View>
+    //     )
+    // }
     /**
      * Render Settings
      */
     const renderSettings = () => {
-        const [isDarkMode, setIsDarkMode] = useState(false)
-
-        const toggleDarkMode = () => {
-            setIsDarkMode((prev) => !prev)
-        }
-
         return (
             <View style={styles.settingsContainer}>
                 <SettingsItem
@@ -112,17 +289,6 @@ const Profile = ({ navigation }) => {
                     name="Edit Profile"
                     onPress={() => navigation.navigate('EditProfile')}
                 />
-                {/* <SettingsItem
-                    icon={icons.bell2}
-                    name="Notification"
-                    onPress={() => navigation.navigate('SettingsNotifications')}
-                /> */}
-
-                {/* <SettingsItem
-                    icon={icons.shieldOutline}
-                    name="Security"
-                    onPress={() => navigation.navigate('SettingsSecurity')}
-                /> */}
 
                 <SettingsItem
                     icon={icons.lockedComputerOutline}
@@ -234,6 +400,39 @@ const Profile = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    pickImage: {
+        height: 42,
+        width: 42,
+        borderRadius: 21,
+        backgroundColor: COLORS.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+    },
+    pickImageX: {
+        height: 42,
+        width: 42,
+        borderRadius: 21,
+        backgroundColor: COLORS.red,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+    },
+    pickImageCheck: {
+        height: 42,
+        width: 42,
+        borderRadius: 21,
+        backgroundColor: COLORS.success,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+    },
     viewRight: {
         marginRight: 5,
         flexDirection: 'row',

@@ -54,9 +54,35 @@ export async function updateprofile(petowner_id, formData) {
     })
     return data
 }
+export async function updateprofilepicture(petowner_id, formData) {
+    const { data } = await axios.post(
+        `/petowners/${petowner_id}/profile`,
+        formData,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        }
+    )
+    return data
+}
 export async function updateVetprofile(veterinarian_id, formData) {
     const { data } = await axios.post(
         `/veterinarians/${veterinarian_id}`,
+        formData,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        }
+    )
+    console.log(data)
+
+    return data
+}
+export async function updateVetprofilepicture(veterinarian_id, formData) {
+    const { data } = await axios.post(
+        `/veterinarians/${veterinarian_id}/profile`,
         formData,
         {
             headers: {

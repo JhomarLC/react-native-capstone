@@ -22,6 +22,8 @@ import { categories, doctors, ratings, veterinarianList } from '../data'
 import NotFoundCard from '../components/NotFoundCard'
 import HorizontalVeterinarianCard from '../components/HorizontalVeterinarianCard'
 import { loadVeterinarians } from '../services/VeterinarianService'
+import { MotiView } from 'moti'
+import { Skeleton } from 'moti/skeleton'
 
 const Veterinarians = ({ navigation }) => {
     const refRBSheet = useRef()

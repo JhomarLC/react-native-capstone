@@ -3,6 +3,15 @@ import React, { useState } from 'react'
 import { COLORS, SIZES, icons } from '../constants'
 import { FontAwesome } from '@expo/vector-icons'
 import { STORAGE_URL } from '@env'
+import { Skeleton } from 'moti/skeleton'
+const SkeletonCommonProps = {
+    colorMode: 'light',
+    transition: {
+        type: 'timing',
+        duration: '2000',
+    },
+    backgroundColor: '#D4D4D4',
+}
 const HorizontalVeterinarianCard = ({
     vetName,
     address,
@@ -21,50 +30,65 @@ const HorizontalVeterinarianCard = ({
                 },
             ]}
         >
-            <Image
-                source={{
-                    uri: `${STORAGE_URL}/vet_profiles/${image}`,
-                }}
-                resizeMode="cover"
-                style={styles.image}
-            />
-
-            <View style={styles.columnContainer}>
-                <View style={styles.topViewContainer}>
-                    <Text
-                        style={[
-                            styles.name,
-                            {
-                                color: COLORS.greyscale900,
-                            },
-                        ]}
-                    >
-                        {vetName}
-                    </Text>
-                </View>
-                <View style={styles.viewContainer}>
-                    <Text
-                        style={[
-                            styles.location,
-                            {
-                                color: COLORS.grayscale700,
-                            },
-                        ]}
-                    >
-                        {position}
-                    </Text>
-                </View>
-                <Text
-                    style={[
-                        styles.location,
-                        {
-                            color: COLORS.grayscale700,
-                        },
-                    ]}
+            <Skeleton.Group show={image == null}>
+                <Skeleton
+                    width={100}
+                    height={100}
+                    radius={16}
+                    {...SkeletonCommonProps}
                 >
-                    {email}
-                </Text>
-            </View>
+                    <Image
+                        source={{
+                            uri: `${STORAGE_URL}/vet_profiles/${image}`,
+                        }}
+                        resizeMode="cover"
+                        style={styles.image}
+                    />
+                </Skeleton>
+
+                <View style={styles.columnContainer}>
+                    <View style={styles.topViewContainer}>
+                        <Skeleton width={'95%'} {...SkeletonCommonProps}>
+                            <Text
+                                style={[
+                                    styles.name,
+                                    {
+                                        color: COLORS.greyscale900,
+                                    },
+                                ]}
+                            >
+                                {vetName}
+                            </Text>
+                        </Skeleton>
+                    </View>
+                    <View style={styles.viewContainer}>
+                        <Skeleton width={'80%'} {...SkeletonCommonProps}>
+                            <Text
+                                style={[
+                                    styles.location,
+                                    {
+                                        color: COLORS.grayscale700,
+                                    },
+                                ]}
+                            >
+                                {position}
+                            </Text>
+                        </Skeleton>
+                    </View>
+                    <Skeleton width={'100%'} {...SkeletonCommonProps}>
+                        <Text
+                            style={[
+                                styles.location,
+                                {
+                                    color: COLORS.grayscale700,
+                                },
+                            ]}
+                        >
+                            {email}
+                        </Text>
+                    </Skeleton>
+                </View>
+            </Skeleton.Group>
         </TouchableOpacity>
     )
 }
