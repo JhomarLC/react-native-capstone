@@ -7,7 +7,13 @@ import {
     TouchableOpacity,
     ActivityIndicator,
 } from 'react-native'
-import React, { useCallback, useContext, useReducer, useState } from 'react'
+import React, {
+    useCallback,
+    useContext,
+    useEffect,
+    useReducer,
+    useState,
+} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { COLORS, SIZES, icons, illustrations, images } from '../../constants'
 import Header from '../../components/Header'
@@ -23,7 +29,9 @@ import { showMessage } from 'react-native-flash-message'
 import { registerVet } from '../../services/AuthService'
 import AuthContext from '../../contexts/AuthContext'
 import CustomModal from '../../components/CustomModal'
-const isTestMode = true
+const isTestMode = false
+import { API_URL } from '@env'
+import axios from 'axios'
 
 const initialState = {
     inputValues: {
@@ -62,6 +70,10 @@ const VetSignup = ({ navigation }) => {
         icon: '',
         action: '',
     })
+    const [resendDisabled, setResendDisabled] = useState(false) // To disable "Get Code" button
+    const [countdown, setCountdown] = useState(0) // Countdown timer state
+    const [isSendingCode, setIsSendingCode] = useState(false) // Track loading state for "Get Code"
+
     const inputChangedHandler = useCallback(
         (inputId, inputValue) => {
             setError({})
@@ -70,6 +82,57 @@ const VetSignup = ({ navigation }) => {
         },
         [dispatchFormState]
     )
+    const handleSendCode = async () => {
+        const email = formState.inputValues.email
+        if (formState.inputValidities.email) {
+            showMessage({
+                message:
+                    'Please enter a valid email to get the verification code.',
+                type: 'danger',
+            })
+            return
+        }
+
+        setIsSendingCode(true) // Start loading indicator
+        try {
+            // Example API call to send the verification code
+            const res = await axios.post(
+                `${API_URL}/vet-send-verification-email`,
+                {
+                    email,
+                }
+            )
+            console.log(res)
+
+            showMessage({
+                message: 'Verification code sent to your email.',
+                type: 'success',
+            })
+            setResendDisabled(true) // Disable resend button
+            setCountdown(60) // Start countdown
+        } catch (error) {
+            showMessage({
+                message: error.response.data.message,
+                type: 'danger',
+            })
+        } finally {
+            setIsSendingCode(false) // Stop loading indicator
+        }
+    }
+
+    // Countdown logic
+    useEffect(() => {
+        if (countdown === 0) {
+            setResendDisabled(false)
+            return
+        }
+
+        const timer = setInterval(() => {
+            setCountdown((prev) => prev - 1)
+        }, 1000)
+
+        return () => clearInterval(timer)
+    }, [countdown])
 
     const pickImage = async () => {
         try {
@@ -106,6 +169,7 @@ const VetSignup = ({ navigation }) => {
 
         const {
             email,
+            verificationCode,
             password,
             password_confirmation,
             name,
@@ -135,6 +199,19 @@ const VetSignup = ({ navigation }) => {
 
         setIsLoading(true)
         try {
+            await axios.post(
+                `${API_URL}/vet-verify-verification-email`,
+                {
+                    email: email,
+                    verification_code: verificationCode,
+                },
+                {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                }
+            )
+
             await registerVet(formData)
             setModalVisible(true)
             setModal({
@@ -156,6 +233,11 @@ const VetSignup = ({ navigation }) => {
             } else if (e.response?.status === 401) {
                 showMessage({
                     message: e.response.data.message[0],
+                    type: 'danger',
+                })
+            } else if (e.response?.status === 400) {
+                showMessage({
+                    message: e.response.data.message,
                     type: 'danger',
                 })
             } else {
@@ -277,6 +359,44 @@ const VetSignup = ({ navigation }) => {
                             keyboardType="email-address"
                             placeholderTextColor={COLORS.gray}
                         />
+                        <View style={styles.verificationContainer}>
+                            <View style={styles.inputWrapper}>
+                                <Input
+                                    id="verificationCode"
+                                    onInputChanged={inputChangedHandler}
+                                    errorText={error.verification_code}
+                                    placeholder="Verification Code"
+                                    placeholderTextColor={COLORS.gray}
+                                    icon={icons.padlock}
+                                />
+                            </View>
+                            <View style={styles.buttonWrapper}>
+                                <TouchableOpacity
+                                    onPress={handleSendCode}
+                                    disabled={resendDisabled}
+                                    style={[
+                                        styles.resendButton,
+                                        resendDisabled &&
+                                            styles.resendButtonDisabled,
+                                    ]}
+                                >
+                                    <Text style={styles.resendText}>
+                                        {isSendingCode ? (
+                                            <ActivityIndicator
+                                                size="small"
+                                                color={COLORS.white}
+                                            />
+                                        ) : (
+                                            <Text style={styles.resendText}>
+                                                {resendDisabled
+                                                    ? `${countdown}s`
+                                                    : 'Get Code'}
+                                            </Text>
+                                        )}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                         <Input
                             onInputChanged={inputChangedHandler}
                             errorText={error.password}
@@ -292,7 +412,7 @@ const VetSignup = ({ navigation }) => {
                             errorText={error.password_confirmation}
                             autoCapitalize="none"
                             id="password_confirmation"
-                            placeholder="Password"
+                            placeholder="Confirm Password"
                             icon={icons.padlock}
                             secureTextEntry={true}
                             placeholderTextColor={COLORS.gray}
@@ -400,6 +520,32 @@ const VetSignup = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    buttonWrapper: {
+        marginTop: 10,
+    },
+    verificationContainer: {
+        flexDirection: 'row',
+        marginVertical: 10,
+    },
+    inputWrapper: {
+        flex: 1, // Input takes up remaining space
+        marginRight: 10, // Add space between input and button
+    },
+    resendButton: {
+        width: 100, // Fixed width for the button
+        backgroundColor: COLORS.primary,
+        paddingVertical: 10,
+        borderRadius: 5,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    resendButtonDisabled: {
+        backgroundColor: COLORS.gray,
+    },
+    resendText: {
+        color: COLORS.white,
+        textAlign: 'center',
+    },
     area: {
         flex: 1,
         backgroundColor: COLORS.white,

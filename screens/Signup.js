@@ -32,7 +32,9 @@ import { setToken } from '../services/TokenService'
 import AuthContext from '../contexts/AuthContext'
 import RNPickerSelect from 'react-native-picker-select'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-const isTestMode = true
+const isTestMode = false
+import { API_URL } from '@env'
+import axios from 'axios'
 
 const initialState = {
     inputValues: {
@@ -65,6 +67,9 @@ const Signup = ({ navigation }) => {
     const [error, setError] = useState({})
     const [isChecked, setChecked] = useState(false)
     const [image, setImage] = useState(null)
+    const [resendDisabled, setResendDisabled] = useState(false) // To disable "Get Code" button
+    const [countdown, setCountdown] = useState(0) // Countdown timer state
+    const [isSendingCode, setIsSendingCode] = useState(false) // Track loading state for "Get Code"
 
     const inputChangedHandler = useCallback(
         (inputId, inputValue) => {
@@ -74,6 +79,52 @@ const Signup = ({ navigation }) => {
         },
         [dispatchFormState]
     )
+    const handleSendCode = async () => {
+        const email = formState.inputValues.email
+        if (formState.inputValidities.email) {
+            showMessage({
+                message:
+                    'Please enter a valid email to get the verification code.',
+                type: 'danger',
+            })
+            return
+        }
+
+        setIsSendingCode(true)
+        try {
+            // Example API call to send the verification code
+            await axios.post(`${API_URL}/send-verification-email`, {
+                email,
+            })
+            showMessage({
+                message: 'Verification code sent to your email.',
+                type: 'success',
+            })
+            setResendDisabled(true) // Disable resend button
+            setCountdown(60) // Start countdown
+        } catch (error) {
+            showMessage({
+                message: error.response.data.message,
+                type: 'danger',
+            })
+        } finally {
+            setIsSendingCode(false) // Stop loading indicator
+        }
+    }
+
+    // Countdown logic
+    useEffect(() => {
+        if (countdown === 0) {
+            setResendDisabled(false)
+            return
+        }
+
+        const timer = setInterval(() => {
+            setCountdown((prev) => prev - 1)
+        }, 1000)
+
+        return () => clearInterval(timer)
+    }, [countdown])
 
     const barangays = [
         { label: 'A. Pascual', value: 'A. Pascual' },
@@ -155,6 +206,7 @@ const Signup = ({ navigation }) => {
         const {
             email,
             password,
+            verificationCode,
             password_confirmation,
             name,
             addr_zone,
@@ -183,6 +235,19 @@ const Signup = ({ navigation }) => {
 
         setIsLoading(true)
         try {
+            await axios.post(
+                `${API_URL}/verify-verification-email`,
+                {
+                    email: email,
+                    verification_code: verificationCode,
+                },
+                {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                }
+            )
+
             const data = await register(formData)
             console.log(data)
 
@@ -197,9 +262,15 @@ const Signup = ({ navigation }) => {
             console.log(e)
             if (e.response?.status === 422) {
                 setError(e.response.data.errors)
+                console.log(e.response.data.errors)
             } else if (e.response?.status === 401) {
                 showMessage({
                     message: e.response.data.message[0],
+                    type: 'danger',
+                })
+            } else if (e.response?.status === 400) {
+                showMessage({
+                    message: e.response.data.message,
                     type: 'danger',
                 })
             } else {
@@ -251,6 +322,44 @@ const Signup = ({ navigation }) => {
                             keyboardType="email-address"
                             placeholderTextColor={COLORS.gray}
                         />
+                        <View style={styles.verificationContainer}>
+                            <View style={styles.inputWrapper}>
+                                <Input
+                                    id="verificationCode"
+                                    onInputChanged={inputChangedHandler}
+                                    errorText={error.verification_code}
+                                    placeholder="Verification Code"
+                                    placeholderTextColor={COLORS.gray}
+                                    icon={icons.padlock}
+                                />
+                            </View>
+                            <View style={styles.buttonWrapper}>
+                                <TouchableOpacity
+                                    onPress={handleSendCode}
+                                    disabled={resendDisabled}
+                                    style={[
+                                        styles.resendButton,
+                                        resendDisabled &&
+                                            styles.resendButtonDisabled,
+                                    ]}
+                                >
+                                    <Text style={styles.resendText}>
+                                        {isSendingCode ? (
+                                            <ActivityIndicator
+                                                size="small"
+                                                color={COLORS.white}
+                                            />
+                                        ) : (
+                                            <Text style={styles.resendText}>
+                                                {resendDisabled
+                                                    ? `${countdown}s`
+                                                    : 'Get Code'}
+                                            </Text>
+                                        )}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                         <Input
                             onInputChanged={inputChangedHandler}
                             errorText={error.password}
@@ -266,7 +375,7 @@ const Signup = ({ navigation }) => {
                             errorText={error.password_confirmation}
                             autoCapitalize="none"
                             id="password_confirmation"
-                            placeholder="Password"
+                            placeholder="Confirm Password"
                             icon={icons.padlock}
                             secureTextEntry={true}
                             placeholderTextColor={COLORS.gray}
@@ -378,6 +487,32 @@ const Signup = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    buttonWrapper: {
+        marginTop: 10,
+    },
+    verificationContainer: {
+        flexDirection: 'row',
+        marginVertical: 10,
+    },
+    inputWrapper: {
+        flex: 1, // Input takes up remaining space
+        marginRight: 10, // Add space between input and button
+    },
+    resendButton: {
+        width: 100, // Fixed width for the button
+        backgroundColor: COLORS.primary,
+        paddingVertical: 10,
+        borderRadius: 5,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    resendButtonDisabled: {
+        backgroundColor: COLORS.gray,
+    },
+    resendText: {
+        color: COLORS.white,
+        textAlign: 'center',
+    },
     area: {
         flex: 1,
         backgroundColor: COLORS.white,
