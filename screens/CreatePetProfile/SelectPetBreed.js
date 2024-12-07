@@ -11,6 +11,7 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { COLORS, SIZES, images } from '../../constants'
 import Button from '../../components/Button'
+import { Skeleton } from 'moti/skeleton'
 
 const { width } = Dimensions.get('window')
 const ITEM_SIZE = width / 2 - 24 // Adjusting size to fit 2 items per row
@@ -71,6 +72,7 @@ const breeds = {
 const SelectPetBreed = ({ navigation, formData, setFormData }) => {
     const [selection, setSelection] = useState(null)
     const [filteredBreeds, setFilteredBreeds] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         setFilteredBreeds(formData.type == '1' ? breeds.Dog : breeds.Cat)
@@ -85,6 +87,15 @@ const SelectPetBreed = ({ navigation, formData, setFormData }) => {
             })
         }
     }, [filteredBreeds])
+
+    const SkeletonCommonProps = {
+        colorMode: 'light',
+        transition: {
+            type: 'timing',
+            duration: '2000',
+        },
+        backgroundColor: '#D4D4D4',
+    }
 
     const renderBreed = ({ item }) => {
         const isSelected = selection === item.id
@@ -106,6 +117,7 @@ const SelectPetBreed = ({ navigation, formData, setFormData }) => {
                     source={item.image}
                     style={styles.breedImage}
                     resizeMode="contain"
+                    onLoad={() => setIsLoading(false)}
                 />
                 <Text
                     style={[

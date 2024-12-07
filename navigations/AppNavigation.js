@@ -151,8 +151,11 @@ const AppNavigation = () => {
             const { status: newStatus } =
                 await Notifications.requestPermissionsAsync()
             if (newStatus === 'granted') {
-                const pushTokenData =
-                    await Notifications.getExpoPushTokenAsync()
+                const pushTokenData = await Notifications.getExpoPushTokenAsync(
+                    {
+                        projectId: '7c007075-01d6-4f80-a4cd-27e68290824a',
+                    }
+                )
 
                 try {
                     if (role === 'veterinarian') {

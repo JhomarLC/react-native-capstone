@@ -380,6 +380,7 @@ const VetAddVaccination = ({ route, navigation }) => {
             <DatePickerModal
                 open={openVaccinationDatePicker}
                 // startDate={expiryDate}
+                maximumDate={startDate}
                 selectedDate={vaccinationDate}
                 onClose={() => setOpenVaccinationDatePicker(false)}
                 onChangeStartDate={(date) => setVaccinationDate(date)}

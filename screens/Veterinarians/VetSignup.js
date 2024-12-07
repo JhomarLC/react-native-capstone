@@ -6,8 +6,6 @@ import {
     Image,
     TouchableOpacity,
     ActivityIndicator,
-    Modal,
-    TouchableWithoutFeedback,
 } from 'react-native'
 import React, { useCallback, useContext, useReducer, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -18,23 +16,12 @@ import { validateInput } from '../../utils/actions/formActions'
 import Input from '../../components/Input'
 import Checkbox from 'expo-checkbox'
 import Button from '../../components/Button'
-import {
-    getFileType,
-    launchImagePicker,
-    launchSignaturePicker,
-} from '../../utils/ImagePickerHelper'
-import { MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons'
+import { getFileType, launchImagePicker } from '../../utils/ImagePickerHelper'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 import FlashMessage from 'react-native-flash-message'
-import { showMessage, hideMessage } from 'react-native-flash-message'
-import {
-    loadUser,
-    loadVetUser,
-    register,
-    registerVet,
-} from '../../services/AuthService'
-import { setToken } from '../../services/TokenService'
+import { showMessage } from 'react-native-flash-message'
+import { registerVet } from '../../services/AuthService'
 import AuthContext from '../../contexts/AuthContext'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import CustomModal from '../../components/CustomModal'
 const isTestMode = true
 
@@ -68,7 +55,6 @@ const VetSignup = ({ navigation }) => {
     const [error, setError] = useState({})
     const [isChecked, setChecked] = useState(false)
     const [image, setImage] = useState(null)
-    const [signature, setSignature] = useState(null)
     const [modalVisible, setModalVisible] = useState(false)
     const [modal, setModal] = useState({
         title: '',
@@ -96,17 +82,7 @@ const VetSignup = ({ navigation }) => {
             console.error(error) // Log error for debugging
         }
     }
-    const pickSignature = async () => {
-        try {
-            const signatureData = await launchSignaturePicker() // Get the image data (uri, fileName, mimeType)
 
-            if (!signatureData) return
-
-            setSignature(signatureData)
-        } catch (error) {
-            console.error(error) // Log error for debugging
-        }
-    }
     const handleSignup = async () => {
         if (isLoading) {
             return
@@ -139,7 +115,6 @@ const VetSignup = ({ navigation }) => {
         } = formState.inputValues
 
         const fileType = getFileType(image)
-        const signatureFileType = getFileType(signature)
 
         const formData = new FormData()
         formData.append('email', email)
@@ -155,13 +130,6 @@ const VetSignup = ({ navigation }) => {
                 uri: image.startsWith('file://') ? image : `file://${image}`,
                 name: `photo.${fileType.split('/')[1]}`,
                 type: fileType,
-            })
-            formData.append('electronic_signature', {
-                uri: signature.startsWith('file://')
-                    ? signature
-                    : `file://${signature}`,
-                name: `photo.${signatureFileType.split('/')[1]}`,
-                type: signatureFileType,
             })
         }
 
@@ -288,29 +256,6 @@ const VetSignup = ({ navigation }) => {
                             />
                             <TouchableOpacity
                                 onPress={pickImage}
-                                style={styles.pickImage}
-                            >
-                                <MaterialCommunityIcons
-                                    name="pencil-outline"
-                                    size={24}
-                                    color={COLORS.white}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.logoContainer}>
-                            <Image
-                                source={
-                                    signature
-                                        ? {
-                                              uri: signature,
-                                          }
-                                        : icons.signature
-                                }
-                                resizeMode="contain"
-                                style={styles.signature}
-                            />
-                            <TouchableOpacity
-                                onPress={pickSignature}
                                 style={styles.pickImage}
                             >
                                 <MaterialCommunityIcons

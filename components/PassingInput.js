@@ -52,7 +52,7 @@ const PassingInput = (props) => {
                     style={[styles.input, { color: COLORS.black }]}
                     placeholder={props.placeholder}
                     placeholderTextColor={props.placeholderTextColor}
-                    autoCapitalize="none"
+                    autoCapitalize="true"
                 />
             </View>
             {props.errorText && (

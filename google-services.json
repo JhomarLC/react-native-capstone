@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "437262181895",
-    "project_id": "pawtection-4c023",
-    "storage_bucket": "pawtection-4c023.firebasestorage.app"
+    "project_number": "140961083340",
+    "project_id": "sjc-pawtection",
+    "storage_bucket": "sjc-pawtection.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:437262181895:android:e44eb6bb9746871c59aca2",
+        "mobilesdk_app_id": "1:140961083340:android:248ade16ba4cdedda23769",
         "android_client_info": {
           "package_name": "com.kaimantin1303.sjcpawtection"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAzSNsak1jDleujyCxX8c3Mx4al1oirdpw"
+          "current_key": "AIzaSyAsEIhvPVrkIQf1OMAEldcrLja7vjo3X9o"
         }
       ],
       "services": {
