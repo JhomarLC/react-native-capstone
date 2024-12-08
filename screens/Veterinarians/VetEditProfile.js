@@ -25,6 +25,7 @@ import {
 import { STORAGE_URL } from '@env'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import CustomModal from '../../components/CustomModal'
+import RNPickerSelect from 'react-native-picker-select'
 
 const VetEditProfile = ({ route, navigation }) => {
     const { setUser } = useContext(AuthContext)
@@ -47,6 +48,8 @@ const VetEditProfile = ({ route, navigation }) => {
             fullName: veterinarian.name || '',
             phoneNumber: veterinarian.phone_number || '',
             position: veterinarian.position || '',
+            zone: veterinarian.addr_zone || '',
+            barangay: veterinarian.addr_brgy || '',
             licenseNumber: veterinarian.license_number || '',
         },
         formIsValid: false,
@@ -57,6 +60,58 @@ const VetEditProfile = ({ route, navigation }) => {
     const [inputValues, setInputValues] = useState(initialState.inputValues)
     const [loading, setLoading] = useState(false)
 
+    const [selectedBarangay, setSelectedBarangay] = useState(
+        veterinarian.addr_brgy
+    )
+    useEffect(() => {
+        if (selectedBarangay) {
+            setSelectedBarangay(selectedBarangay)
+        }
+    }, [selectedBarangay])
+
+    const barangays = [
+        { label: 'A. Pascual', value: 'A. Pascual' },
+        { label: 'Abar Ist', value: 'Abar Ist' },
+        { label: 'Abar 2nd', value: 'Abar 2nd' },
+        { label: 'Bagong Sikat', value: 'Bagong Sikat' },
+        { label: 'Caanawan', value: 'Caanawan' },
+        { label: 'Calaocan', value: 'Calaocan' },
+        { label: 'Camanacsacan', value: 'Camanacsacan' },
+        { label: 'Culaylay', value: 'Culaylay' },
+        { label: 'Dizol', value: 'Dizol' },
+        { label: 'Kaliwanagan', value: 'Kaliwanagan' },
+        { label: 'Kita-Kita', value: 'Kita-Kita' },
+        { label: 'Malasin', value: 'Malasin' },
+        { label: 'Manicla', value: 'Manicla' },
+        { label: 'Palestina', value: 'Palestina' },
+        { label: 'Parang Mangga', value: 'Parang Mangga' },
+        { label: 'Villa Joson', value: 'Villa Joson' },
+        { label: 'Pinili', value: 'Pinili' },
+        { label: 'Rafael Rueda, Sr. Pob.', value: 'Rafael Rueda, Sr. Pob.' },
+        {
+            label: 'Ferdinand E. Marcos Pob.',
+            value: 'Ferdinand E. Marcos Pob.',
+        },
+        { label: 'Canuto Ramos Pob.', value: 'Canuto Ramos Pob.' },
+        { label: 'Raymundo Eugenio Pob.', value: 'Raymundo Eugenio Pob.' },
+        { label: 'Crisanto Sanchez Pob.', value: 'Crisanto Sanchez Pob.' },
+        { label: 'Porais', value: 'Porais' },
+        { label: 'San Agustin', value: 'San Agustin' },
+        { label: 'San Juan', value: 'San Juan' },
+        { label: 'San Mauricio', value: 'San Mauricio' },
+        { label: 'Santo Niño 1st', value: 'Santo Niño 1st' },
+        { label: 'Santo Niño 2nd', value: 'Santo Niño 2nd' },
+        { label: 'Santo Tomas', value: 'Santo Tomas' },
+        { label: 'Sibut', value: 'Sibut' },
+        { label: 'Sinipit Bubon', value: 'Sinipit Bubon' },
+        { label: 'Santo Niño 3rd', value: 'Santo Niño 3rd' },
+        { label: 'Tabulac', value: 'Tabulac' },
+        { label: 'Tayabo', value: 'Tayabo' },
+        { label: 'Tondod', value: 'Tondod' },
+        { label: 'Tulat', value: 'Tulat' },
+        { label: 'Villa Floresca', value: 'Villa Floresca' },
+        { label: 'Villa Marina', value: 'Villa Marina' },
+    ]
     // Handle text input changes
     const inputChangedHandler = (inputId, inputValue) => {
         setInputValues((prevValues) => ({
@@ -65,18 +120,18 @@ const VetEditProfile = ({ route, navigation }) => {
         }))
     }
 
-    // Pick image from the library
-    const pickImage = async () => {
-        try {
-            const imageData = await launchImagePicker()
-            if (!imageData) return
-            setImage(imageData)
-            setIsImageFromLibrary(true)
-            console.log(imageData)
-        } catch (error) {
-            console.error(error)
-        }
-    }
+    // // Pick image from the library
+    // const pickImage = async () => {
+    //     try {
+    //         const imageData = await launchImagePicker()
+    //         if (!imageData) return
+    //         setImage(imageData)
+    //         setIsImageFromLibrary(true)
+    //         console.log(imageData)
+    //     } catch (error) {
+    //         console.error(error)
+    //     }
+    // }
 
     // Handle profile update with loading indication
     const handleEditProfile = async () => {
@@ -89,11 +144,15 @@ const VetEditProfile = ({ route, navigation }) => {
         }
 
         setLoading(true)
-        const { fullName, phoneNumber, position, licenseNumber } = inputValues
+        const { fullName, phoneNumber, zone, position, licenseNumber } =
+            inputValues
         const fileType = getFileType(image)
         const formData = new FormData()
+        console.log(zone, selectedBarangay)
 
         formData.append('name', fullName)
+        formData.append('addr_zone', zone)
+        formData.append('addr_brgy', selectedBarangay)
         formData.append('phone_number', phoneNumber)
         formData.append('position', position)
         formData.append('license_number', licenseNumber)
@@ -188,6 +247,54 @@ const VetEditProfile = ({ route, navigation }) => {
                             placeholderTextColor={COLORS.gray}
                         />
                     </View>
+                    <View style={styles.verificationContainer}>
+                        <View style={styles.inputWrapperZone}>
+                            <View style={styles.inputSection}>
+                                <Text style={styles.label}>Zone *</Text>
+                                <Input
+                                    id="addr_zone"
+                                    value={inputValues.zone}
+                                    onInputChanged={inputChangedHandler}
+                                    placeholder="Zone"
+                                    icon={icons.location}
+                                    placeholderTextColor={COLORS.gray}
+                                    keyboardType="numeric"
+                                />
+                            </View>
+                        </View>
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.inputSection}>
+                                <Text style={styles.label}>Barangay *</Text>
+                                <RNPickerSelect
+                                    placeholder={{
+                                        label: 'Select Barangay',
+                                        value: '',
+                                    }}
+                                    items={barangays}
+                                    value={selectedBarangay}
+                                    onValueChange={(value) =>
+                                        setSelectedBarangay(value)
+                                    }
+                                    style={{
+                                        inputAndroid: {
+                                            borderRadius: 12,
+                                            borderWidth: 1,
+                                            marginVertical: 5,
+                                            fontSize: 14,
+                                            paddingHorizontal: 10,
+                                            color: COLORS.black,
+                                            paddingRight: 30,
+                                            height: 52,
+                                            alignItems: 'center',
+                                            backgroundColor:
+                                                COLORS.greyscale500,
+                                        },
+                                    }}
+                                />
+                            </View>
+                        </View>
+                    </View>
+
                     <View style={styles.inputSection}>
                         <Text style={styles.label}>Phone Number</Text>
                         <Input
@@ -246,6 +353,19 @@ const VetEditProfile = ({ route, navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    verificationContainer: {
+        flexDirection: 'row',
+        // marginVertical: 10,
+    },
+    inputWrapper: {
+        flex: 1, // Input takes up remaining space
+        marginRight: 10, // Add space between input and button
+    },
+    inputWrapperZone: {
+        width: '30%',
+        // flex: 1, // Input takes up remaining space
+        marginRight: 10, // Add space between input and button
+    },
     area: {
         flex: 1,
         backgroundColor: COLORS.white,

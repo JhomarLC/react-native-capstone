@@ -3,6 +3,14 @@ import React, { useState } from 'react'
 import { COLORS, SIZES, icons } from '../../constants'
 import { FontAwesome } from '@expo/vector-icons'
 import { Skeleton } from 'moti/skeleton'
+const SkeletonCommonProps = {
+    colorMode: 'light',
+    transition: {
+        type: 'timing',
+        duration: '2000',
+    },
+    backgroundColor: '#D4D4D4',
+}
 
 const HorizontalPetOwnerCard = ({
     name,
@@ -23,14 +31,6 @@ const HorizontalPetOwnerCard = ({
 }) => {
     const [isLoading, setIsLoading] = useState(true)
 
-    const SkeletonCommonProps = {
-        colorMode: 'light',
-        transition: {
-            type: 'timing',
-            duration: '2000',
-        },
-        backgroundColor: '#D4D4D4',
-    }
     return (
         <TouchableOpacity
             onPress={onPress}
@@ -62,41 +62,54 @@ const HorizontalPetOwnerCard = ({
                 )}
                 <View style={styles.columnContainer}>
                     <View style={styles.topViewContainer}>
-                        <Text
-                            style={[
-                                styles.name,
-                                {
-                                    color: COLORS.greyscale900,
-                                },
-                            ]}
-                        >
-                            {name}
-                        </Text>
+                        <Skeleton width={'95%'} {...SkeletonCommonProps}>
+                            {!isLoading && (
+                                <Text
+                                    style={[
+                                        styles.name,
+                                        {
+                                            color: COLORS.greyscale900,
+                                        },
+                                    ]}
+                                >
+                                    {name}
+                                </Text>
+                            )}
+                        </Skeleton>
                     </View>
                     <View style={styles.viewContainer}>
                         {/* <FontAwesome name="star" size={14} color="rgb(250, 159, 28)" /> */}
-                        <Text
-                            style={[
-                                styles.location,
-                                {
-                                    color: COLORS.grayscale700,
-                                },
-                            ]}
-                        >
-                            Zone {addr_zone}, Brgy.{addr_brgy}, San Jose City
-                        </Text>
+                        <Skeleton width={'80%'} {...SkeletonCommonProps}>
+                            {!isLoading && (
+                                <Text
+                                    style={[
+                                        styles.location,
+                                        {
+                                            color: COLORS.grayscale700,
+                                        },
+                                    ]}
+                                >
+                                    Zone {addr_zone}, Brgy.{addr_brgy}, San Jose
+                                    City
+                                </Text>
+                            )}
+                        </Skeleton>
                         {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
                     </View>
-                    <Text
-                        style={[
-                            styles.location,
-                            {
-                                color: COLORS.grayscale700,
-                            },
-                        ]}
-                    >
-                        {email}
-                    </Text>
+                    <Skeleton width={'100%'} {...SkeletonCommonProps}>
+                        {!isLoading && (
+                            <Text
+                                style={[
+                                    styles.location,
+                                    {
+                                        color: COLORS.grayscale700,
+                                    },
+                                ]}
+                            >
+                                {email}
+                            </Text>
+                        )}
+                    </Skeleton>
                     {/* <Text style={[styles.location, {
                     color: COLORS.grayscale700,
                 }]}></Text> */}

@@ -313,82 +313,149 @@ const Signup = ({ navigation }) => {
                     </View>
 
                     <View>
-                        <Input
-                            id="email"
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.email}
-                            placeholder="Email"
-                            icon={icons.email}
-                            keyboardType="email-address"
-                            placeholderTextColor={COLORS.gray}
-                        />
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Email *</Text>
+                            <Input
+                                id="email"
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.email}
+                                placeholder="Email"
+                                icon={icons.email}
+                                keyboardType="email-address"
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
                         <View style={styles.verificationContainer}>
                             <View style={styles.inputWrapper}>
-                                <Input
-                                    id="verificationCode"
-                                    onInputChanged={inputChangedHandler}
-                                    errorText={error.verification_code}
-                                    placeholder="Verification Code"
-                                    placeholderTextColor={COLORS.gray}
-                                    icon={icons.padlock}
-                                />
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.label}>
+                                        Verification Code *
+                                    </Text>
+                                    <Input
+                                        id="verificationCode"
+                                        onInputChanged={inputChangedHandler}
+                                        errorText={error.verification_code}
+                                        placeholder="Verification Code"
+                                        placeholderTextColor={COLORS.gray}
+                                        icon={icons.padlock}
+                                    />
+                                </View>
                             </View>
                             <View style={styles.buttonWrapper}>
-                                <TouchableOpacity
-                                    onPress={handleSendCode}
-                                    disabled={resendDisabled}
-                                    style={[
-                                        styles.resendButton,
-                                        resendDisabled &&
-                                            styles.resendButtonDisabled,
-                                    ]}
-                                >
-                                    <Text style={styles.resendText}>
-                                        {isSendingCode ? (
-                                            <ActivityIndicator
-                                                size="small"
-                                                color={COLORS.white}
-                                            />
-                                        ) : (
-                                            <Text style={styles.resendText}>
-                                                {resendDisabled
-                                                    ? `${countdown}s`
-                                                    : 'Get Code'}
-                                            </Text>
-                                        )}
-                                    </Text>
-                                </TouchableOpacity>
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.label}></Text>
+                                    <TouchableOpacity
+                                        onPress={handleSendCode}
+                                        disabled={resendDisabled}
+                                        style={[
+                                            styles.resendButton,
+                                            resendDisabled &&
+                                                styles.resendButtonDisabled,
+                                        ]}
+                                    >
+                                        <Text style={styles.resendText}>
+                                            {isSendingCode ? (
+                                                <ActivityIndicator
+                                                    size="small"
+                                                    color={COLORS.white}
+                                                />
+                                            ) : (
+                                                <Text style={styles.resendText}>
+                                                    {resendDisabled
+                                                        ? `${countdown}s`
+                                                        : 'Get Code'}
+                                                </Text>
+                                            )}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
-                        <Input
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.password}
-                            autoCapitalize="none"
-                            id="password"
-                            placeholder="Password"
-                            icon={icons.padlock}
-                            secureTextEntry={true}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                        <Input
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.password_confirmation}
-                            autoCapitalize="none"
-                            id="password_confirmation"
-                            placeholder="Confirm Password"
-                            icon={icons.padlock}
-                            secureTextEntry={true}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                        <Input
-                            id="name"
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.name}
-                            placeholder="Full Name"
-                            icon={icons.user}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                        <Input
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Password</Text>
+                            <Input
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.password}
+                                autoCapitalize="none"
+                                id="password"
+                                placeholder="Password"
+                                icon={icons.padlock}
+                                secureTextEntry={true}
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Confirm Password</Text>
+                            <Input
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.password_confirmation}
+                                autoCapitalize="none"
+                                id="password_confirmation"
+                                placeholder="Confirm Password"
+                                icon={icons.padlock}
+                                secureTextEntry={true}
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Full Name</Text>
+                            <Input
+                                id="name"
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.name}
+                                placeholder="Full Name"
+                                icon={icons.user}
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
+                        <View style={styles.verificationContainer}>
+                            <View style={styles.inputWrapperZone}>
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.label}>Zone</Text>
+                                    <Input
+                                        id="addr_zone"
+                                        onInputChanged={inputChangedHandler}
+                                        errorText={error.addr_zone}
+                                        placeholder="Zone"
+                                        icon={icons.location}
+                                        placeholderTextColor={COLORS.gray}
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+                            </View>
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.label}>Barangay</Text>
+                                    <RNPickerSelect
+                                        placeholder={{
+                                            label: 'Select Barangay',
+                                            value: '',
+                                        }}
+                                        items={barangays}
+                                        value={selectedBarangay}
+                                        onValueChange={(value) =>
+                                            setSelectedBarangay(value)
+                                        }
+                                        style={{
+                                            inputAndroid: {
+                                                borderRadius: 12,
+                                                borderWidth: 1,
+                                                marginVertical: 5,
+                                                fontSize: 14,
+                                                paddingHorizontal: 10,
+                                                color: COLORS.black,
+                                                paddingRight: 30,
+                                                height: 52,
+                                                alignItems: 'center',
+                                                backgroundColor:
+                                                    COLORS.greyscale500,
+                                            },
+                                        }}
+                                    />
+                                </View>
+                            </View>
+                        </View>
+                        {/* <Input
                             id="addr_zone"
                             onInputChanged={inputChangedHandler}
                             errorText={error.addr_zone}
@@ -396,7 +463,7 @@ const Signup = ({ navigation }) => {
                             icon={icons.location}
                             placeholderTextColor={COLORS.gray}
                             keyboardType="numeric"
-                        />
+                        /> */}
                         {/* <Input
                             id="addr_brgy"
                             onInputChanged={inputChangedHandler}
@@ -405,7 +472,7 @@ const Signup = ({ navigation }) => {
                             icon={icons.location2}
                             placeholderTextColor={COLORS.gray}
                         /> */}
-                        <RNPickerSelect
+                        {/* <RNPickerSelect
                             placeholder={{
                                 label: 'Select Barangay',
                                 value: '',
@@ -429,16 +496,19 @@ const Signup = ({ navigation }) => {
                                     backgroundColor: COLORS.greyscale500,
                                 },
                             }}
-                        />
-                        <Input
-                            id="phone_number"
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.phone_number}
-                            placeholder="Phone Number"
-                            placeholderTextColor={COLORS.gray}
-                            icon={icons.telephone}
-                            keyboardType="numeric"
-                        />
+                        /> */}
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Phone Number</Text>
+                            <Input
+                                id="phone_number"
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.phone_number}
+                                placeholder="Phone Number"
+                                placeholderTextColor={COLORS.gray}
+                                icon={icons.telephone}
+                                keyboardType="numeric"
+                            />
+                        </View>
                     </View>
                     <View style={styles.checkBoxContainer}>
                         <View style={{ flexDirection: 'row' }}>
@@ -487,15 +557,28 @@ const Signup = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    inputSection: {
+        marginBottom: 16,
+    },
+    label: {
+        fontSize: 16,
+        color: COLORS.gray,
+        marginBottom: 4,
+        marginLeft: 8,
+    },
     buttonWrapper: {
         marginTop: 10,
     },
     verificationContainer: {
         flexDirection: 'row',
-        marginVertical: 10,
     },
     inputWrapper: {
         flex: 1, // Input takes up remaining space
+        marginRight: 10, // Add space between input and button
+    },
+    inputWrapperZone: {
+        width: '30%',
+        // flex: 1, // Input takes up remaining space
         marginRight: 10, // Add space between input and button
     },
     resendButton: {
@@ -512,6 +595,10 @@ const styles = StyleSheet.create({
     resendText: {
         color: COLORS.white,
         textAlign: 'center',
+    },
+    area: {
+        flex: 1,
+        backgroundColor: COLORS.white,
     },
     area: {
         flex: 1,

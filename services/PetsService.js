@@ -11,6 +11,12 @@ export async function loadPetProfile(pet_owner_id, pet_id) {
     )
     return pet_profile
 }
+export async function loadPetNextMeds(pet_id) {
+    const { data: next_meds } = await axios.get(
+        `/pets/${pet_id}/next-vaccinations`
+    )
+    return next_meds
+}
 export async function loadPetPictures(pet_owner_id, pet_id) {
     const { data: pet_pictures } = await axios.get(
         `/petowners/${pet_owner_id}/pets/${pet_id}/getphotos`

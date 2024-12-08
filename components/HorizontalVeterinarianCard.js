@@ -20,6 +20,7 @@ const HorizontalVeterinarianCard = ({
     image,
     onPress,
 }) => {
+    const [isLoading, setIsLoading] = useState(true)
     return (
         <TouchableOpacity
             onPress={onPress}
@@ -30,7 +31,7 @@ const HorizontalVeterinarianCard = ({
                 },
             ]}
         >
-            <Skeleton.Group show={image == null}>
+            <Skeleton.Group show={isLoading}>
                 <Skeleton
                     width={100}
                     height={100}
@@ -42,6 +43,7 @@ const HorizontalVeterinarianCard = ({
                             uri: `${STORAGE_URL}/vet_profiles/${image}`,
                         }}
                         resizeMode="cover"
+                        onLoad={() => setIsLoading(false)}
                         style={styles.image}
                     />
                 </Skeleton>
@@ -49,16 +51,18 @@ const HorizontalVeterinarianCard = ({
                 <View style={styles.columnContainer}>
                     <View style={styles.topViewContainer}>
                         <Skeleton width={'95%'} {...SkeletonCommonProps}>
-                            <Text
-                                style={[
-                                    styles.name,
-                                    {
-                                        color: COLORS.greyscale900,
-                                    },
-                                ]}
-                            >
-                                {vetName}
-                            </Text>
+                            {!isLoading && (
+                                <Text
+                                    style={[
+                                        styles.name,
+                                        {
+                                            color: COLORS.greyscale900,
+                                        },
+                                    ]}
+                                >
+                                    {vetName}
+                                </Text>
+                            )}
                         </Skeleton>
                     </View>
                     <View style={styles.viewContainer}>

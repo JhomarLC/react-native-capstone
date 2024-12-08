@@ -8,6 +8,7 @@ import {
     Alert,
     Modal,
     TouchableWithoutFeedback,
+    ActivityIndicator,
 } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { SIZES, COLORS, icons, images, illustrations } from '../constants'
@@ -15,7 +16,7 @@ import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../components/Button'
 import { FontAwesome } from '@expo/vector-icons'
 import { ScrollView } from 'react-native-virtualized-view'
-import { loadPetProfile } from '../services/PetsService'
+import { loadPetNextMeds, loadPetProfile } from '../services/PetsService'
 import AuthContext from '../contexts/AuthContext'
 import { STORAGE_URL } from '@env'
 import QRCode from 'react-native-qrcode-svg'
@@ -29,11 +30,14 @@ const PetHealthCard = ({ pet_id }) => {
     const refRBSheet = useRef()
     const qrCodeRef = useRef()
     const [modalVisible, setModalVisible] = useState(false)
+    const [nextMedications, setNextMedications] = useState({})
 
     useEffect(() => {
         async function runEffect() {
             try {
                 const pet_profile = await loadPetProfile(pet_owner.id, pet_id)
+                const next_meds = await loadPetNextMeds(pet_id)
+                setNextMedications(next_meds.data)
                 setPet(pet_profile.data)
             } catch (e) {
                 console.log('Failed to load pet profile', e)
@@ -43,11 +47,11 @@ const PetHealthCard = ({ pet_id }) => {
     }, [])
     if (!pet) {
         return (
-            <View style={styles.loadingContainer}>
-                <Text style={styles.loadingText}>
-                    Loading pet information...
-                </Text>
-            </View>
+            <ActivityIndicator
+                size="large"
+                color={COLORS.primary}
+                style={{ marginTop: 20 }}
+            />
         )
     }
 
@@ -141,6 +145,42 @@ const PetHealthCard = ({ pet_id }) => {
             </Modal>
         )
     }
+    const renderNextVaccine = ({ item }) => (
+        <View style={styles.PetBreed}>
+            <View
+                style={{
+                    borderColor: COLORS.black,
+                    borderRadius: 32,
+                }}
+            >
+                <FontAwesome
+                    name="calendar-check-o"
+                    size={30}
+                    style={{
+                        color: COLORS.primary,
+                        backgroundColor: COLORS.tansparentPrimary,
+                        padding: 15,
+                    }}
+                />
+            </View>
+            <View style={styles.bdayDetails}>
+                <Text style={{ color: COLORS.grayscale700 }}>
+                    Next {item.medicationname.medtype.name}
+                </Text>
+                <Text
+                    style={[styles.BirthDate, { color: COLORS.grayscale700 }]}
+                >
+                    {formatDate(item.next_vaccination)}
+                </Text>
+                <Text
+                    style={[styles.BirthDate, { color: COLORS.grayscale700 }]}
+                >
+                    {item.medicationname.name}
+                </Text>
+            </View>
+        </View>
+    )
+
     return (
         <View style={[styles.wrapper]}>
             {renderModal()}
@@ -445,7 +485,6 @@ const PetHealthCard = ({ pet_id }) => {
                             >
                                 Birthday
                             </Text>
-                            {/* }]}>{" "}{rating}  ({numReviews})</Text> */}
                             <Text
                                 style={[
                                     styles.BirthDate,
@@ -467,20 +506,12 @@ const PetHealthCard = ({ pet_id }) => {
                                 {pet.age}
                             </Text>
                         </View>
-                        {/* <Text
-                            style={[
-                                styles.BirthCount,
-                                {
-                                    color: COLORS.grayscale700,
-                                },
-                            ]}
-                        >
-                            {pet.age}
-                        </Text> */}
                     </View>
-                    {/* <View>
-                        <QRCode value={pet.id} />
-                    </View> */}
+                    <FlatList
+                        data={nextMedications}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderNextVaccine}
+                    />
                 </View>
             </ScrollView>
             <View style={styles.bottomContainerQR}>
@@ -825,6 +856,7 @@ const styles = StyleSheet.create({
     },
 
     PetBreed: {
+        marginVertical: 5,
         fontSize: 14,
         fontFamily: 'regular',
         color: COLORS.grayscale700,

@@ -292,7 +292,7 @@ const VetPetOwnerLists = ({ navigation }) => {
                                 onRefresh={onRefresh} // Enables pull-to-refresh
                             />
                         ) : (
-                            <NotFoundCard />
+                            <NotFoundCard message="Sorry, no Pet Owners to display" />
                         )}
                     </View>
                 </View>

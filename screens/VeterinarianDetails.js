@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    ActivityIndicator,
+} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { COLORS, SIZES, icons, images } from '../constants'
@@ -64,7 +71,13 @@ const VeterinarianDetails = ({ route, navigation }) => {
 
     const renderContent = () => {
         if (!profile) {
-            return <Text>Loading...</Text>
+            return (
+                <ActivityIndicator
+                    size="large"
+                    color={COLORS.primary}
+                    style={{ marginTop: 20 }}
+                />
+            )
         }
 
         return (
@@ -123,7 +136,8 @@ const VeterinarianDetails = ({ route, navigation }) => {
                                     },
                                 ]}
                             >
-                                San Jose City, Nueva Ecija
+                                Zone {profile.addr_zone}, Brgy.{' '}
+                                {profile.addr_brgy}, San Jose City
                             </Text>
                         </View>
                     </View>

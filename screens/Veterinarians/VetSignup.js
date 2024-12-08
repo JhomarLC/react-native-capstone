@@ -32,6 +32,7 @@ import CustomModal from '../../components/CustomModal'
 const isTestMode = false
 import { API_URL } from '@env'
 import axios from 'axios'
+import RNPickerSelect from 'react-native-picker-select'
 
 const initialState = {
     inputValues: {
@@ -39,6 +40,7 @@ const initialState = {
         password: isTestMode ? 'password' : '',
         password_confirmation: isTestMode ? 'password' : '',
         name: isTestMode ? 'Jhomar Candelario' : '',
+        addr_zone: isTestMode ? '4' : '',
         position: isTestMode ? 'Veterinary II' : '',
         license_number: isTestMode ? '1234567' : '',
         phone_number: isTestMode ? '09982369196' : '',
@@ -47,6 +49,7 @@ const initialState = {
         email: false,
         password: false,
         password_confirmation: false,
+        addr_zone: false,
         name: false,
         position: false,
         license_number: false,
@@ -59,6 +62,7 @@ const VetSignup = ({ navigation }) => {
     const { setUser, setRole } = useContext(AuthContext)
     const [formState, dispatchFormState] = useReducer(reducer, initialState)
     const [isLoading, setIsLoading] = useState(false)
+    const [selectedBarangay, setSelectedBarangay] = useState()
 
     const [error, setError] = useState({})
     const [isChecked, setChecked] = useState(false)
@@ -82,6 +86,50 @@ const VetSignup = ({ navigation }) => {
         },
         [dispatchFormState]
     )
+    const barangays = [
+        { label: 'A. Pascual', value: 'A. Pascual' },
+        { label: 'Abar Ist', value: 'Abar Ist' },
+        { label: 'Abar 2nd', value: 'Abar 2nd' },
+        { label: 'Bagong Sikat', value: 'Bagong Sikat' },
+        { label: 'Caanawan', value: 'Caanawan' },
+        { label: 'Calaocan', value: 'Calaocan' },
+        { label: 'Camanacsacan', value: 'Camanacsacan' },
+        { label: 'Culaylay', value: 'Culaylay' },
+        { label: 'Dizol', value: 'Dizol' },
+        { label: 'Kaliwanagan', value: 'Kaliwanagan' },
+        { label: 'Kita-Kita', value: 'Kita-Kita' },
+        { label: 'Malasin', value: 'Malasin' },
+        { label: 'Manicla', value: 'Manicla' },
+        { label: 'Palestina', value: 'Palestina' },
+        { label: 'Parang Mangga', value: 'Parang Mangga' },
+        { label: 'Villa Joson', value: 'Villa Joson' },
+        { label: 'Pinili', value: 'Pinili' },
+        { label: 'Rafael Rueda, Sr. Pob.', value: 'Rafael Rueda, Sr. Pob.' },
+        {
+            label: 'Ferdinand E. Marcos Pob.',
+            value: 'Ferdinand E. Marcos Pob.',
+        },
+        { label: 'Canuto Ramos Pob.', value: 'Canuto Ramos Pob.' },
+        { label: 'Raymundo Eugenio Pob.', value: 'Raymundo Eugenio Pob.' },
+        { label: 'Crisanto Sanchez Pob.', value: 'Crisanto Sanchez Pob.' },
+        { label: 'Porais', value: 'Porais' },
+        { label: 'San Agustin', value: 'San Agustin' },
+        { label: 'San Juan', value: 'San Juan' },
+        { label: 'San Mauricio', value: 'San Mauricio' },
+        { label: 'Santo Niño 1st', value: 'Santo Niño 1st' },
+        { label: 'Santo Niño 2nd', value: 'Santo Niño 2nd' },
+        { label: 'Santo Tomas', value: 'Santo Tomas' },
+        { label: 'Sibut', value: 'Sibut' },
+        { label: 'Sinipit Bubon', value: 'Sinipit Bubon' },
+        { label: 'Santo Niño 3rd', value: 'Santo Niño 3rd' },
+        { label: 'Tabulac', value: 'Tabulac' },
+        { label: 'Tayabo', value: 'Tayabo' },
+        { label: 'Tondod', value: 'Tondod' },
+        { label: 'Tulat', value: 'Tulat' },
+        { label: 'Villa Floresca', value: 'Villa Floresca' },
+        { label: 'Villa Marina', value: 'Villa Marina' },
+    ]
+
     const handleSendCode = async () => {
         const email = formState.inputValues.email
         if (formState.inputValidities.email) {
@@ -172,6 +220,7 @@ const VetSignup = ({ navigation }) => {
             verificationCode,
             password,
             password_confirmation,
+            addr_zone,
             name,
             position,
             license_number,
@@ -185,6 +234,8 @@ const VetSignup = ({ navigation }) => {
         formData.append('password', password)
         formData.append('password_confirmation', password_confirmation)
         formData.append('name', name)
+        formData.append('addr_zone', addr_zone)
+        formData.append('addr_brgy', selectedBarangay)
         formData.append('position', position)
         formData.append('license_number', license_number)
         formData.append('phone_number', phone_number)
@@ -247,61 +298,6 @@ const VetSignup = ({ navigation }) => {
             setIsLoading(false) // Set loading back to false after login attempt
         }
     }
-    // // Render modal
-    // const renderModal = () => {
-    //     return (
-    //         <Modal
-    //             animationType="slide"
-    //             transparent={true}
-    //             visible={modalVisible}
-    //         >
-    //             <TouchableWithoutFeedback
-    //                 onPress={() => setModalVisible(false)}
-    //             >
-    //                 <View style={[styles.modalContainer]}>
-    //                     <View
-    //                         style={[
-    //                             styles.modalSubContainer,
-    //                             {
-    //                                 backgroundColor: COLORS.secondaryWhite,
-    //                             },
-    //                         ]}
-    //                     >
-    //                         <Image
-    //                             source={illustrations.star}
-    //                             resizeMode="contain"
-    //                             style={styles.modalIllustration}
-    //                         />
-    //                         <Text style={styles.modalTitle}>Success!</Text>
-    //                         <Text
-    //                             style={[
-    //                                 styles.modalSubtitle,
-    //                                 {
-    //                                     color: COLORS.greyscale900,
-    //                                 },
-    //                             ]}
-    //                         >
-    //                             Your account is pending admin verification.
-    //                             You’ll be notified once it’s approved.
-    //                         </Text>
-    //                         <Button
-    //                             title="Okay"
-    //                             filled
-    //                             onPress={() => {
-    //                                 setModalVisible(false)
-    //                                 navigation.replace('VetLogin')
-    //                             }}
-    //                             style={{
-    //                                 width: '100%',
-    //                                 marginTop: 12,
-    //                             }}
-    //                         />
-    //                     </View>
-    //                 </View>
-    //             </TouchableWithoutFeedback>
-    //         </Modal>
-    //     )
-    // }
 
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: COLORS.white }]}>
@@ -350,106 +346,182 @@ const VetSignup = ({ navigation }) => {
                     </View>
 
                     <View>
-                        <Input
-                            id="email"
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.email}
-                            placeholder="Email"
-                            icon={icons.email}
-                            keyboardType="email-address"
-                            placeholderTextColor={COLORS.gray}
-                        />
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Email *</Text>
+                            <Input
+                                id="email"
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.email}
+                                placeholder="Email"
+                                icon={icons.email}
+                                keyboardType="email-address"
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
                         <View style={styles.verificationContainer}>
                             <View style={styles.inputWrapper}>
-                                <Input
-                                    id="verificationCode"
-                                    onInputChanged={inputChangedHandler}
-                                    errorText={error.verification_code}
-                                    placeholder="Verification Code"
-                                    placeholderTextColor={COLORS.gray}
-                                    icon={icons.padlock}
-                                />
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.label}>
+                                        Verification Code *
+                                    </Text>
+                                    <Input
+                                        id="verificationCode"
+                                        onInputChanged={inputChangedHandler}
+                                        errorText={error.verification_code}
+                                        placeholder="Verification Code"
+                                        placeholderTextColor={COLORS.gray}
+                                        icon={icons.shield}
+                                    />
+                                </View>
                             </View>
                             <View style={styles.buttonWrapper}>
-                                <TouchableOpacity
-                                    onPress={handleSendCode}
-                                    disabled={resendDisabled}
-                                    style={[
-                                        styles.resendButton,
-                                        resendDisabled &&
-                                            styles.resendButtonDisabled,
-                                    ]}
-                                >
-                                    <Text style={styles.resendText}>
-                                        {isSendingCode ? (
-                                            <ActivityIndicator
-                                                size="small"
-                                                color={COLORS.white}
-                                            />
-                                        ) : (
-                                            <Text style={styles.resendText}>
-                                                {resendDisabled
-                                                    ? `${countdown}s`
-                                                    : 'Get Code'}
-                                            </Text>
-                                        )}
-                                    </Text>
-                                </TouchableOpacity>
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.label}></Text>
+                                    <TouchableOpacity
+                                        onPress={handleSendCode}
+                                        disabled={resendDisabled}
+                                        style={[
+                                            styles.resendButton,
+                                            resendDisabled &&
+                                                styles.resendButtonDisabled,
+                                        ]}
+                                    >
+                                        <Text style={styles.resendText}>
+                                            {isSendingCode ? (
+                                                <ActivityIndicator
+                                                    size="small"
+                                                    color={COLORS.white}
+                                                />
+                                            ) : (
+                                                <Text style={styles.resendText}>
+                                                    {resendDisabled
+                                                        ? `${countdown}s`
+                                                        : 'Get Code'}
+                                                </Text>
+                                            )}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
-                        <Input
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.password}
-                            autoCapitalize="none"
-                            id="password"
-                            placeholder="Password"
-                            icon={icons.padlock}
-                            secureTextEntry={true}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                        <Input
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.password_confirmation}
-                            autoCapitalize="none"
-                            id="password_confirmation"
-                            placeholder="Confirm Password"
-                            icon={icons.padlock}
-                            secureTextEntry={true}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                        <Input
-                            id="name"
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.name}
-                            placeholder="Full Name"
-                            icon={icons.user}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                        <Input
-                            id="position"
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.position}
-                            placeholder="Position"
-                            icon={icons.apple}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                        <Input
-                            id="license_number"
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.license_number}
-                            placeholder="License Number"
-                            icon={icons.shield}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                        <Input
-                            id="phone_number"
-                            onInputChanged={inputChangedHandler}
-                            errorText={error.phone_number}
-                            placeholder="Phone Number"
-                            placeholderTextColor={COLORS.gray}
-                            icon={icons.telephone}
-                            keyboardType="numeric"
-                        />
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Password *</Text>
+                            <Input
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.password}
+                                autoCapitalize="none"
+                                id="password"
+                                placeholder="Password"
+                                icon={icons.padlock}
+                                secureTextEntry={true}
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Confirm Password *</Text>
+                            <Input
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.password_confirmation}
+                                autoCapitalize="none"
+                                id="password_confirmation"
+                                placeholder="Confirm Password"
+                                icon={icons.padlock}
+                                secureTextEntry={true}
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Full Name *</Text>
+                            <Input
+                                id="name"
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.name}
+                                placeholder="Full Name"
+                                icon={icons.user}
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
+                        <View style={styles.verificationContainer}>
+                            <View style={styles.inputWrapperZone}>
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.label}>Zone *</Text>
+                                    <Input
+                                        id="addr_zone"
+                                        onInputChanged={inputChangedHandler}
+                                        errorText={error.addr_zone}
+                                        placeholder="Zone"
+                                        icon={icons.location}
+                                        placeholderTextColor={COLORS.gray}
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+                            </View>
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.label}>Barangay *</Text>
+                                    <RNPickerSelect
+                                        placeholder={{
+                                            label: 'Select Barangay',
+                                            value: '',
+                                        }}
+                                        items={barangays}
+                                        value={selectedBarangay}
+                                        onValueChange={(value) =>
+                                            setSelectedBarangay(value)
+                                        }
+                                        style={{
+                                            inputAndroid: {
+                                                borderRadius: 12,
+                                                borderWidth: 1,
+                                                marginVertical: 5,
+                                                fontSize: 14,
+                                                paddingHorizontal: 10,
+                                                color: COLORS.black,
+                                                paddingRight: 30,
+                                                height: 52,
+                                                alignItems: 'center',
+                                                backgroundColor:
+                                                    COLORS.greyscale500,
+                                            },
+                                        }}
+                                    />
+                                </View>
+                            </View>
+                        </View>
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Position *</Text>
+                            <Input
+                                id="position"
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.position}
+                                placeholder="Position"
+                                icon={icons.veterinarian}
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>License Number *</Text>
+                            <Input
+                                id="license_number"
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.license_number}
+                                placeholder="License Number"
+                                icon={icons.shield}
+                                placeholderTextColor={COLORS.gray}
+                            />
+                        </View>
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>Phone Number *</Text>
+                            <Input
+                                id="phone_number"
+                                onInputChanged={inputChangedHandler}
+                                errorText={error.phone_number}
+                                placeholder="Phone Number"
+                                placeholderTextColor={COLORS.gray}
+                                icon={icons.telephone}
+                                keyboardType="numeric"
+                            />
+                        </View>
                     </View>
                     <View style={styles.checkBoxContainer}>
                         <View style={{ flexDirection: 'row' }}>
@@ -491,28 +563,6 @@ const VetSignup = ({ navigation }) => {
                         )}
                     </Button>
                 </View>
-                {/* <View style={styles.bottomContainer}>
-                    <Text
-                        style={[
-                            styles.bottomLeft,
-                            {
-                                color: COLORS.black,
-                            },
-                        ]}
-                    >
-                        Already have an account ?
-                    </Text>
-                    <TouchableOpacity
-                        onPress={() =>
-                            navigation.navigate('Login', {
-                                email,
-                                password,
-                            })
-                        }
-                    >
-                        <Text style={styles.bottomRight}> Sign In</Text>
-                    </TouchableOpacity>
-                </View> */}
             </View>
             <FlashMessage position="top" />
         </SafeAreaView>
@@ -520,15 +570,29 @@ const VetSignup = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    inputSection: {
+        marginBottom: 16,
+    },
+    label: {
+        fontSize: 16,
+        color: COLORS.gray,
+        marginBottom: 4,
+        marginLeft: 8,
+    },
     buttonWrapper: {
         marginTop: 10,
     },
     verificationContainer: {
         flexDirection: 'row',
-        marginVertical: 10,
+        // marginVertical: 10,
     },
     inputWrapper: {
         flex: 1, // Input takes up remaining space
+        marginRight: 10, // Add space between input and button
+    },
+    inputWrapperZone: {
+        width: '30%',
+        // flex: 1, // Input takes up remaining space
         marginRight: 10, // Add space between input and button
     },
     resendButton: {

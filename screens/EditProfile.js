@@ -283,45 +283,52 @@ const EditProfile = ({ navigation }) => {
                             keyboardType="numeric"
                         />
                     </View>
-                    <View style={styles.inputSection}>
-                        <Text style={styles.label}>Zone</Text>
-                        <Input
-                            id="zone"
-                            value={inputValues.zone}
-                            onInputChanged={inputChangedHandler}
-                            placeholder="Zone"
-                            icon={icons.location}
-                            placeholderTextColor={COLORS.gray}
-                        />
-                    </View>
-                    <View style={styles.inputSection}>
-                        <Text style={styles.label}>Select Barangay</Text>
-
-                        <RNPickerSelect
-                            placeholder={{
-                                label: 'Select Barangay',
-                                value: '',
-                            }}
-                            items={barangays}
-                            value={selectedBarangay}
-                            onValueChange={(value) =>
-                                setSelectedBarangay(value)
-                            }
-                            style={{
-                                inputAndroid: {
-                                    borderRadius: 12,
-                                    borderWidth: 1,
-                                    marginVertical: 5,
-                                    fontSize: 14,
-                                    paddingHorizontal: 10,
-                                    color: COLORS.black,
-                                    paddingRight: 30,
-                                    height: 52,
-                                    alignItems: 'center',
-                                    backgroundColor: COLORS.greyscale500,
-                                },
-                            }}
-                        />
+                    <View style={styles.verificationContainer}>
+                        <View style={styles.inputWrapperZone}>
+                            <View style={styles.inputSection}>
+                                <Text style={styles.label}>Zone *</Text>
+                                <Input
+                                    id="addr_zone"
+                                    value={inputValues.zone}
+                                    onInputChanged={inputChangedHandler}
+                                    placeholder="Zone"
+                                    icon={icons.location}
+                                    placeholderTextColor={COLORS.gray}
+                                    keyboardType="numeric"
+                                />
+                            </View>
+                        </View>
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.inputSection}>
+                                <Text style={styles.label}>Barangay *</Text>
+                                <RNPickerSelect
+                                    placeholder={{
+                                        label: 'Select Barangay',
+                                        value: '',
+                                    }}
+                                    items={barangays}
+                                    value={selectedBarangay}
+                                    onValueChange={(value) =>
+                                        setSelectedBarangay(value)
+                                    }
+                                    style={{
+                                        inputAndroid: {
+                                            borderRadius: 12,
+                                            borderWidth: 1,
+                                            marginVertical: 5,
+                                            fontSize: 14,
+                                            paddingHorizontal: 10,
+                                            color: COLORS.black,
+                                            paddingRight: 30,
+                                            height: 52,
+                                            alignItems: 'center',
+                                            backgroundColor:
+                                                COLORS.greyscale500,
+                                        },
+                                    }}
+                                />
+                            </View>
+                        </View>
                     </View>
                 </ScrollView>
             </View>
@@ -362,6 +369,19 @@ const EditProfile = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    verificationContainer: {
+        flexDirection: 'row',
+        // marginVertical: 10,
+    },
+    inputWrapper: {
+        flex: 1, // Input takes up remaining space
+        marginRight: 10, // Add space between input and button
+    },
+    inputWrapperZone: {
+        width: '30%',
+        // flex: 1, // Input takes up remaining space
+        marginRight: 10, // Add space between input and button
+    },
     area: {
         flex: 1,
         backgroundColor: COLORS.white,

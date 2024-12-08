@@ -25,9 +25,6 @@ const PetVaccination = ({ pet_id }) => {
         async function runEffect() {
             try {
                 const result = await loadMedications()
-                console.log('====================================')
-                console.log(result.data)
-                console.log('====================================')
                 setVaccine(result.data)
             } catch (e) {
                 console.log('Failed to load medications', e)
@@ -78,7 +75,7 @@ const PetVaccination = ({ pet_id }) => {
                                     {/* <FontAwesome name="birthday-cake" //> */}
                                     <Image
                                         source={
-                                            item.id === 1
+                                            item.name === 'Vaccine'
                                                 ? icons.vaccine
                                                 : icons.deworm
                                         }
@@ -103,17 +100,6 @@ const PetVaccination = ({ pet_id }) => {
                                     {item.name}
                                 </Text>
                             </View>
-                            {/* <View style={[styles.separateLine, {
-                marginVertical: 10,
-                backgroundColor: COLORS.grayscale200,
-              }]} /> */}
-                            {/* <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("EReceipt")}
-                  style={styles.receiptBtn}>
-                  <Text style={styles.receiptBtnText}>View E-Receipt</Text>
-                </TouchableOpacity>
-              </View> */}
                         </TouchableOpacity>
                     </View>
                 )}

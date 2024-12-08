@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     Image,
     Alert,
+    ActivityIndicator,
 } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { SIZES, COLORS, icons, illustrations } from '../constants'
@@ -13,7 +14,12 @@ import RBSheet from 'react-native-raw-bottom-sheet'
 import Button from '../components/Button'
 import { FontAwesome } from '@expo/vector-icons'
 import { ScrollView } from 'react-native-virtualized-view'
-import { approvePet, declinePet, loadPetProfile } from '../services/PetsService'
+import {
+    approvePet,
+    declinePet,
+    loadPetNextMeds,
+    loadPetProfile,
+} from '../services/PetsService'
 import { STORAGE_URL } from '@env'
 import QRCode from 'react-native-qrcode-svg'
 import * as FileSystem from 'expo-file-system'
@@ -26,6 +32,7 @@ const VetPetHealthCard = ({ pet, petowner }) => {
     const [petData, setPetData] = useState(pet)
     const [isApproving, setIsApproving] = useState(false)
     const qrCodeRef = useRef()
+    const [nextMedications, setNextMedications] = useState({})
 
     const [modalVisible, setModalVisible] = useState(false)
     const [modal, setModal] = useState({
@@ -38,6 +45,8 @@ const VetPetHealthCard = ({ pet, petowner }) => {
     const loadPetData = async () => {
         try {
             const updatedPet = await loadPetProfile(petowner.id, pet.id) // Fetch latest pet data
+            const next_meds = await loadPetNextMeds(pet.id)
+            setNextMedications(next_meds.data)
             setPetData(updatedPet.data)
         } catch (error) {
             console.error('Failed to load pet data:', error)
@@ -51,11 +60,11 @@ const VetPetHealthCard = ({ pet, petowner }) => {
     }, [pet.id])
     if (!petData) {
         return (
-            <View style={styles.loadingContainer}>
-                <Text style={styles.loadingText}>
-                    Loading pet information...
-                </Text>
-            </View>
+            <ActivityIndicator
+                size="large"
+                color={COLORS.primary}
+                style={{ marginTop: 20 }}
+            />
         )
     }
 
@@ -109,6 +118,41 @@ const VetPetHealthCard = ({ pet, petowner }) => {
             Alert.alert('Error', 'Failed to save QR Code. Please try again.')
         }
     }
+    const renderNextVaccine = ({ item }) => (
+        <View style={styles.PetBreed}>
+            <View
+                style={{
+                    borderColor: COLORS.black,
+                    borderRadius: 32,
+                }}
+            >
+                <FontAwesome
+                    name="calendar-check-o"
+                    size={30}
+                    style={{
+                        color: COLORS.primary,
+                        backgroundColor: COLORS.tansparentPrimary,
+                        padding: 15,
+                    }}
+                />
+            </View>
+            <View style={styles.bdayDetails}>
+                <Text style={{ color: COLORS.grayscale700 }}>
+                    Next {item.medicationname.medtype.name}
+                </Text>
+                <Text
+                    style={[styles.BirthDate, { color: COLORS.grayscale700 }]}
+                >
+                    {formatDate(item.next_vaccination)}
+                </Text>
+                <Text
+                    style={[styles.BirthDate, { color: COLORS.grayscale700 }]}
+                >
+                    {item.medicationname.name}
+                </Text>
+            </View>
+        </View>
+    )
     return (
         <View style={[styles.wrapper]}>
             <CustomModal
@@ -456,6 +500,11 @@ const VetPetHealthCard = ({ pet, petowner }) => {
                             </Text>
                         </View>
                     </View>
+                    <FlatList
+                        data={nextMedications}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderNextVaccine}
+                    />
                 </View>
                 <RBSheet
                     ref={refRBSheet2}
@@ -488,10 +537,6 @@ const VetPetHealthCard = ({ pet, petowner }) => {
                     >
                         Status
                     </Text>
-                    {/* <View style={styles.separateLine} /> */}
-                    {/* <View style={{ width: SIZES.width - 32 }}>
-        
-          </View> */}
 
                     <View style={styles.separateLine} />
 
@@ -914,6 +959,7 @@ const styles = StyleSheet.create({
     },
 
     PetBreed: {
+        marginVertical: 5,
         fontSize: 14,
         fontFamily: 'regular',
         color: COLORS.grayscale700,
